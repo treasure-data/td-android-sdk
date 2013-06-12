@@ -1,0 +1,56 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.treasure_data</groupId>
+  <artifactId>td-logger-android</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+    	<id>komamitsu</id>
+    	<name>Mitsunori Komatsu</name>
+    	<email>komamitsu@gmail.com</email>
+    </developer>
+  </developers>
+
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.6</source>
+          <target>1.6</target>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <dependencies>
+  	<dependency>
+  		<groupId>com.google.android</groupId>
+  		<artifactId>android</artifactId>
+  		<version>4.1.1.4</version>
+  		<scope>provided</scope>
+  	</dependency>
+  	<dependency>
+  		<groupId>com.treasure_data</groupId>
+  		<artifactId>td-logger</artifactId>
+  		<version>0.1.4</version>
+  	</dependency>
+  </dependencies>
+
+  <repositories>
+    <repository>
+      <id>treasure-data.com</id>
+      <name>Treasure Data's Maven Repository</name>
+      <url>http://maven.treasure-data.com/</url>
+    </repository>
+  </repositories>
+</project>
