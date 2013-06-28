@@ -4,12 +4,11 @@ import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Properties;
 
 import org.junit.Test;
 import org.msgpack.type.ArrayValue;
 
-import com.treasure_data.td_logger.android.FluentdMock.Result;
+import com.treasure_data.td_logger.android.TdServerMock.Result;
 
 public class TdAndroidLoggerTest {
     private static final String API_KEY = "1234567890qwertyuiopasdfghjklzxcvbnm";
@@ -31,14 +30,14 @@ public class TdAndroidLoggerTest {
 
     @Test
     public void test() throws IOException, InterruptedException {
-        FluentdMock td = new FluentdMock();
+        TdServerMock td = new TdServerMock();
         Result result = td.run(1);
 
         int port = td.getPort();
         System.out.println("port ===> "+ port);
         TdAndroidLogger logger = new TdAndroidLogger(API_KEY, "localhost", port);
-        logger.write("testdb", "testlabel", "testkey0", "testval0");
-        logger.flushAll();
+        logger.write("testdb", "testlabel", "k", 1);
+        logger.flush("testdb", "testlabel");
 
         result.waitResult();
 

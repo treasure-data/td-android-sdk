@@ -1,18 +1,21 @@
 package com.treasure_data.td_logger.android;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.zip.GZIPOutputStream;
 
+import org.apache.commons.io.IOUtils;
 import org.msgpack.MessagePack;
 import org.msgpack.packer.BufferPacker;
 
 import com.treasure_data.td_logger.android.ApiClient.ApiError;
 
 import android.content.Context;
+import android.view.View;
 
 public class TdAndroidLogger {
     private static final String TAG = TdAndroidLogger.class.getSimpleName();
@@ -62,6 +65,7 @@ public class TdAndroidLogger {
         for (Entry<String, Counter> counter : counterContainer) {
             String[] databaseAndTable = fromBufferPackerKey(counter.getKey());
             for (Entry<String, Long> kv : counter.getValue()) {
+                Log.d(TAG, "moveCounterToBuffer: " + kv);
                 write(databaseAndTable[0], databaseAndTable[1], kv.getKey(), kv.getValue());
             }
         }
@@ -101,15 +105,29 @@ public class TdAndroidLogger {
     }
 
     private synchronized void flushBufferPacker(String database, String table, BufferPacker bufferPacker) throws IOException, ApiError {
-        moveCounterToBuffer();
-        if (bufferPacker.getBufferSize() == 0) {
-            return;
+        ByteArrayOutputStream out = null;
+        try {
+            moveCounterToBuffer();
+            if (bufferPacker.getBufferSize() == 0) {
+                return;
+            }
+            out = new ByteArrayOutputStream();
+            GZIPOutputStream gzipOutputStream = new GZIPOutputStream(out);
+            gzipOutputStream.write(bufferPacker.toByteArray());
+            gzipOutputStream.close();
+            try {
+                apiClient.importTable(database, table, out.toByteArray());
+            }
+            catch (FileNotFoundException e) {
+                Log.w(TAG, "flushBufferPacker", e);
+                // TODO: retry management
+                apiClient.createTable(database, table);
+                apiClient.importTable(database, table, out.toByteArray());
+            }
         }
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        GZIPOutputStream gzipOutputStream = new GZIPOutputStream(out);
-        gzipOutputStream.write(bufferPacker.toByteArray());
-        gzipOutputStream.close();
-        apiClient.importTable(database, table, out.toByteArray());
+        finally {
+            IOUtils.closeQuietly(out);
+        }
         bufferPacker.clear();
     }
 
@@ -118,8 +136,12 @@ public class TdAndroidLogger {
         BufferPacker bufferPacker = getBufferPacker(packerKey);
 
         try {
+            Log.d(TAG, ">>>>>>>>>>> " + database + ", " + table + ", " + timestamp);
             if (!data.containsKey("time")) {
                 data.put("time", timestamp == 0 ? System.currentTimeMillis() / 1000 : timestamp);
+            }
+            for (Entry<String, Object> e : data.entrySet()) {
+                Log.d(TAG, ">>>> " + e);
             }
             bufferPacker.write(data);
             Log.d(TAG, "write: bufsize=" + bufferPacker.getBufferSize());

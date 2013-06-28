@@ -69,7 +69,12 @@ public class Log {
     private static void log(Method m, String level, String tag, String msg, Throwable ex) {
         if (m != null) {
             try {
-                m.invoke(null, tag, msg);
+                if (ex != null) {
+                    m.invoke(null, tag, msg, ex);
+                }
+                else {
+                    m.invoke(null, tag, msg);
+                }
                 return;
             } catch (IllegalAccessException e) {
                 e.printStackTrace();

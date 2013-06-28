@@ -27,34 +27,67 @@ public class ApiClient {
         this.port = port;
     }
 
-    public String importTable(String database, String table, byte [] data) throws IOException, ApiError {
-        String path = String.format("/v3/table/import/%s/%s/msgpack.gz", database, table);
-        URL url = new URL("http", host, port, path);
-        Log.d(TAG, "importTable: url=" + url + ", data.len=" + data.length);
-
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-
+    private void setupClient(HttpURLConnection conn) {
         conn.setRequestProperty("Authorization", "TD1 " + apikey);
-        conn.setRequestMethod("PUT");
-        conn.setRequestProperty("Content-Type", "application/octet-stream");
-        conn.setRequestProperty("Content-Length", String.valueOf(data.length));
         conn.setDoOutput(true);
         conn.setUseCaches (false);
+    }
 
-        BufferedOutputStream out = null;
+    public String createTable(String database, String table) throws IOException, ApiError {
+        HttpURLConnection conn = null;
         try {
-            out = new BufferedOutputStream(conn.getOutputStream());
-            out.write(data);
-            out.flush();
+            String path = String.format("/v3/table/create/%s/%s/log", database, table);
+            URL url = new URL("http", host, port, path);
+            Log.d(TAG, "createTable: url=" + url);
+            conn = (HttpURLConnection) url.openConnection();
+            setupClient(conn);
+
+            conn.setRequestMethod("POST");
+            conn.connect();
+
+            int responseCode = conn.getResponseCode();
+            if (responseCode != HttpURLConnection.HTTP_OK) {
+                throw new ApiError(conn.getResponseMessage());
+            }
+            return IOUtils.toString(conn.getInputStream());
         }
         finally {
-            IOUtils.closeQuietly(out);
+            IOUtils.closeQuietly(conn.getInputStream());
         }
+    }
 
-        int responseCode = conn.getResponseCode();
-        if (responseCode != HttpURLConnection.HTTP_OK) {
-            throw new ApiError(conn.getResponseMessage());
+    public String importTable(String database, String table, byte [] data) throws IOException, ApiError {
+        HttpURLConnection conn = null;
+        try {
+            String path = String.format("/v3/table/import/%s/%s/msgpack.gz", database, table);
+            URL url = new URL("http", host, port, path);
+            Log.d(TAG, "importTable: url=" + url + ", data.len=" + data.length);
+
+            conn = (HttpURLConnection) url.openConnection();
+            setupClient(conn);
+
+            conn.setRequestMethod("PUT");
+            conn.setRequestProperty("Content-Type", "application/octet-stream");
+            conn.setRequestProperty("Content-Length", String.valueOf(data.length));
+
+            BufferedOutputStream out = null;
+            try {
+                out = new BufferedOutputStream(conn.getOutputStream());
+                out.write(data);
+                out.flush();
+            }
+            finally {
+                IOUtils.closeQuietly(out);
+            }
+
+            int responseCode = conn.getResponseCode();
+            if (responseCode != HttpURLConnection.HTTP_OK) {
+                throw new ApiError(conn.getResponseMessage());
+            }
+            return IOUtils.toString(conn.getInputStream());
         }
-        return IOUtils.toString(conn.getInputStream());
+        finally {
+            IOUtils.closeQuietly(conn.getInputStream());
+        }
     }
 }

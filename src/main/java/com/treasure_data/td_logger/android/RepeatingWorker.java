@@ -56,4 +56,10 @@ public class RepeatingWorker {
         }
         wakeupQueue.add(true);
     }
+
+    @Override
+    protected void finalize() throws Throwable {
+        stop();
+        super.finalize();
+    }
 }
