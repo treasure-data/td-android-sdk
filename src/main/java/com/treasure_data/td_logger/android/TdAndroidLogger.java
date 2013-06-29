@@ -66,6 +66,10 @@ public class TdAndroidLogger {
         Log.d(TAG, "moveCounterToBuffer: database=" + database + ", table=" + table);
         String key = toBufferPackerKey(database, table);
         Counter counter = counterContainer.getCounter(key);
+        if (counter == null) {
+            return;
+        }
+
         for (Entry<String, Long> kv : counter) {
             write(database, table, kv.getKey(), kv.getValue());
         }
