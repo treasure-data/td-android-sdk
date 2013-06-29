@@ -9,14 +9,12 @@ import java.util.Map.Entry;
 import java.util.zip.GZIPOutputStream;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.IllegalClassException;
 import org.msgpack.MessagePack;
 import org.msgpack.packer.BufferPacker;
 
 import com.treasure_data.td_logger.android.DefaultApiClient.ApiError;
 
 import android.content.Context;
-import android.view.View;
 
 public class TdAndroidLogger {
     private static final String TAG = TdAndroidLogger.class.getSimpleName();
@@ -26,7 +24,7 @@ public class TdAndroidLogger {
     private static final int BUFFER_FLUSH_SIZE = 1 * 1024 * 1024;   // TODO: tune up
     private static final String PACKER_KEY_DELIM = "#";
     private static Class<? extends ApiClient> apiClientClass = DefaultApiClient.class;
-    private final ApiClient apiClient;
+    final ApiClient apiClient;
     // TODO: add updated_at
     private final Map<String, BufferPacker> bufferPackerMap = new HashMap<String, BufferPacker>();
     private final MessagePack msgpack = new MessagePack();
