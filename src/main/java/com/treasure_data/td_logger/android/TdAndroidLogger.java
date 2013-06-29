@@ -9,28 +9,27 @@ import java.util.Map.Entry;
 import java.util.zip.GZIPOutputStream;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.IllegalClassException;
 import org.msgpack.MessagePack;
 import org.msgpack.packer.BufferPacker;
 
 import com.treasure_data.td_logger.android.DefaultApiClient.ApiError;
 
 import android.content.Context;
-import android.view.View;
 
 public class TdAndroidLogger {
     private static final String TAG = TdAndroidLogger.class.getSimpleName();
     private static final String RES_DEFTYPE = "string";
     private static final String API_SERVER_HOST = "api.treasure-data.com";
+    private static final boolean API_SECURE = true; // TODO: use this
     private static final int API_SERVER_PORT = 80;
     private static final int BUFFER_FLUSH_SIZE = 1 * 1024 * 1024;   // TODO: tune up
     private static final String PACKER_KEY_DELIM = "#";
     private static Class<? extends ApiClient> apiClientClass = DefaultApiClient.class;
-    private final ApiClient apiClient;
+    final ApiClient apiClient;
     // TODO: add updated_at
     private final Map<String, BufferPacker> bufferPackerMap = new HashMap<String, BufferPacker>();
     private final MessagePack msgpack = new MessagePack();
-    private final RepeatingWorker flushWorker = new RepeatingWorker();
+    final RepeatingWorker flushWorker = new RepeatingWorker();
     private final CounterContainer counterContainer = new CounterContainer();
 
     public static void setApiClientClass(Class<? extends ApiClient> klass) {
@@ -156,12 +155,8 @@ public class TdAndroidLogger {
         BufferPacker bufferPacker = getBufferPacker(database, table);
 
         try {
-            Log.d(TAG, ">>>>>>>>>>> " + database + ", " + table + ", " + timestamp);
             if (!data.containsKey("time")) {
                 data.put("time", timestamp == 0 ? System.currentTimeMillis() / 1000 : timestamp);
-            }
-            for (Entry<String, Object> e : data.entrySet()) {
-                Log.d(TAG, ">>>> " + e);
             }
             bufferPacker.write(data);
             Log.d(TAG, "write: bufsize=" + bufferPacker.getBufferSize());
@@ -211,6 +206,7 @@ public class TdAndroidLogger {
         flushAll();
         for (String bufferPackerKey : bufferPackerMap.keySet()) {
             try {
+                // TODO: if failed to flush, should retry somehow...
                 getBufferPacker(bufferPackerKey).close();
             } catch (IOException e) {
                 e.printStackTrace();
