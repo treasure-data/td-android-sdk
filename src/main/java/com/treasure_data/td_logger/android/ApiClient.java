@@ -47,7 +47,7 @@ public class ApiClient {
 
             int responseCode = conn.getResponseCode();
             if (responseCode != HttpURLConnection.HTTP_OK) {
-                throw new ApiError(conn.getResponseMessage());
+                throw new ApiError("status code = " + responseCode + " " + conn.getResponseMessage());
             }
             return IOUtils.toString(conn.getInputStream());
         }

@@ -8,8 +8,6 @@ import java.util.List;
 import org.junit.Test;
 import org.msgpack.type.ArrayValue;
 
-import com.treasure_data.td_logger.android.TdServerMock.Result;
-
 public class TdAndroidLoggerTest {
     private static final String API_KEY = "1234567890qwertyuiopasdfghjklzxcvbnm";
 
@@ -28,6 +26,7 @@ public class TdAndroidLoggerTest {
     }
     */
 
+    /*
     @Test
     public void test() throws IOException, InterruptedException {
         TdServerMock td = new TdServerMock();
@@ -46,4 +45,5 @@ public class TdAndroidLoggerTest {
 
         logger.close();
     }
+    */
 }

@@ -58,18 +58,18 @@ public class TdAndroidLogger {
     }
 
     public void increment(String database, String table, String key, long i) {
+        getBufferPacker(database, table);   // prepare to flush()
         counterContainer.increment(toBufferPackerKey(database, table), key, i);
     }
 
-    private void moveCounterToBuffer() {
-        for (Entry<String, Counter> counter : counterContainer) {
-            String[] databaseAndTable = fromBufferPackerKey(counter.getKey());
-            for (Entry<String, Long> kv : counter.getValue()) {
-                Log.d(TAG, "moveCounterToBuffer: " + kv);
-                write(databaseAndTable[0], databaseAndTable[1], kv.getKey(), kv.getValue());
-            }
+    private void moveCounterToBuffer(String database, String table) {
+        Log.d(TAG, "moveCounterToBuffer: database=" + database + ", table=" + table);
+        String key = toBufferPackerKey(database, table);
+        Counter counter = counterContainer.getCounter(key);
+        for (Entry<String, Long> kv : counter) {
+            write(database, table, kv.getKey(), kv.getValue());
         }
-        counterContainer.clear();
+        counter.clear();
     }
 
     public boolean write(String database, String table, String key, Object value, long timestamp) {
@@ -80,6 +80,10 @@ public class TdAndroidLogger {
 
     public boolean write(String database, String table, String key, Object value) {
         return write(database, table, key, value, 0);
+    }
+
+    private BufferPacker getBufferPacker(String database, String table) {
+        return getBufferPacker(toBufferPackerKey(database, table));
     }
 
     private BufferPacker getBufferPacker(String packerKey) {
@@ -105,9 +109,9 @@ public class TdAndroidLogger {
     }
 
     private synchronized void flushBufferPacker(String database, String table, BufferPacker bufferPacker) throws IOException, ApiError {
+        moveCounterToBuffer(database, table);
         ByteArrayOutputStream out = null;
         try {
-            moveCounterToBuffer();
             if (bufferPacker.getBufferSize() == 0) {
                 return;
             }
@@ -132,8 +136,7 @@ public class TdAndroidLogger {
     }
 
     public boolean write(String database, String table, Map<String, Object>data, long timestamp) {
-        String packerKey = toBufferPackerKey(database, table);
-        BufferPacker bufferPacker = getBufferPacker(packerKey);
+        BufferPacker bufferPacker = getBufferPacker(database, table);
 
         try {
             Log.d(TAG, ">>>>>>>>>>> " + database + ", " + table + ", " + timestamp);
@@ -168,7 +171,7 @@ public class TdAndroidLogger {
     }
 
     public boolean flush(String database, String table) {
-        BufferPacker bufferPacker = getBufferPacker(toBufferPackerKey(database, table));
+        BufferPacker bufferPacker = getBufferPacker(database, table);
         try {
             flushBufferPacker(database, table, bufferPacker);
             return true;
