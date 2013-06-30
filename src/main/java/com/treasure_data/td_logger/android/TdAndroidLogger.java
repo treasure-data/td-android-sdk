@@ -37,7 +37,7 @@ public class TdAndroidLogger {
     }
 
     public TdAndroidLogger(Context context) {
-        this(context.getString(context.getResources().getIdentifier("apikey", RES_DEFTYPE, context.getPackageName())));
+        this(context.getString(context.getResources().getIdentifier("td_apikey", RES_DEFTYPE, context.getPackageName())));
     }
 
     public TdAndroidLogger(Context context, boolean autoFlushing) {
