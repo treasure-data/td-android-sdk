@@ -36,7 +36,7 @@ Also, you can use td-mobile-sdk with td-mobile-sdk.jar in (YOUR_ANDROID_PROJECT)
 
 td-mobile-sdk uses Treasure Data API, so this library needs the API key of the user. You can pass your API key to td-mobile-sdk in the following ways.
 
-#### Java constractor
+#### Java constructor
 
     final String apiKey = "1Qaz2WSx3eDc4RfvBGt56yHnMjU78ik";
     TdAndroidLogger logger = new TdAndroidLogger(apiKey);
