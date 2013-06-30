@@ -1,8 +1,8 @@
-package com.treasure_data.td_logger.android;
+package com.treasure_data.mobilesdk;
 
 import java.io.IOException;
 
-import com.treasure_data.td_logger.android.DefaultApiClient.ApiError;
+import com.treasure_data.mobilesdk.DefaultApiClient.ApiError;
 
 public interface ApiClient {
 

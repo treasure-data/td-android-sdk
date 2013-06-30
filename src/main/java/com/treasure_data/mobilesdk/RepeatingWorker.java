@@ -1,4 +1,4 @@
-package com.treasure_data.td_logger.android;
+package com.treasure_data.mobilesdk;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;

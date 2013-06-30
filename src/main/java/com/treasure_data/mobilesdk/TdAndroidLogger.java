@@ -1,4 +1,4 @@
-package com.treasure_data.td_logger.android;
+package com.treasure_data.mobilesdk;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
@@ -12,7 +12,7 @@ import org.apache.commons.io.IOUtils;
 import org.msgpack.MessagePack;
 import org.msgpack.packer.BufferPacker;
 
-import com.treasure_data.td_logger.android.DefaultApiClient.ApiError;
+import com.treasure_data.mobilesdk.DefaultApiClient.ApiError;
 
 import android.content.Context;
 

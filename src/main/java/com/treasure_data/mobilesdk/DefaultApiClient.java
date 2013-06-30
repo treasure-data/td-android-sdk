@@ -1,4 +1,4 @@
-package com.treasure_data.td_logger.android;
+package com.treasure_data.mobilesdk;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
