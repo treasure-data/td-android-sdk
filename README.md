@@ -1,6 +1,6 @@
 # td-mobile-sdk
 
-td-mobile-sdk is a library to send any data to Treasure Data directly from Android without td-agent(fluentd). td-mobile-sdk is so small that it's easy to use for Android development.
+td-mobile-sdk is a library to send any data to Treasure Data directly from Android applications without td-agent(fluentd). td-mobile-sdk is so small that it's easy to use for Android application development.
 
 ## Requirement
 
@@ -24,8 +24,11 @@ If you're using maven, please add the following directive into your pom.xml
            :
     </dependencies>
 
+Now, this library isn't released on any maven repository, so you have to import it into Eclipse project or install it to maven local repository using 'mvn install'.
+
 ### Jars
-Also, you can use td-mobile-sdk when you put td-mobile-sdk.jar into (YOUR_ANDROID_PROJECT)/libs.
+
+Also, you can use td-mobile-sdk with td-mobile-sdk.jar in (YOUR_ANDROID_PROJECT)/libs.
 
 ## Usage
 
@@ -40,7 +43,7 @@ td-mobile-sdk uses Treasure Data API, so this library needs the API key of the u
 
 #### res/values/td-logger.xml
 
-Also, you put res/values/td.xml in the following format and you can use td-mobile-sdk without writting APK key in Java code.
+Also, with res/values/td.xml including the following format, you can use td-mobile-sdk without writting API key in Java code.
 
     <resources>
         <string name="td_apikey">1Qaz2WSx3eDc4RfvBGt56yHnMjU78ik</string>
@@ -58,7 +61,7 @@ If you want to only increment some counters, you might as well use increment() A
 
 ### Send record
 
-Of couse, you can send various information not only counter.
+Of course, you can send various information not only counter.
 
     viewLargeImage.setOnTouchListener(new OnTouchListener() {
         @Override
@@ -66,11 +69,11 @@ Of couse, you can send various information not only counter.
             logger.write("foo_db", "bar_tbl", "large_image_touch", ev.toString());
                 :
 
-## Flushing buffered data
+### Flushing buffered data
 
 write() and increment() only buffer the data without sending immediately. So you need to flush the data manually or automatically.
 
-### Flush manually
+#### Flush manually
 
 You can flush the specified buffered data using flush().
 
@@ -80,9 +83,9 @@ Also, you can flush all the buffered data using flushAll().
 
     logger.flushAll();
 
-### Flush automatically
+#### Flush automatically
 
-If you call startAutoFlushing(), buffered data will be flushed automatically at regular intervals.
+If you call startAutoFlushing(), buffered data will be flushed automatically at regular intervals(default 5min).
 
     logger.startAutoFlushing()
 
@@ -98,3 +101,6 @@ When you finish to use TdAndroidLogger, you have to call close() in order to rel
 
     logger.close()
 
+## Example
+
+This project includes an Android example project. Let's run example/td-mobile-sdk-demo as Android project.
