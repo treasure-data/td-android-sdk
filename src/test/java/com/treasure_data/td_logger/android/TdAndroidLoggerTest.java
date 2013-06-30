@@ -45,6 +45,7 @@ public class TdAndroidLoggerTest {
             createTables.add(new String[] {database, table});
             return "OK";
         }
+
         public void setTableNotFound(boolean tableNotfound) {
             this.tableNotfound = tableNotfound;
         }
