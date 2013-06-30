@@ -1,0 +1,68 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F8F8F8"
+    tools:context=".MainActivity" >
+
+    <LinearLayout
+        android:id="@+id/navi"
+        android:orientation="horizontal"
+	    android:background="#FFFFFF"
+        android:layout_width="match_parent"
+        android:layout_height="48dip"
+        android:layout_alignParentTop="true">
+        <TextView
+            android:id="@+id/navi_news"
+            android:text="News"
+            style="@style/NaviLabel"
+        />
+        <TextView
+            android:id="@+id/navi_play"
+            android:text="Play"
+            style="@style/NaviLabel"
+        />
+        <TextView
+            android:id="@+id/navi_help"
+            android:text="Help"
+            style="@style/NaviLabel"
+        />
+        <TextView
+            android:id="@+id/navi_signup"
+            android:text="Signup"
+            style="@style/NaviLabel"
+        />
+    </LinearLayout>
+    <LinearLayout
+        android:orientation="horizontal"
+	    android:background="#bbbbbb"
+        android:layout_width="match_parent"
+        android:layout_height="1dip"
+        android:layout_below="@id/navi"
+    />
+
+    <TextView
+        android:id="@+id/title"
+        android:text="TD Logger Android Demo"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:textColor="#999999"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/navi"
+        android:layout_marginTop="32dip"
+        android:gravity="center"
+    />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:layout_below="@id/title"
+        android:id="@+id/image"
+        android:layout_marginTop="12dip"
+        android:layout_marginLeft="28dip"
+        android:layout_marginRight="28dip"
+        android:layout_marginBottom="28dip"
+        android:src="@drawable/wine"/>
+</RelativeLayout>
