@@ -3,13 +3,11 @@ package com.treasure_data.td_logger.android.demo;
 import java.util.Arrays;
 import java.util.List;
 
-import com.treasure_data.td_logger.android.TdAndroidLogger;
+import com.treasure_data.mobilesdk.TdAndroidLogger;
 
 import android.os.Bundle;
 import android.app.Activity;
-import android.util.Log;
 import android.util.Pair;
-import android.view.Menu;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
