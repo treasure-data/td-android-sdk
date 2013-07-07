@@ -1,4 +1,4 @@
-package com.treasure_data.mobilesdk;
+package com.treasure_data.androidsdk;
 
 import static org.junit.Assert.*;
 
@@ -20,11 +20,11 @@ import org.msgpack.type.Value;
 import org.msgpack.unpacker.MessagePackUnpacker;
 import org.msgpack.unpacker.UnpackerIterator;
 
-import com.treasure_data.mobilesdk.ApiClient;
-import com.treasure_data.mobilesdk.DefaultApiClient;
-import com.treasure_data.mobilesdk.RepeatingWorker;
-import com.treasure_data.mobilesdk.TdAndroidLogger;
-import com.treasure_data.mobilesdk.DefaultApiClient.ApiError;
+import com.treasure_data.androidsdk.ApiClient;
+import com.treasure_data.androidsdk.DefaultApiClient;
+import com.treasure_data.androidsdk.RepeatingWorker;
+import com.treasure_data.androidsdk.TdAndroidLogger;
+import com.treasure_data.androidsdk.DefaultApiClient.ApiError;
 
 public class TdAndroidLoggerTest {
     private static final String API_KEY = "1234567890qwertyuiopasdfghjklzxcvbnm";

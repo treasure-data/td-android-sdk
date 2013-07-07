@@ -43,7 +43,7 @@
 
     <TextView
         android:id="@+id/title"
-        android:text="TD Logger Android Demo"
+        android:text="TD Android SDK Demo"
         android:textSize="22sp"
         android:textStyle="bold"
         android:textColor="#999999"

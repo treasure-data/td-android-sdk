@@ -1,4 +1,4 @@
-package com.treasure_data.mobilesdk;
+package com.treasure_data.androidsdk;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;

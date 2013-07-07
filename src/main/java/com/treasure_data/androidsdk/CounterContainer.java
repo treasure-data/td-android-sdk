@@ -1,4 +1,4 @@
-package com.treasure_data.mobilesdk;
+package com.treasure_data.androidsdk;
 
 import java.util.HashMap;
 import java.util.Iterator;

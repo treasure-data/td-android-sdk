@@ -1,9 +1,10 @@
-package com.treasure_data.td_logger.android.demo;
+package com.treasure_data.androidsdk.demo;
 
 import java.util.Arrays;
 import java.util.List;
 
-import com.treasure_data.mobilesdk.TdAndroidLogger;
+import com.treasure_data.androidsdk.TdAndroidLogger;
+import com.treasure_data.td_logger.android.demo.R;
 
 import android.os.Bundle;
 import android.app.Activity;
