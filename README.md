@@ -14,14 +14,20 @@ You can install td-android-sdk into your Android project in the following ways.
 
 If you're using maven, please add the following directive into your pom.xml
 
+    <repositories>
+	  <repository>
+	    <id>treasure-data.com</id>
+	    <name>Treasure Data's Maven Repository</name>
+	    <url>http://maven.treasure-data.com/</url>
+	  </repository>
+    </repositories>
+
     <dependencies>
-           :
-        <dependency>
-            <groupId>com.treasure_data</groupId>
-            <artifactId>td-android-sdk</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
-           :
+      <dependency>
+        <groupId>com.treasure_data</groupId>
+        <artifactId>td-android-sdk</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+      </dependency>
     </dependencies>
 
 Now, this library isn't released on any maven repository, so you have to import it into Eclipse project or install it to maven local repository using 'mvn install'.
