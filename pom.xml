@@ -3,6 +3,9 @@
   <groupId>com.treasure_data</groupId>
   <artifactId>td-android-sdk</artifactId>
   <version>0.0.1-SNAPSHOT</version>
+  <name>Android SDK for Treasure Data Cloud</name>
+  <description>Android SDK for Treasure Data Cloud.</description>
+  <url>https://github.com/treasure-data/td-android-sdk</url>
 
   <licenses>
     <license>
@@ -12,11 +15,38 @@
     </license>
   </licenses>
 
+  <scm>
+    <connection>scm:git:https://github.com/treasure-data/td-android-sdk.git</connection>
+    <developerConnection>scm:git:git@github.com:treasure-data/td-android-sdk.git</developerConnection>
+    <url>https://github.com/treasure-data/td-android-sdk</url>
+  </scm>
+
+  <issueManagement>
+    <system>GitHub</system>
+    <url>https://github.com/treasure-data/td-android-sdk/issues</url>
+  </issueManagement>
+
+  <distributionManagement>
+    <downloadUrl>http://maven.treasure-data.com/com/treasure_data/td-android-sdk/</downloadUrl>
+    <repository>
+      <uniqueVersion>false</uniqueVersion>
+      <id>maven.treasure-data.com</id>
+      <name>Repository at maven.treasure-data.com</name>
+      <url>dav:http://maven.treasure-data.com</url>
+    </repository>
+    <snapshotRepository>
+      <uniqueVersion>false</uniqueVersion>
+      <id>maven.treasure-data.com</id>
+      <name>Snapshot Repository at maven.treasure-data.com</name>
+      <url>dav:http://maven.treasure-data.com/snapshot</url>
+    </snapshotRepository>
+  </distributionManagement>
+
   <developers>
     <developer>
-    	<id>komamitsu</id>
-    	<name>Mitsunori Komatsu</name>
-    	<email>komamitsu@gmail.com</email>
+      <id>komamitsu</id>
+      <name>Mitsunori Komatsu</name>
+      <email>komamitsu@gmail.com</email>
     </developer>
   </developers>
 
@@ -29,7 +59,35 @@
           <target>1.6</target>
         </configuration>
       </plugin>
+
+      <plugin>
+        <artifactId>maven-eclipse-plugin</artifactId>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-javadoc-plugin</artifactId>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-source-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>jar-no-fork</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
+
+    <extensions>
+      <extension>
+        <groupId>org.apache.maven.wagon</groupId>
+        <artifactId>wagon-webdav-jackrabbit</artifactId>
+      </extension>
+    </extensions>
   </build>
 
   <dependencies>
