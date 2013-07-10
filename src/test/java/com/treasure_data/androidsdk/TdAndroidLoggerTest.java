@@ -381,6 +381,19 @@ public class TdAndroidLoggerTest {
         assertEquals(RepeatingWorker.MIN_INTERVAL_MILLI, logger.flushWorker.intervalMilli);
     }
 
+    @Test
+    public void testIsRunningForFlushWorker() throws InterruptedException {
+        TdAndroidLogger logger = new TdAndroidLogger(API_KEY);
+        assertFalse(logger.flushWorker.isRunning());
+
+        logger.startAutoFlushing(0);
+        assertTrue(logger.flushWorker.isRunning());
+
+        logger.close();
+        TimeUnit.MILLISECONDS.sleep(300);
+        assertFalse(logger.flushWorker.isRunning());
+    }
+
     private List<MapValue> parseMsgpack(byte[] data) throws IOException {
         MessagePackUnpacker unpacker = new MessagePackUnpacker(new MessagePack(), new GZIPInputStream(new ByteArrayInputStream(data)));
         UnpackerIterator iterator = unpacker.iterator();

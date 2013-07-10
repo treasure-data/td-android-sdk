@@ -194,18 +194,29 @@ public class TdAndroidLogger {
         return false;
     }
 
-    public void flushAll() {
+    public boolean flushAll() {
+        boolean isSuccess = true;
         for (String bufferPackerKey : bufferPackerMap.keySet()) {
             String[] databaseAndTable = fromBufferPackerKey(bufferPackerKey);
-            flush(databaseAndTable[0], databaseAndTable[1]);
+            if (!flush(databaseAndTable[0], databaseAndTable[1])) {
+                isSuccess = false;
+            }
         }
+        return isSuccess;
     }
 
     public void close() {
-        flushAll();
+        if (!flushAll()) {
+            flushWorker.setClosing(true);
+            startAutoFlushing();
+        }
+        else {
+            stopAutoFlushing();
+        }
+
+        // TODO: should be executed after flushAll()?
         for (String bufferPackerKey : bufferPackerMap.keySet()) {
             try {
-                // TODO: if failed to flush, should retry somehow...
                 getBufferPacker(bufferPackerKey).close();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -218,9 +229,14 @@ public class TdAndroidLogger {
     }
 
     public void startAutoFlushing(long intervalMilli) {
+        if (flushWorker.isRunning()) {
+            return;
+        }
+
         if (intervalMilli != 0) {
             flushWorker.setInterval(intervalMilli);
         }
+
         flushWorker.setProcedure(new Runnable() {
             @Override
             public void run() {

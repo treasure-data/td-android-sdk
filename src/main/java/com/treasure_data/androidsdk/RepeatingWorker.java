@@ -13,6 +13,7 @@ public class RepeatingWorker {
     volatile long intervalMilli = DEFAULT_INTERVAL_MILLI;
     private BlockingQueue<Boolean> wakeupQueue = new LinkedBlockingQueue<Boolean>();
     private Runnable procedure;
+    private boolean isClosing = false;
 
     public void setProcedure(Runnable r) {
         this.procedure = r;
@@ -44,6 +45,10 @@ public class RepeatingWorker {
 
                     if (procedure != null) {
                         procedure.run();
+                        if (isClosing) {
+                            isClosing = false;
+                            stop();
+                        }
                     }
                 }
             }
@@ -55,6 +60,14 @@ public class RepeatingWorker {
             executorService.shutdownNow();
         }
         wakeupQueue.add(true);
+    }
+
+    public boolean isRunning() {
+        return executorService != null && !executorService.isShutdown();
+    }
+
+    public void setClosing(boolean isClosing) {
+        this.isClosing = isClosing;
     }
 
     @Override
