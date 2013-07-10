@@ -81,7 +81,7 @@ public class TdAndroidLoggerTest {
         ApiClientMock apiClient = (ApiClientMock) logger.apiClient;
         assertEquals(API_KEY, apiClient.apikey);
         assertEquals("api.treasure-data.com", apiClient.host);
-        assertEquals(80, apiClient.port);   // TODO: 443
+        assertEquals(443, apiClient.port);
     }
 
     @Test

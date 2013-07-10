@@ -45,7 +45,7 @@ public class DefaultApiClient implements ApiClient {
         HttpURLConnection conn = null;
         try {
             String path = String.format("/v3/table/create/%s/%s/log", database, table);
-            URL url = new URL("http", host, port, path);
+            URL url = new URL("https", host, port, path);
             Log.d(TAG, "createTable: url=" + url);
             conn = (HttpURLConnection) url.openConnection();
             setupClient(conn);
@@ -72,7 +72,7 @@ public class DefaultApiClient implements ApiClient {
         HttpURLConnection conn = null;
         try {
             String path = String.format("/v3/table/import/%s/%s/msgpack.gz", database, table);
-            URL url = new URL("http", host, port, path);
+            URL url = new URL("https", host, port, path);
             Log.d(TAG, "importTable: url=" + url + ", data.len=" + data.length);
 
             conn = (HttpURLConnection) url.openConnection();

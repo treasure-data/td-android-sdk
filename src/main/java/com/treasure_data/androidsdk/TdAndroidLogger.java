@@ -20,8 +20,7 @@ public class TdAndroidLogger {
     private static final String TAG = TdAndroidLogger.class.getSimpleName();
     private static final String RES_DEFTYPE = "string";
     private static final String API_SERVER_HOST = "api.treasure-data.com";
-    private static final boolean API_SECURE = true; // TODO: use this
-    private static final int API_SERVER_PORT = 80;
+    private static final int API_SERVER_PORT = 443;
     private static final int BUFFER_FLUSH_SIZE = 1 * 1024 * 1024;   // TODO: tune up
     private static final String PACKER_KEY_DELIM = "#";
     private static Class<? extends ApiClient> apiClientClass = DefaultApiClient.class;
