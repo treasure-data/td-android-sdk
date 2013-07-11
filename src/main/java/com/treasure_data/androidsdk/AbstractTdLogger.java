@@ -16,52 +16,29 @@ import com.treasure_data.androidsdk.DefaultApiClient.ApiError;
 
 import android.content.Context;
 
-public class TdAndroidLogger {
-    private static final String TAG = TdAndroidLogger.class.getSimpleName();
-    private static final String RES_DEFTYPE = "string";
-    private static final String API_SERVER_HOST = "api.treasure-data.com";
-    private static final int API_SERVER_PORT = 443;
+public abstract class AbstractTdLogger {
+    private static final String TAG = AbstractTdLogger.class.getSimpleName();
     private static final int BUFFER_FLUSH_SIZE = 1 * 1024 * 1024;   // TODO: tune up
     private static final String PACKER_KEY_DELIM = "#";
-    private static Class<? extends ApiClient> apiClientClass = DefaultApiClient.class;
-    final ApiClient apiClient;
     // TODO: add updated_at
     private final Map<String, BufferPacker> bufferPackerMap = new HashMap<String, BufferPacker>();
     private final MessagePack msgpack = new MessagePack();
-    final RepeatingWorker flushWorker = new RepeatingWorker();
     private final CounterContainer counterContainer = new CounterContainer();
+    private final RepeatingWorker flushWorker = new RepeatingWorker();
 
-    public static void setApiClientClass(Class<? extends ApiClient> klass) {
-        apiClientClass = klass;
-    }
+    abstract boolean outputData(String database, String table, byte[] data);
 
-    public TdAndroidLogger(Context context) {
-        this(context.getString(context.getResources().getIdentifier("td_apikey", RES_DEFTYPE, context.getPackageName())));
-    }
+    abstract void cleanup();
 
-    public TdAndroidLogger(Context context, boolean autoFlushing) {
-        this(context);
-        startAutoFlushing();
-    }
-
-    public TdAndroidLogger(String apikey) {
-        this(apikey, API_SERVER_HOST, API_SERVER_PORT);
-    }
-
-    public TdAndroidLogger(String apikey, boolean autoFlushing) {
-        this(apikey, API_SERVER_HOST, API_SERVER_PORT);
-        startAutoFlushing();
-    }
-
-    public TdAndroidLogger(String apikey, String host, int port) {
-        try {
-            this.apiClient = apiClientClass.newInstance();
-            this.apiClient.init(apikey, host, port);
-        } catch (InstantiationException e) {
-            throw new IllegalStateException(e);
-        } catch (IllegalAccessException e) {
-            throw new IllegalStateException(e);
-        }
+    public AbstractTdLogger() {
+        flushWorker.setProcedure(new Runnable() {
+            @Override
+            public void run() {
+                flushAll();
+            }
+        });
+        flushWorker.setInterval(RepeatingWorker.MIN_INTERVAL_MILLI);    // TODO: for test
+        flushWorker.start();
     }
 
     public void increment(String database, String table, String key) {
@@ -134,15 +111,7 @@ public class TdAndroidLogger {
             GZIPOutputStream gzipOutputStream = new GZIPOutputStream(out);
             gzipOutputStream.write(bufferPacker.toByteArray());
             gzipOutputStream.close();
-            try {
-                apiClient.importTable(database, table, out.toByteArray());
-            }
-            catch (FileNotFoundException e) {
-                Log.w(TAG, "flushBufferPacker", e);
-                // TODO: retry management
-                apiClient.createTable(database, table);
-                apiClient.importTable(database, table, out.toByteArray());
-            }
+            outputData(database, table, out.toByteArray());
         }
         finally {
             IOUtils.closeQuietly(out);
@@ -206,15 +175,8 @@ public class TdAndroidLogger {
     }
 
     public void close() {
-        if (!flushAll()) {
-            flushWorker.setClosing(true);
-            startAutoFlushing();
-        }
-        else {
-            stopAutoFlushing();
-        }
+        flushAll();
 
-        // TODO: should be executed after flushAll()?
         for (String bufferPackerKey : bufferPackerMap.keySet()) {
             try {
                 getBufferPacker(bufferPackerKey).close();
@@ -222,31 +184,8 @@ public class TdAndroidLogger {
                 e.printStackTrace();
             }
         }
-    }
 
-    public void startAutoFlushing() {
-        startAutoFlushing(0);
-    }
-
-    public void startAutoFlushing(long intervalMilli) {
-        if (flushWorker.isRunning()) {
-            return;
-        }
-
-        if (intervalMilli != 0) {
-            flushWorker.setInterval(intervalMilli);
-        }
-
-        flushWorker.setProcedure(new Runnable() {
-            @Override
-            public void run() {
-                flushAll();
-            }
-        });
-        flushWorker.start();
-    }
-
-    public void stopAutoFlushing() {
         flushWorker.stop();
+        cleanup();
     }
 }

@@ -3,7 +3,8 @@ package com.treasure_data.androidsdk.demo;
 import java.util.Arrays;
 import java.util.List;
 
-import com.treasure_data.androidsdk.TdAndroidLogger;
+import com.treasure_data.androidsdk.AbstractTdLogger;
+import com.treasure_data.androidsdk.DefaultTdLogger;
 import com.treasure_data.td_logger.android.demo.R;
 
 import android.os.Bundle;
@@ -16,14 +17,14 @@ import android.view.View.OnTouchListener;
 import android.widget.Toast;
 
 public class MainActivity extends Activity {
-    private TdAndroidLogger logger;
+    private AbstractTdLogger logger;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        logger = new TdAndroidLogger(this);
+        logger = new DefaultTdLogger(this);
 
         List<Pair<Integer, String>> targets = Arrays.asList(
                 new Pair<Integer, String>(R.id.navi_help, "navi_help"),
@@ -55,9 +56,9 @@ public class MainActivity extends Activity {
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
-        logger.flushAll();
+    protected void onDestroy() {
+        logger.close();
         Toast.makeText(MainActivity.this, "logger.flush()", Toast.LENGTH_SHORT).show();
+        super.onDestroy();
     }
 }
