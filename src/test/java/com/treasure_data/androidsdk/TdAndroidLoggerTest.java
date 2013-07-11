@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -36,6 +37,8 @@ public class TdAndroidLoggerTest {
         List<String[]> createTables = new LinkedList<String[]>();
         List<Object[]> importTables = new LinkedList<Object[]>();
         boolean tableNotfound = false;
+        int importCounter = 1;
+        List<Integer> importErrors = new ArrayList<Integer>();
 
         @Override
         public void init(String apikey, String host, int port) {
@@ -60,6 +63,11 @@ public class TdAndroidLoggerTest {
                 tableNotfound = false;
                 throw new FileNotFoundException();
             }
+
+            if (importErrors.contains(importCounter++)) {
+                throw new ApiError("test execption occurrd");
+            }
+
             importTables.add(new Object[] {database, table, data});
             return "OK";
         }
@@ -391,6 +399,50 @@ public class TdAndroidLoggerTest {
 
         logger.close();
         TimeUnit.MILLISECONDS.sleep(300);
+        assertFalse(logger.flushWorker.isRunning());
+    }
+
+    @Test
+    public void testExceptionOnFlush() throws InterruptedException {
+        TdAndroidLogger logger = new TdAndroidLogger(API_KEY);
+        ApiClientMock apiClient = (ApiClientMock) logger.apiClient;
+        apiClient.importErrors.add(2);
+
+        logger.write("db", "tbl", "k", 1234);
+        assertTrue(logger.flush("db", "tbl"));
+
+        logger.write("db", "tbl", "k", 1234);
+        assertFalse(logger.flush("db", "tbl"));
+    }
+
+    @Test
+    public void testExeptionOnClose() throws InterruptedException {
+        TdAndroidLogger logger = new TdAndroidLogger(API_KEY);
+        logger.flushWorker.intervalMilli = 500;
+        ApiClientMock apiClient = (ApiClientMock) logger.apiClient;
+        apiClient.importErrors.add(2);
+
+        logger.write("db", "tbl", "k", 1234);
+        assertTrue(logger.flush("db", "tbl"));
+
+        assertEquals(1, apiClient.importTables.size());
+
+        assertFalse(logger.flushWorker.isRunning());
+        logger.write("db", "tbl", "k", 1234);
+        logger.close();
+
+        assertEquals(1, apiClient.importTables.size());
+
+        TimeUnit.MILLISECONDS.sleep(300);
+
+        assertTrue(logger.flushWorker.isRunning());
+
+        assertEquals(1, apiClient.importTables.size());
+
+        TimeUnit.MILLISECONDS.sleep(300);
+
+        assertEquals(2, apiClient.importTables.size());
+
         assertFalse(logger.flushWorker.isRunning());
     }
 
