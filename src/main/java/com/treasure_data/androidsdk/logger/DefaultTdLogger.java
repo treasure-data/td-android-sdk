@@ -1,4 +1,5 @@
-package com.treasure_data.androidsdk;
+package com.treasure_data.androidsdk.logger;
+
 
 import android.content.Context;
 import android.content.Intent;

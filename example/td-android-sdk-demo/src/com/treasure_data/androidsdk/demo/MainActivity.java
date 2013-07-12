@@ -3,8 +3,8 @@ package com.treasure_data.androidsdk.demo;
 import java.util.Arrays;
 import java.util.List;
 
-import com.treasure_data.androidsdk.AbstractTdLogger;
-import com.treasure_data.androidsdk.DefaultTdLogger;
+import com.treasure_data.androidsdk.logger.AbstractTdLogger;
+import com.treasure_data.androidsdk.logger.DefaultTdLogger;
 import com.treasure_data.td_logger.android.demo.R;
 
 import android.os.Bundle;

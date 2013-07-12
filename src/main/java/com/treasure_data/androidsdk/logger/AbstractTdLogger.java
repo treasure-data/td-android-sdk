@@ -1,7 +1,6 @@
-package com.treasure_data.androidsdk;
+package com.treasure_data.androidsdk.logger;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -12,9 +11,11 @@ import org.apache.commons.io.IOUtils;
 import org.msgpack.MessagePack;
 import org.msgpack.packer.BufferPacker;
 
-import com.treasure_data.androidsdk.DefaultApiClient.ApiError;
+import com.treasure_data.androidsdk.counter.Counter;
+import com.treasure_data.androidsdk.counter.CounterContainer;
+import com.treasure_data.androidsdk.util.Log;
+import com.treasure_data.androidsdk.util.RepeatingWorker;
 
-import android.content.Context;
 
 public abstract class AbstractTdLogger {
     private static final String TAG = AbstractTdLogger.class.getSimpleName();
@@ -99,7 +100,7 @@ public abstract class AbstractTdLogger {
         return bufferPackerKey.split(PACKER_KEY_DELIM);
     }
 
-    private synchronized void flushBufferPacker(String database, String table, BufferPacker bufferPacker) throws IOException, ApiError {
+    private synchronized void flushBufferPacker(String database, String table, BufferPacker bufferPacker) throws IOException {
         moveCounterToBuffer(database, table);
         ByteArrayOutputStream out = null;
         try {
@@ -137,8 +138,6 @@ public abstract class AbstractTdLogger {
                 flushBufferPacker(database, table, bufferPacker);
             } catch (IOException e) {
                 e.printStackTrace();
-            } catch (ApiError e) {
-                e.printStackTrace();
             }
         }
 
@@ -154,9 +153,8 @@ public abstract class AbstractTdLogger {
         try {
             flushBufferPacker(database, table, bufferPacker);
             return true;
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ApiError e) {
+        }
+        catch (Exception e) {
             e.printStackTrace();
         }
         return false;

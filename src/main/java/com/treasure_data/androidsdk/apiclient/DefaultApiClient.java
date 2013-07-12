@@ -1,4 +1,4 @@
-package com.treasure_data.androidsdk;
+package com.treasure_data.androidsdk.apiclient;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
@@ -6,6 +6,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import org.apache.commons.io.IOUtils;
+
+import com.treasure_data.androidsdk.util.Log;
 
 public class DefaultApiClient implements ApiClient {
     private static final String TAG = DefaultApiClient.class.getSimpleName();

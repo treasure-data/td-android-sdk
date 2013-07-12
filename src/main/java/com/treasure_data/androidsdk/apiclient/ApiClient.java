@@ -1,8 +1,8 @@
-package com.treasure_data.androidsdk;
+package com.treasure_data.androidsdk.apiclient;
 
 import java.io.IOException;
 
-import com.treasure_data.androidsdk.DefaultApiClient.ApiError;
+import com.treasure_data.androidsdk.apiclient.DefaultApiClient.ApiError;
 
 public interface ApiClient {
 

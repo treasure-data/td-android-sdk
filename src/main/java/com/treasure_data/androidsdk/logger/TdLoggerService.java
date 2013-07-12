@@ -1,4 +1,4 @@
-package com.treasure_data.androidsdk;
+package com.treasure_data.androidsdk.logger;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -11,7 +11,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
-import com.treasure_data.androidsdk.DefaultApiClient.ApiError;
+import com.treasure_data.androidsdk.apiclient.ApiClient;
+import com.treasure_data.androidsdk.apiclient.DefaultApiClient;
+import com.treasure_data.androidsdk.apiclient.DefaultApiClient.ApiError;
+import com.treasure_data.androidsdk.util.Log;
+import com.treasure_data.androidsdk.util.RepeatingWorker;
 
 import android.app.Service;
 import android.content.BroadcastReceiver;

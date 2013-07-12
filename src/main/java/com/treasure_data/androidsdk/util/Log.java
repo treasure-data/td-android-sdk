@@ -1,4 +1,4 @@
-package com.treasure_data.androidsdk;
+package com.treasure_data.androidsdk.util;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

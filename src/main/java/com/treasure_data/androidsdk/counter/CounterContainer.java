@@ -1,4 +1,4 @@
-package com.treasure_data.androidsdk;
+package com.treasure_data.androidsdk.counter;
 
 import java.util.HashMap;
 import java.util.Iterator;

@@ -1,4 +1,4 @@
-package com.treasure_data.androidsdk;
+package com.treasure_data.androidsdk.util;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
