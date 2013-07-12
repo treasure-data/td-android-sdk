@@ -37,7 +37,6 @@ public abstract class AbstractTdLogger {
                 flushAll();
             }
         });
-        flushWorker.setInterval(RepeatingWorker.MIN_INTERVAL_MILLI);    // TODO: for test
         flushWorker.start();
     }
 
@@ -187,5 +186,11 @@ public abstract class AbstractTdLogger {
 
         flushWorker.stop();
         cleanup();
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        close();
+        super.finalize();
     }
 }

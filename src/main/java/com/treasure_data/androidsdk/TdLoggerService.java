@@ -46,8 +46,6 @@ public class TdLoggerService extends Service {
         apikey = getString(getResources().getIdentifier("td_apikey", RES_DEFTYPE, getPackageName()));
         apiClient.init(apikey, API_SERVER_HOST, API_SERVER_PORT);
 
-        // TODO: test
-        flushWorker.setInterval(RepeatingWorker.MIN_INTERVAL_MILLI);
         flushWorker.setProcedure(new Runnable() {
             @Override
             public void run() {
@@ -87,7 +85,7 @@ public class TdLoggerService extends Service {
                 if (isClosing && msgpackMap.keySet().size() == 0) {
                     Log.d(TAG, "closing...");
                     flushWorker.stop();
-                    TdLoggerService.this.stopSelf();
+                    TdLoggerService.super.stopSelf();
                 }
             }
         });
