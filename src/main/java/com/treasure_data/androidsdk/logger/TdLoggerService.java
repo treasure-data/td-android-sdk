@@ -1,6 +1,5 @@
 package com.treasure_data.androidsdk.logger;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
@@ -14,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 import com.treasure_data.androidsdk.apiclient.ApiClient;
 import com.treasure_data.androidsdk.apiclient.DefaultApiClient;
 import com.treasure_data.androidsdk.apiclient.DefaultApiClient.ApiError;
+import com.treasure_data.androidsdk.apiclient.TdTableImporter;
 import com.treasure_data.androidsdk.util.Log;
 import com.treasure_data.androidsdk.util.RepeatingWorker;
 
@@ -37,7 +37,6 @@ public class TdLoggerService extends Service {
 
     private Map<String, List<ByteBuffer>> msgpackMap = new HashMap<String, List<ByteBuffer>>();
     private final RepeatingWorker flushWorker = new RepeatingWorker();
-    private ApiClient apiClient;
     private LogReceiver logReceiver;
     private boolean isClosing;
     private String apikey;
@@ -46,9 +45,11 @@ public class TdLoggerService extends Service {
     public void onCreate() {
         Log.d(TAG, "onCreate");
 
-        apiClient = new DefaultApiClient();
+        final ApiClient apiClient= new DefaultApiClient();
         apikey = getString(getResources().getIdentifier("td_apikey", RES_DEFTYPE, getPackageName()));
         apiClient.init(apikey, API_SERVER_HOST, API_SERVER_PORT);
+
+        final TdTableImporter tdTableImporter = new TdTableImporter(apiClient);
 
         flushWorker.setProcedure(new Runnable() {
             @Override
@@ -63,15 +64,7 @@ public class TdLoggerService extends Service {
                     while (msgpacks.hasNext()) {
                         ByteBuffer buff = msgpacks.next();
                         try {
-                            try {
-                                apiClient.importTable(database, table, buff.array());
-                            }
-                            catch (FileNotFoundException e) {
-                                Log.i(TAG, "creating new table");
-                                // TODO: retry management
-                                apiClient.createTable(database, table);
-                                apiClient.importTable(database, table, buff.array());
-                            }
+                            tdTableImporter.output(database, table, buff.array());
                             msgpacks.remove();
                             TimeUnit.SECONDS.sleep(5);
                         } catch (IOException e) {

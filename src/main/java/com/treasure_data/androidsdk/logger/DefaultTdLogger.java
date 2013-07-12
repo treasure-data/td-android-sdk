@@ -1,12 +1,16 @@
 package com.treasure_data.androidsdk.logger;
 
 
+import com.treasure_data.androidsdk.util.Log;
+
 import android.content.Context;
 import android.content.Intent;
 
 public class DefaultTdLogger extends AbstractTdLogger {
+    private static final String TAG = DefaultTdLogger.class.getSimpleName();
     private final Context context;
     private Intent serviceIntent;
+
     public DefaultTdLogger(Context context) {
         this.context = context;
         serviceIntent = new Intent(this.context, TdLoggerService.class);
@@ -22,6 +26,7 @@ public class DefaultTdLogger extends AbstractTdLogger {
 
     @Override
     void cleanup() {
+        Log.d(TAG, "cleanup");
         context.stopService(serviceIntent);
     }
 }

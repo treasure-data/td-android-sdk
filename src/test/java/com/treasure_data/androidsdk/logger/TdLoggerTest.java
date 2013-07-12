@@ -30,8 +30,7 @@ import com.treasure_data.androidsdk.logger.AbstractTdLogger;
 import com.treasure_data.androidsdk.util.RepeatingWorker;
 
 public class TdLoggerTest {
-    private static final String API_KEY = "1234567890qwertyuiopasdfghjklzxcvbnm";
-    AbstractTdLogger logger;
+    MockTdLogger logger;
 
     class Output {
         String database;
@@ -45,9 +44,26 @@ public class TdLoggerTest {
         }
     }
 
+    private class MyRepeatingWorker extends RepeatingWorker {
+
+        @Override
+        public void setInterval(long intervalMilli) {
+            this.intervalMilli = intervalMilli;
+        }
+    }
+
     private class MockTdLogger extends AbstractTdLogger {
         int cleanUpCallCount;
         List<Output> outputs = new LinkedList<Output>();
+
+        public MockTdLogger() {
+            super();
+        }
+
+        public MockTdLogger(RepeatingWorker flushWorker) {
+            super(false);
+            setFlushWorker(flushWorker);
+        }
 
         @Override
         boolean outputData(String database, String table, byte[] data) {
@@ -63,61 +79,60 @@ public class TdLoggerTest {
 
     @Before
     public void setup() {
-        logger = new MockTdLogger();
     }
 
     @After
     public void teardown() {
+        if (logger != null) {
+            logger.close();
+        }
     }
 
     @Test
     public void testWriteOnly() {
-        MockTdLogger mockLogger = (MockTdLogger)logger;
+        logger = new MockTdLogger();
         assertTrue(logger.write("testdb", "testtbl", "keykey", "valval"));
-        assertEquals(0, mockLogger.cleanUpCallCount);
-        assertEquals(0, mockLogger.outputs.size());
+        assertEquals(0, logger.cleanUpCallCount);
+        assertEquals(0, logger.outputs.size());
     }
 
     @Test
     public void testIncrementOnly() {
-        MockTdLogger mockLogger = (MockTdLogger)logger;
+        logger = new MockTdLogger();
         logger.increment("testdb", "testtbl", "increkey1", 1);
         logger.increment("testdb", "testtbl", "increkey1", 20);
         logger.increment("testdb", "testtbl", "increkey2", 3);
         logger.increment("testdb", "testtbl", "increkey2", 40);
-        assertEquals(0, mockLogger.cleanUpCallCount);
-        assertEquals(0, mockLogger.outputs.size());
+        assertEquals(0, logger.cleanUpCallCount);
+        assertEquals(0, logger.outputs.size());
     }
 
     @Test
     public void testFinishOnly() {
-        MockTdLogger mockLogger = (MockTdLogger)logger;
+        logger = new MockTdLogger();
         logger.flushAll();
-        assertEquals(0, mockLogger.cleanUpCallCount);
-        assertEquals(0, mockLogger.outputs.size());
+        assertEquals(0, logger.cleanUpCallCount);
+        assertEquals(0, logger.outputs.size());
     }
 
     @Test
     public void testCloseOnly() {
-        MockTdLogger mockLogger = (MockTdLogger)logger;
+        logger = new MockTdLogger();
         logger.close();
-        assertEquals(1, mockLogger.cleanUpCallCount);
-        assertEquals(0, mockLogger.outputs.size());
+        assertEquals(1, logger.cleanUpCallCount);
+        assertEquals(0, logger.outputs.size());
     }
 
     private String getDb(int i) {
-        MockTdLogger mockLogger = (MockTdLogger)logger;
-        return mockLogger.outputs.get(i).database;
+        return logger.outputs.get(i).database;
     }
 
     private String getTbl(int i) {
-        MockTdLogger mockLogger = (MockTdLogger)logger;
-        return mockLogger.outputs.get(i).table;
+        return logger.outputs.get(i).table;
     }
 
     private List<MapValue> getData(int i) throws IOException {
-        MockTdLogger mockLogger = (MockTdLogger)logger;
-        return parseMsgpack(mockLogger.outputs.get(i).data.array());
+        return parseMsgpack(logger.outputs.get(i).data.array());
     }
 
     private boolean isTimeField(Value v) {
@@ -126,11 +141,11 @@ public class TdLoggerTest {
 
     @Test
     public void testWriteAndFlush() throws IOException {
-        MockTdLogger mockLogger = (MockTdLogger)logger;
+        logger = new MockTdLogger();
         assertTrue(logger.write("testdb", "testtbl", "keykey", "valval"));
         logger.flush("testdb", "testtbl");
-        assertEquals(0, mockLogger.cleanUpCallCount);
-        assertEquals(1, mockLogger.outputs.size());
+        assertEquals(0, logger.cleanUpCallCount);
+        assertEquals(1, logger.outputs.size());
 
         int idx = 0;
         assertEquals("testdb", getDb(idx));
@@ -151,15 +166,99 @@ public class TdLoggerTest {
     }
 
     @Test
+    public void testWriteAndFlushWithAutoFlush() throws IOException, InterruptedException {
+        MyRepeatingWorker flushWorker = new MyRepeatingWorker();
+        flushWorker.setInterval(300);
+        logger = new MockTdLogger(flushWorker);
+        logger.startFlushWorker();
+
+        assertTrue(logger.write("testdb", "testtbl", "keykey", "valval"));
+        assertEquals(0, logger.cleanUpCallCount);
+        assertEquals(0, logger.outputs.size());
+
+        TimeUnit.MILLISECONDS.sleep(400);
+        assertEquals(0, logger.cleanUpCallCount);
+        assertEquals(1, logger.outputs.size());
+
+        TimeUnit.MILLISECONDS.sleep(400);
+        assertEquals(0, logger.cleanUpCallCount);
+        assertEquals(1, logger.outputs.size());
+
+        int idx = 0;
+        assertEquals("testdb", getDb(idx));
+        assertEquals("testtbl", getTbl(idx));
+        List<MapValue> mapValues = getData(idx);
+
+        assertEquals(1, mapValues.size());
+        MapValue mapValue = mapValues.get(0);
+        for (Entry<Value, Value> kv : mapValue.entrySet()) {
+            String key = kv.getKey().asRawValue().getString();
+            if (key.equals("time"))
+                assertTrue(isTimeField(kv.getValue()));
+            else if (key.equals("keykey"))
+                assertEquals("valval", kv.getValue().asRawValue().getString());
+            else
+                assertTrue(false);
+        }
+    }
+
+    @Test
+    public void testIncrementFlushWithAutoFlush() throws IOException, InterruptedException {
+        MyRepeatingWorker flushWorker = new MyRepeatingWorker();
+        flushWorker.setInterval(300);
+        logger = new MockTdLogger(flushWorker);
+        logger.startFlushWorker();
+
+        logger.increment("testdb", "testtbl", "increkey1", 1);
+        logger.increment("testdb", "testtbl", "increkey1", 20);
+        logger.increment("testdb", "testtbl", "increkey2", 3);
+        logger.increment("testdb", "testtbl", "increkey2", 40);
+        assertEquals(0, logger.cleanUpCallCount);
+        assertEquals(0, logger.outputs.size());
+
+        TimeUnit.MILLISECONDS.sleep(400);
+        assertEquals(0, logger.cleanUpCallCount);
+        assertEquals(1, logger.outputs.size());
+
+        TimeUnit.MILLISECONDS.sleep(400);
+        assertEquals(0, logger.cleanUpCallCount);
+        assertEquals(1, logger.outputs.size());
+
+        int idx = 0;
+        assertEquals("testdb", getDb(idx));
+        assertEquals("testtbl", getTbl(idx));
+        List<MapValue> mapValues = getData(idx);
+
+        assertEquals(2, mapValues.size());
+        for (MapValue v : mapValues) {
+            boolean timeExists = false;
+            for (Entry<Value, Value> kv : v.entrySet()) {
+                String key = kv.getKey().asRawValue().getString();
+                if (key.equals("time")) {
+                    timeExists = true;
+                    assertTrue(isTimeField(kv.getValue()));
+                }
+                else if (key.equals("increkey1"))
+                    assertEquals(21, kv.getValue().asIntegerValue().getInt());
+                else if (key.equals("increkey2"))
+                    assertEquals(43, kv.getValue().asIntegerValue().getInt());
+                else
+                    assertTrue(false);
+            }
+            assertTrue(timeExists);
+        }
+    }
+
+    @Test
     public void testIncrementFlush() throws IOException {
-        MockTdLogger mockLogger = (MockTdLogger)logger;
+        logger = new MockTdLogger();
         logger.increment("testdb", "testtbl", "increkey1", 1);
         logger.increment("testdb", "testtbl", "increkey1", 20);
         logger.increment("testdb", "testtbl", "increkey2", 3);
         logger.increment("testdb", "testtbl", "increkey2", 40);
         logger.flush("testdb", "testtbl");
-        assertEquals(0, mockLogger.cleanUpCallCount);
-        assertEquals(1, mockLogger.outputs.size());
+        assertEquals(0, logger.cleanUpCallCount);
+        assertEquals(1, logger.outputs.size());
 
         int idx = 0;
         assertEquals("testdb", getDb(idx));
@@ -197,7 +296,7 @@ public class TdLoggerTest {
     }
 
     private void _testMultiImport(boolean flushAll) throws IOException {
-        MockTdLogger mockLogger = (MockTdLogger)logger;
+        logger = new MockTdLogger();
         logger.increment("testdb1", "testtbl1", "increkey1", 1);
         logger.increment("testdb1", "testtbl1", "increkey1", 20);
         assertTrue(logger.write("testdb1", "testtbl2", "keykey", "valval"));
@@ -206,15 +305,15 @@ public class TdLoggerTest {
 
         if (flushAll) {
             logger.flushAll();
-            assertEquals(0, mockLogger.cleanUpCallCount);
+            assertEquals(0, logger.cleanUpCallCount);
         }
         else {
             logger.close();
-            assertEquals(1, mockLogger.cleanUpCallCount);
+            assertEquals(1, logger.cleanUpCallCount);
         }
-        assertEquals(3, mockLogger.outputs.size());
+        assertEquals(3, logger.outputs.size());
 
-        for (Output output : mockLogger.outputs) {
+        for (Output output : logger.outputs) {
             String database = output.database;
             String table = output.table;
             byte[] data = output.data.array();

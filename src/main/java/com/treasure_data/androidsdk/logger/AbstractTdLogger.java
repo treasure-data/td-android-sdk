@@ -25,20 +25,40 @@ public abstract class AbstractTdLogger {
     private final Map<String, BufferPacker> bufferPackerMap = new HashMap<String, BufferPacker>();
     private final MessagePack msgpack = new MessagePack();
     private final CounterContainer counterContainer = new CounterContainer();
-    private final RepeatingWorker flushWorker = new RepeatingWorker();
+    protected RepeatingWorker flushWorker = new RepeatingWorker();
 
     abstract boolean outputData(String database, String table, byte[] data);
 
     abstract void cleanup();
 
     public AbstractTdLogger() {
+        this(true);
+    }
+
+    public AbstractTdLogger(boolean startFlushWorkerOnInit) {
         flushWorker.setProcedure(new Runnable() {
             @Override
             public void run() {
                 flushAll();
             }
         });
-        flushWorker.start();
+
+        if (startFlushWorkerOnInit) {
+            startFlushWorker();
+        }
+    }
+
+    protected void setFlushWorker(RepeatingWorker worker) {
+        if (flushWorker != null) {
+            flushWorker.stop();
+        }
+        flushWorker = worker;
+    }
+
+    public void startFlushWorker() {
+        if (!flushWorker.isRunning()) {
+            flushWorker.start();
+        }
     }
 
     public void increment(String database, String table, String key) {
