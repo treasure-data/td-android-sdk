@@ -26,6 +26,12 @@ public abstract class AbstractTdLogger {
     private final MessagePack msgpack = new MessagePack();
     private final CounterContainer counterContainer = new CounterContainer();
     protected RepeatingWorker flushWorker = new RepeatingWorker();
+    private final Runnable flushTask = new Runnable() {
+        @Override
+        public void run() {
+            flushAll();
+        }
+    };
 
     abstract boolean outputData(String database, String table, byte[] data);
 
@@ -36,12 +42,7 @@ public abstract class AbstractTdLogger {
     }
 
     public AbstractTdLogger(boolean startFlushWorkerOnInit) {
-        flushWorker.setProcedure(new Runnable() {
-            @Override
-            public void run() {
-                flushAll();
-            }
-        });
+        flushWorker.setProcedure(flushTask);
 
         if (startFlushWorkerOnInit) {
             startFlushWorker();
@@ -53,6 +54,7 @@ public abstract class AbstractTdLogger {
             flushWorker.stop();
         }
         flushWorker = worker;
+        flushWorker.setProcedure(flushTask);
     }
 
     public void startFlushWorker() {

@@ -27,9 +27,11 @@ import com.treasure_data.androidsdk.apiclient.ApiClient;
 import com.treasure_data.androidsdk.apiclient.DefaultApiClient;
 import com.treasure_data.androidsdk.apiclient.DefaultApiClient.ApiError;
 import com.treasure_data.androidsdk.logger.AbstractTdLogger;
+import com.treasure_data.androidsdk.util.Log;
 import com.treasure_data.androidsdk.util.RepeatingWorker;
 
-public class TdLoggerTest {
+public class AbstractTdLoggerTest {
+    private static final String TAG = AbstractTdLoggerTest.class.getSimpleName();
     MockTdLogger logger;
 
     class Output {
@@ -44,7 +46,14 @@ public class TdLoggerTest {
         }
     }
 
-    private class MyRepeatingWorker extends RepeatingWorker {
+    private static class MyRepeatingWorker extends RepeatingWorker {
+        private static final String TAG = MyRepeatingWorker.class.getSimpleName();
+
+        @Override
+        public void start() {
+            Log.d(TAG, "start");
+            super.start();
+        }
 
         @Override
         public void setInterval(long intervalMilli) {
@@ -53,8 +62,9 @@ public class TdLoggerTest {
     }
 
     private class MockTdLogger extends AbstractTdLogger {
+        private final String TAG = MyRepeatingWorker.class.getSimpleName();
         int cleanUpCallCount;
-        List<Output> outputs = new LinkedList<Output>();
+        volatile List<Output> outputs = new LinkedList<Output>();
 
         public MockTdLogger() {
             super();
@@ -67,6 +77,7 @@ public class TdLoggerTest {
 
         @Override
         boolean outputData(String database, String table, byte[] data) {
+            Log.d(TAG, "outputData");
             outputs.add(new Output(database, table, ByteBuffer.wrap(data)));
             return true;
         }
@@ -218,6 +229,7 @@ public class TdLoggerTest {
 
         TimeUnit.MILLISECONDS.sleep(400);
         assertEquals(0, logger.cleanUpCallCount);
+        Log.d(TAG, "checking logger.outputs.size()");
         assertEquals(1, logger.outputs.size());
 
         TimeUnit.MILLISECONDS.sleep(400);

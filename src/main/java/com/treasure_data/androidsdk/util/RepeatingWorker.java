@@ -12,7 +12,7 @@ public class RepeatingWorker {
     private volatile ExecutorService executorService;
     protected volatile long intervalMilli = DEFAULT_INTERVAL_MILLI;
     private BlockingQueue<Boolean> wakeupQueue = new LinkedBlockingQueue<Boolean>();
-    private Runnable procedure;
+    private volatile Runnable procedure;
     private boolean isClosing = false;
 
     public void setProcedure(Runnable r) {
