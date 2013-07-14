@@ -15,13 +15,17 @@ public class TdTableImporter {
     }
 
     public void output(String database, String table, byte[] data) throws IOException, ApiError {
-        // TODO: create database
         try {
             apiClient.importTable(database, table, data);
-        }
-        catch (FileNotFoundException e) {
-            Log.i(TAG, "creating new table");
-            apiClient.createTable(database, table);
+        } catch (FileNotFoundException e1) {
+            try {
+                Log.i(TAG, "creating new table: " + table);
+                apiClient.createTable(database, table);
+            } catch (FileNotFoundException e2) {
+                Log.i(TAG, "creating new database & table: database=" + database + ", table=" + table);
+                apiClient.createDatabase(database);
+                apiClient.createTable(database, table);
+            }
             apiClient.importTable(database, table, data);
         }
     }

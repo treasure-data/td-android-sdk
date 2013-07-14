@@ -39,16 +39,11 @@ public class DefaultApiClient implements ApiClient {
         conn.setUseCaches (false);
     }
 
-    /* (non-Javadoc)
-     * @see com.treasure_data.td_logger.android.ApiClient#createTable(java.lang.String, java.lang.String)
-     */
-    @Override
-    public String createTable(String database, String table) throws IOException, ApiError {
+    private String post(String path) throws IOException, ApiError {
+        URL url = new URL("https", host, port, path);
         HttpURLConnection conn = null;
         try {
-            String path = String.format("/v3/table/create/%s/%s/log", database, table);
-            URL url = new URL("https", host, port, path);
-            Log.d(TAG, "createTable: url=" + url);
+            Log.d(TAG, "post: url=" + url);
             conn = (HttpURLConnection) url.openConnection();
             setupClient(conn);
 
@@ -57,13 +52,27 @@ public class DefaultApiClient implements ApiClient {
 
             int responseCode = conn.getResponseCode();
             if (responseCode != HttpURLConnection.HTTP_OK) {
-                throw new ApiError("status code = " + responseCode + " " + conn.getResponseMessage());
+                throw new ApiError("post: url=" + url + ", status code = " + responseCode + " " + conn.getResponseMessage());
             }
             return IOUtils.toString(conn.getInputStream());
-        }
-        finally {
+        } finally {
             IOUtils.closeQuietly(conn.getInputStream());
         }
+    }
+
+    @Override
+    public String createDatabase(String database) throws IOException, ApiError {
+        String path = String.format("/v3/database/create/%s", database);
+        return post(path);
+    }
+
+    /* (non-Javadoc)
+     * @see com.treasure_data.td_logger.android.ApiClient#createTable(java.lang.String, java.lang.String)
+     */
+    @Override
+    public String createTable(String database, String table) throws IOException, ApiError {
+        String path = String.format("/v3/table/create/%s/%s/log", database, table);
+        return post(path);
     }
 
     /* (non-Javadoc)
