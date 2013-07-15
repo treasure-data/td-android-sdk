@@ -8,12 +8,12 @@ import java.util.Map.Entry;
 import java.util.zip.GZIPOutputStream;
 
 import org.apache.commons.io.IOUtils;
+import org.komamitsu.android.util.Log;
 import org.msgpack.MessagePack;
 import org.msgpack.packer.BufferPacker;
 
 import com.treasure_data.androidsdk.counter.Counter;
 import com.treasure_data.androidsdk.counter.CounterContainer;
-import com.treasure_data.androidsdk.util.Log;
 import com.treasure_data.androidsdk.util.RepeatingWorker;
 
 

@@ -17,6 +17,7 @@ import java.util.zip.GZIPInputStream;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.komamitsu.android.util.Log;
 import org.msgpack.MessagePack;
 import org.msgpack.type.MapValue;
 import org.msgpack.type.Value;
@@ -27,7 +28,6 @@ import com.treasure_data.androidsdk.apiclient.ApiClient;
 import com.treasure_data.androidsdk.apiclient.DefaultApiClient;
 import com.treasure_data.androidsdk.apiclient.DefaultApiClient.ApiError;
 import com.treasure_data.androidsdk.logger.AbstractTdLogger;
-import com.treasure_data.androidsdk.util.Log;
 import com.treasure_data.androidsdk.util.RepeatingWorker;
 
 public class AbstractTdLoggerTest {

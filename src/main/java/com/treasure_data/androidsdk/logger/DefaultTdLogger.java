@@ -1,7 +1,7 @@
 package com.treasure_data.androidsdk.logger;
 
 
-import com.treasure_data.androidsdk.util.Log;
+import org.komamitsu.android.util.Log;
 
 import android.content.Context;
 import android.content.Intent;

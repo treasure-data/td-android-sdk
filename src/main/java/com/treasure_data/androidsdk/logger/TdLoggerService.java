@@ -10,11 +10,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
+import org.komamitsu.android.util.Log;
+
 import com.treasure_data.androidsdk.apiclient.ApiClient;
 import com.treasure_data.androidsdk.apiclient.DefaultApiClient;
 import com.treasure_data.androidsdk.apiclient.DefaultApiClient.ApiError;
 import com.treasure_data.androidsdk.apiclient.TdTableImporter;
-import com.treasure_data.androidsdk.util.Log;
 import com.treasure_data.androidsdk.util.RepeatingWorker;
 
 import android.app.Service;

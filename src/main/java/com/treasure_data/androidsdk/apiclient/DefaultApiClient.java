@@ -6,8 +6,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import org.apache.commons.io.IOUtils;
-
-import com.treasure_data.androidsdk.util.Log;
+import org.komamitsu.android.util.Log;
 
 public class DefaultApiClient implements ApiClient {
     private static final String TAG = DefaultApiClient.class.getSimpleName();

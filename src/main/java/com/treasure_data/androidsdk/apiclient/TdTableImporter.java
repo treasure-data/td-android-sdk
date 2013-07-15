@@ -3,8 +3,9 @@ package com.treasure_data.androidsdk.apiclient;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import org.komamitsu.android.util.Log;
+
 import com.treasure_data.androidsdk.apiclient.DefaultApiClient.ApiError;
-import com.treasure_data.androidsdk.util.Log;
 
 public class TdTableImporter {
     private static final String TAG = TdTableImporter.class.getSimpleName();
