@@ -1,6 +1,6 @@
 # td-android-sdk
 
-td-android-sdk is a library to send any data to Treasure Data directly from Android applications without td-agent(fluentd). td-android-sdk is so small that it's easy to use for Android application development.
+td-android-sdk is a library to send any data to Treasure Data storage directly from Android applications without td-agent(fluentd). td-android-sdk is so small that it's easy to use for Android application development.
 
 ## Requirement
 
@@ -12,7 +12,7 @@ You can install td-android-sdk into your Android project in the following ways.
 
 ### Maven
 
-If you're using maven, please add the following directive into your pom.xml
+If you're using maven, add the following directives to your pom.xml
 
     <repositories>
 	  <repository>
@@ -30,34 +30,43 @@ If you're using maven, please add the following directive into your pom.xml
       </dependency>
     </dependencies>
 
-Now, this library isn't released on any maven repository, so you have to import it into Eclipse project or install it to maven local repository using 'mvn install'.
+### Jar file
 
-### Jars
+Or put td-android-sdk.jar into (YOUR_ANDROID_PROJECT)/libs.
 
-Also, you can use td-android-sdk with td-android-sdk.jar in (YOUR_ANDROID_PROJECT)/libs.
+## Settings
 
-## Usage
+### AndroidManifest.xml
 
-### How to pass API key to TdAndroidLogger
+Ensure that your app requests INTERNET permission by adding this line to your AndroidManifest.xml.
 
-td-android-sdk uses Treasure Data API, so this library needs the API key of the user. You can pass your API key to td-android-sdk in the following ways.
+    <uses-permission android:name="android.permission.INTERNET" />
 
-#### Java constructor
+In addition to it, add the folloing lines to allow to run TdLoggerService
 
-    final String apiKey = "1Qaz2WSx3eDc4RfvBGt56yHnMjU78ik";
-    TdAndroidLogger logger = new TdAndroidLogger(apiKey);
+    <application>
+        <service android:name="com.treasure_data.androidsdk.logger.TdLoggerService"></service>
+    </application>
 
 #### res/values/td-logger.xml
 
-Also, with res/values/td.xml including the following format, you can use td-android-sdk without writting API key in Java code.
+Write your API key in res/values/td.xml.
 
     <resources>
         <string name="td_apikey">1Qaz2WSx3eDc4RfvBGt56yHnMjU78ik</string>
     </resources>
 
+## Usage
+
+### Instantiate TdLogger
+
+Usually, DefaultTdLogger is best because it's non-blocking and robust.
+
+    TdLogger logger = new DefaultTdLogger();
+
 ### Increment counter
 
-If you want to only increment some counters, you might as well use increment() APIs. They aggregate the values and use less memory and network.
+If you want to only increment some counters, you might as well use TdLogger.increment() APIs. They aggregate the values and use less memory and network.
 
     viewNaviSighUp.setOnClickListener(new OnClickListener() {
         @Override
@@ -67,7 +76,7 @@ If you want to only increment some counters, you might as well use increment() A
 
 ### Send record
 
-Of course, you can send various information not only counter.
+Of course, you can send various information other than counter.
 
     viewLargeImage.setOnTouchListener(new OnTouchListener() {
         @Override
@@ -77,33 +86,11 @@ Of course, you can send various information not only counter.
 
 ### Flushing buffered data
 
-write() and increment() only buffer the data without sending immediately. So you need to flush the data manually or automatically.
-
-#### Flush manually
-
-You can flush the specified buffered data using flush().
-
-    logger.flush("foo_db", "bar_tbl");
-
-Also, you can flush all the buffered data using flushAll().
-
-    logger.flushAll();
-
-#### Flush automatically
-
-If you call startAutoFlushing(), buffered data will be flushed automatically at regular intervals(default 5min).
-
-    logger.startAutoFlushing()
-
-Constructor TdAndroidLogger(..., true) has the same effect too.
-
-    TdAndroidLogger logger = new TdAndroidLogger("1Qaz2WSx3eDc4RfvBGt56yHnMjU78ik", true)
-
-Calling stopAutoFlushing() or close() stop the repeatedly flushing.
+TdLogger.write() and increment() only buffer the data without sending it to Treasure Data storage. The data will be sent automatically at regular intervals.
 
 ### Cleaning up
 
-When you finish to use TdAndroidLogger, you have to call close() in order to release the resources.
+When you finish using TdLogger, you need to call TdLogger.close() in order to release its resources.
 
     logger.close()
 
