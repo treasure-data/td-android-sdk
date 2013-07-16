@@ -27,6 +27,7 @@ public class DefaultTdLogger extends AbstractTdLogger {
     @Override
     void cleanup() {
         Log.d(TAG, "cleanup");
-        context.stopService(serviceIntent);
+        Intent intentForClose = TdLoggerService.createIntentForClose();
+        context.sendBroadcast(intentForClose);
     }
 }

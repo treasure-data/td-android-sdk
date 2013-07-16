@@ -28,6 +28,7 @@ import android.os.IBinder;
 public class TdLoggerService extends Service {
     private static final String TAG = TdLoggerService.class.getSimpleName();
     private static final String ACTION_FLUSH = TdLoggerService.class.getName() + ".ACTION_FLUSH";
+    private static final String ACTION_CLOSE = TdLoggerService.class.getName() + ".ACTION_CLOSE";
     private static final String EXTRA_KEY_DB = "db";
     private static final String EXTRA_KEY_TBL = "tbl";
     private static final String EXTRA_KEY_DATA = "data";
@@ -44,7 +45,7 @@ public class TdLoggerService extends Service {
 
     @Override
     public void onCreate() {
-        Log.d(TAG, "onCreate");
+        Log.d(TAG, "onCreate: " + this);
 
         final ApiClient apiClient= new DefaultApiClient();
         apikey = getString(getResources().getIdentifier("td_apikey", RES_DEFTYPE, getPackageName()));
@@ -55,7 +56,7 @@ public class TdLoggerService extends Service {
         flushWorker.setProcedure(new Runnable() {
             @Override
             public void run() {
-                Log.d(TAG, "flushWorker.run()");
+                Log.d(TAG, "flushWorker.run() " + this);
 
                 for (Entry<String, List<ByteBuffer>> keyAndMsgpacks : msgpackMap.entrySet()) {
                     String[] databaseAndTable = fromMsgpackMapKey(keyAndMsgpacks.getKey());
@@ -83,15 +84,15 @@ public class TdLoggerService extends Service {
                 if (isClosing && msgpackMap.keySet().size() == 0) {
                     Log.d(TAG, "closing...");
                     flushWorker.stop();
-                    TdLoggerService.super.stopSelf();
                 }
             }
         });
-        flushWorker.start();
 
-        IntentFilter intentFilter = new IntentFilter(ACTION_FLUSH);
+        IntentFilter intentFilterFlush = new IntentFilter(ACTION_FLUSH);
+        IntentFilter intentFilterClose = new IntentFilter(ACTION_CLOSE);
         logReceiver = new LogReceiver();
-        registerReceiver(logReceiver, intentFilter);
+        registerReceiver(logReceiver, intentFilterFlush);
+        registerReceiver(logReceiver, intentFilterClose);
     }
 
     @Override
@@ -104,6 +105,19 @@ public class TdLoggerService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         return null;
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        isClosing = false;
+
+        synchronized (flushWorker) {
+            if (!flushWorker.isRunning()) {
+                flushWorker.start();
+            }
+        }
+
+        return super.onStartCommand(intent, flags, startId);
     }
 
     private class LogReceiver extends BroadcastReceiver {
@@ -127,6 +141,9 @@ public class TdLoggerService extends Service {
                 }
                 msgpacks.add(ByteBuffer.wrap(data));
             }
+            else if (intent.getAction().equals(ACTION_CLOSE)) {
+                isClosing = true;
+            }
         }
     }
 
@@ -144,6 +161,12 @@ public class TdLoggerService extends Service {
         intent.putExtra(EXTRA_KEY_DB, database);
         intent.putExtra(EXTRA_KEY_TBL, table);
         intent.putExtra(EXTRA_KEY_DATA, data);
+        return intent;
+    }
+
+    public static Intent createIntentForClose() {
+        Intent intent = new Intent();
+        intent.setAction(ACTION_CLOSE);
         return intent;
     }
 }
