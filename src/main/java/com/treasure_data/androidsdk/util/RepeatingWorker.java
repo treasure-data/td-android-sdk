@@ -7,8 +7,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 public class RepeatingWorker {
-    public static final long DEFAULT_INTERVAL_MILLI = 5 * 60 * 1000;
-    public static final long MIN_INTERVAL_MILLI = 2 * 60 * 1000;
+    public static final long DEFAULT_INTERVAL_MILLI = 10 * 60 * 1000;
+    public static final long MIN_INTERVAL_MILLI = 5 * 60 * 1000;
     private volatile ExecutorService executorService;
     protected volatile long intervalMilli = DEFAULT_INTERVAL_MILLI;
     private BlockingQueue<Boolean> wakeupQueue = new LinkedBlockingQueue<Boolean>();
