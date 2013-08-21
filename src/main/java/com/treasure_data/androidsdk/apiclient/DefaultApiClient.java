@@ -36,6 +36,7 @@ public class DefaultApiClient implements ApiClient {
         conn.setRequestProperty("Authorization", "TD1 " + apikey);
         conn.setDoOutput(true);
         conn.setUseCaches (false);
+        conn.setRequestProperty("Connection", "close");
     }
 
     private String post(String path) throws IOException, ApiError {
