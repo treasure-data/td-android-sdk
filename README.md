@@ -42,7 +42,7 @@ Ensure that your app requests INTERNET permission by adding this line to your An
 
     <uses-permission android:name="android.permission.INTERNET" />
 
-In addition to it, add the folloing lines to allow to run TdLoggerService
+In addition to it, add the following lines to allow to run TdLoggerService
 
     <application>
         <service android:name="com.treasure_data.androidsdk.logger.TdLoggerService"></service>
@@ -68,7 +68,7 @@ Usually, DefaultTdLogger is best because it's non-blocking and robust.
 
 If you want to only increment some counters, you might as well use TdLogger.increment() APIs. They aggregate the values and use less memory and network.
 
-    viewNaviSighUp.setOnClickListener(new OnClickListener() {
+    viewNaviSignUp.setOnClickListener(new OnClickListener() {
         @Override
         public void onClick(View v) {
             logger.increment("foo_db", "bar_tbl", "navi_signup");
