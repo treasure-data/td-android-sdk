@@ -15,11 +15,11 @@ You can install td-android-sdk into your Android project in the following ways.
 If you're using maven, add the following directives to your pom.xml
 
     <repositories>
-	  <repository>
-	    <id>treasure-data.com</id>
-	    <name>Treasure Data's Maven Repository</name>
-	    <url>http://maven.treasure-data.com/</url>
-	  </repository>
+      <repository>
+        <id>treasure-data.com</id>
+        <name>Treasure Data's Maven Repository</name>
+        <url>http://maven.treasure-data.com/</url>
+      </repository>
     </repositories>
 
     <dependencies>
@@ -48,7 +48,7 @@ In addition to it, add the following lines to allow to run TdLoggerService
         <service android:name="com.treasure_data.androidsdk.logger.TdLoggerService"></service>
     </application>
 
-#### res/values/td-logger.xml
+#### res/values/td.xml
 
 Write your API key in res/values/td.xml.
 
