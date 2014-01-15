@@ -61,6 +61,7 @@ public class TdLoggerService extends Service {
                 //  'LogReceiver') and removing from it (happens in this
                 //  worker - uploadWorker).
                 synchronized(msgpackMap) {
+                    LinkedList<String> uploadedKeys = new LinkedList<String>();
                     for (Entry<String, List<ByteBuffer>> keyAndMsgpacks : msgpackMap.entrySet()) {
                         String[] databaseAndTable = fromMsgpackMapKey(keyAndMsgpacks.getKey());
                         Iterator<ByteBuffer> msgpacks = keyAndMsgpacks.getValue().iterator();
@@ -83,8 +84,14 @@ public class TdLoggerService extends Service {
                             }
                         }
                         if (keyAndMsgpacks.getValue().size() == 0) {
-                            msgpackMap.remove(keyAndMsgpacks.getKey());
+                            uploadedKeys.add(keyAndMsgpacks.getKey());
                         }
+                    }
+                    // remove data for all the keys whose data was uploaded.
+                    //  Access to the msgpackMap is prevented until after this
+                    //  is done.
+                    for (String key : uploadedKeys) {
+                        msgpackMap.remove(key);
                     }
                 }    // unlock msgpackMap object
 
