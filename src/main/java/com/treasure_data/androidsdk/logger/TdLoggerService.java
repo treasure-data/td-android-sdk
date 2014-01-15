@@ -38,7 +38,7 @@ public class TdLoggerService extends Service {
     private static final int API_SERVER_PORT = 443;
 
     private Map<String, List<ByteBuffer>> msgpackMap = new HashMap<String, List<ByteBuffer>>();
-    private final RepeatingWorker flushWorker = new RepeatingWorker();
+    private final RepeatingWorker uploadWorker = new RepeatingWorker();
     private LogReceiver logReceiver;
     private boolean isClosing;
     private String apikey;
@@ -53,37 +53,44 @@ public class TdLoggerService extends Service {
 
         final TdTableImporter tdTableImporter = new TdTableImporter(apiClient);
 
-        flushWorker.setProcedure(new Runnable() {
+        uploadWorker.setProcedure(new Runnable() {
             @Override
             public void run() {
-                Log.d(TAG, "flushWorker.run() " + this);
-
-                for (Entry<String, List<ByteBuffer>> keyAndMsgpacks : msgpackMap.entrySet()) {
-                    String[] databaseAndTable = fromMsgpackMapKey(keyAndMsgpacks.getKey());
-                    String database = databaseAndTable[0];
-                    String table = databaseAndTable[1];
-                    Iterator<ByteBuffer> msgpacks = keyAndMsgpacks.getValue().iterator();
-                    while (msgpacks.hasNext()) {
-                        ByteBuffer buff = msgpacks.next();
-                        try {
-                            tdTableImporter.output(database, table, buff.array());
-                            msgpacks.remove();
-                            TimeUnit.SECONDS.sleep(5);
-                        } catch (IOException e) {
-                            Log.e(TAG, "import table error", e);
-                        } catch (ApiError e) {
-                            Log.e(TAG, "import table error", e);
-                        } catch (InterruptedException e) {
+                // avoid concurrency issues with msgpackMap with adding data
+                //  to the msgpackMap[packerKey] LinkedList (happens in the
+                //  'LogReceiver') and removing from it (happens in this
+                //  worker - uploadWorker).
+                synchronized(msgpackMap) {
+                    for (Entry<String, List<ByteBuffer>> keyAndMsgpacks : msgpackMap.entrySet()) {
+                        String[] databaseAndTable = fromMsgpackMapKey(keyAndMsgpacks.getKey());
+                        Iterator<ByteBuffer> msgpacks = keyAndMsgpacks.getValue().iterator();
+                        while (msgpacks.hasNext()) {
+                            ByteBuffer buff = msgpacks.next();
+                            try {
+                                tdTableImporter.output(databaseAndTable[0], databaseAndTable[1], buff.array());
+                                msgpacks.remove();
+                                TimeUnit.SECONDS.sleep(5);
+                            } catch (IOException e) {
+                                Log.e(TAG, "import table error: IOException " +
+                                        e + ". Upload will be retried later, " +
+                                        "moving onto the next data. ");
+                            } catch (ApiError e) {
+                                Log.e(TAG, "import table error: ApiError " +
+                                        e + ". Upload will be retried later, " +
+                                        "moving onto the next data.");
+                            } catch (InterruptedException e) {
+                                // do nothing, will be retried at the next run of the uploadWorker
+                            }
+                        }
+                        if (keyAndMsgpacks.getValue().size() == 0) {
+                            msgpackMap.remove(keyAndMsgpacks.getKey());
                         }
                     }
-                    if (keyAndMsgpacks.getValue().size() == 0) {
-                        msgpackMap.remove(keyAndMsgpacks.getKey());
-                    }
-                }
+                }    // unlock msgpackMap object
 
                 if (isClosing && msgpackMap.keySet().size() == 0) {
                     Log.d(TAG, "closing...");
-                    flushWorker.stop();
+                    uploadWorker.stop();
                 }
             }
         });
@@ -110,10 +117,9 @@ public class TdLoggerService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         isClosing = false;
-
-        synchronized (flushWorker) {
-            if (!flushWorker.isRunning()) {
-                flushWorker.start();
+        synchronized (uploadWorker) {
+            if (!uploadWorker.isRunning()) {
+                uploadWorker.start();
             }
         }
 
@@ -127,19 +133,25 @@ public class TdLoggerService extends Service {
             if (intent.getAction().equals(ACTION_FLUSH)) {
                 String database = intent.getExtras().getString(EXTRA_KEY_DB);
                 String table = intent.getExtras().getString(EXTRA_KEY_TBL);
-                byte[] data = intent.getExtras().getByteArray(EXTRA_KEY_DATA);
                 String msgpackMapKey = toMsgpackMapKey(database, table);
-                List<ByteBuffer> msgpacks = msgpackMap.get(msgpackMapKey);
-                if (msgpacks == null) {
-                    synchronized (msgpackMap) {
-                        msgpacks = msgpackMap.get(msgpackMapKey);
-                        if (msgpacks == null) {
-                            msgpacks = new LinkedList<ByteBuffer>();
-                            msgpackMap.put(msgpackMapKey, msgpacks);
+                byte[] data = intent.getExtras().getByteArray(EXTRA_KEY_DATA);
+                // avoid concurrency issues with msgpackMap with adding data
+                //  to the msgpackMap[packerKey] Linked list (happens in this
+                //  'Receiver') and removing from it (happens in the
+                //  uploadWorker).
+                synchronized (msgpackMap) {
+                    List<ByteBuffer> msgpacks = msgpackMap.get(msgpackMapKey);
+                    if (msgpacks == null) {
+                        synchronized (msgpackMap) {
+                            msgpacks = msgpackMap.get(msgpackMapKey);
+                            if (msgpacks == null) {
+                                msgpacks = new LinkedList<ByteBuffer>();
+                                msgpackMap.put(msgpackMapKey, msgpacks);
+                            }
                         }
                     }
+                    msgpacks.add(ByteBuffer.wrap(data));
                 }
-                msgpacks.add(ByteBuffer.wrap(data));
             }
             else if (intent.getAction().equals(ACTION_CLOSE)) {
                 isClosing = true;
