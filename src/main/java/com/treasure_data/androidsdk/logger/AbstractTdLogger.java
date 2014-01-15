@@ -66,6 +66,16 @@ public abstract class AbstractTdLogger {
         flushWorker.setProcedure(flushTask);
     }
 
+    public static void setRepeatingWorkersInterval(long millis) {
+        long actualInterval = RepeatingWorker.setInterval(millis);
+        if (actualInterval < millis) {
+            Log.w(TAG,
+              "Requested interval (" + millis + ") is smaller than " +
+              "the minimum allowed (" + actualInterval / 1000 + ")");
+        }
+        Log.v(TAG, "Changed all RepeatingWorkers intervals to " + millis + " ms");
+    }
+
     public void startFlushWorker() {
         if (!flushWorker.isRunning()) {
             flushWorker.start();
@@ -121,6 +131,7 @@ public abstract class AbstractTdLogger {
                 if (bufferPacker == null) {
                     bufferPacker = msgpack.createBufferPacker();
                     bufferPackerMap.put(packerKey, bufferPacker);
+
                 }
             }
         }
@@ -147,8 +158,13 @@ public abstract class AbstractTdLogger {
             GZIPOutputStream gzipOutputStream = new GZIPOutputStream(out);
             gzipOutputStream.write(bufferPacker.toByteArray());
             gzipOutputStream.close();
+            byte[] data = out.toByteArray();
+            Log.d(TAG, "compressed data for key " + packerKey +
+                    " from " + bufferPacker.getBufferSize() + " B " +
+                    "(" + bufferPackerCounterMap.get(packerKey) + " records) down to " +
+                    data.length + " B");
             String[] databaseAndTable = fromBufferPackerKey(packerKey);
-            outputData(databaseAndTable[0], databaseAndTable[1], out.toByteArray());
+            outputData(databaseAndTable[0], databaseAndTable[1], data);
         }
         finally {
             IOUtils.closeQuietly(out);
