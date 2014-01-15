@@ -93,8 +93,9 @@ public class DefaultApiClient implements ApiClient {
             conn.setRequestProperty("Content-Length", String.valueOf(data.length));
             setupClient(conn);
             Log.d(TAG, "importTable: url=" + url + ", data.len=" + data.length +
-                    ", conn=" + conn.hashCode());
+                    " B, conn=" + conn.hashCode());
 
+            long duration = System.currentTimeMillis();
             BufferedOutputStream out = null;
             try {
                 out = new BufferedOutputStream(conn.getOutputStream());
@@ -104,10 +105,13 @@ public class DefaultApiClient implements ApiClient {
             finally {
                 IOUtils.closeQuietly(out);
             }
+            duration = System.currentTimeMillis() - duration;
 
             int responseCode = conn.getResponseCode();
             Log.d(TAG, "status code=" + responseCode +
-                    " (" + conn.getResponseMessage() + "), conn=" + conn.hashCode());
+                    " (" + conn.getResponseMessage() + "), " +
+                    "duration=" + ((float)duration / 1000.f) + " secs, " +
+                    "conn=" + conn.hashCode());
             if (responseCode != HttpURLConnection.HTTP_OK) {
                 throw new ApiError("importTable: url=" + url + ", status code=" +
                                     responseCode + " (" + conn.getResponseMessage() +
