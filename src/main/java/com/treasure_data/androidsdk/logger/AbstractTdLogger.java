@@ -169,7 +169,9 @@ public abstract class AbstractTdLogger {
         finally {
             IOUtils.closeQuietly(out);
         }
-        bufferPacker.clear();
+        synchronized (bufferPacker) {
+            bufferPacker.clear();
+        }
         bufferPackerCounterMap.clear(packerKey);
     }
 
@@ -188,7 +190,9 @@ public abstract class AbstractTdLogger {
                 data.put("time", timestamp == 0 ?
                         System.currentTimeMillis() / 1000 : timestamp);
             }
-            bufferPacker.write(data);
+            synchronized (bufferPacker) {
+                bufferPacker.write(data);
+            }
             bufferPackerCounterMap.increment(packerKey);
             Log.d(TAG, "write: key=" + packerKey +
                     ", bufsize=" + bufferPacker.getBufferSize());
