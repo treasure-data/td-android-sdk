@@ -12,18 +12,18 @@ import java.util.concurrent.TimeUnit;
 
 import org.komamitsu.android.util.Log;
 
-import com.treasure_data.androidsdk.apiclient.ApiClient;
-import com.treasure_data.androidsdk.apiclient.DefaultApiClient;
-import com.treasure_data.androidsdk.apiclient.DefaultApiClient.ApiError;
-import com.treasure_data.androidsdk.apiclient.TdTableImporter;
-import com.treasure_data.androidsdk.util.RepeatingWorker;
-
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.IBinder;
+
+import com.treasure_data.androidsdk.apiclient.ApiClient;
+import com.treasure_data.androidsdk.apiclient.DefaultApiClient;
+import com.treasure_data.androidsdk.apiclient.DefaultApiClient.ApiError;
+import com.treasure_data.androidsdk.apiclient.TdTableImporter;
+import com.treasure_data.androidsdk.util.RepeatingWorker;
 
 public class TdLoggerService extends Service {
     private static final String TAG = TdLoggerService.class.getSimpleName();
@@ -129,14 +129,13 @@ public class TdLoggerService extends Service {
                 uploadWorker.start();
             }
         }
-
         return super.onStartCommand(intent, flags, startId);
     }
 
     private class LogReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.d(TAG, "onReceive: " + intent);
+            Log.d(TAG, "received intent " + intent);
             if (intent.getAction().equals(ACTION_FLUSH)) {
                 String database = intent.getExtras().getString(EXTRA_KEY_DB);
                 String table = intent.getExtras().getString(EXTRA_KEY_TBL);
@@ -149,13 +148,8 @@ public class TdLoggerService extends Service {
                 synchronized (msgpackMap) {
                     List<ByteBuffer> msgpacks = msgpackMap.get(msgpackMapKey);
                     if (msgpacks == null) {
-                        synchronized (msgpackMap) {
-                            msgpacks = msgpackMap.get(msgpackMapKey);
-                            if (msgpacks == null) {
-                                msgpacks = new LinkedList<ByteBuffer>();
-                                msgpackMap.put(msgpackMapKey, msgpacks);
-                            }
-                        }
+                        msgpacks = new LinkedList<ByteBuffer>();
+                        msgpackMap.put(msgpackMapKey, msgpacks);
                     }
                     msgpacks.add(ByteBuffer.wrap(data));
                 }
