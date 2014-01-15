@@ -35,7 +35,7 @@ public class DefaultApiClient implements ApiClient {
     private void setupClient(HttpURLConnection conn) {
         conn.setRequestProperty("Authorization", "TD1 " + apikey);
         conn.setDoOutput(true);
-        conn.setUseCaches (false);
+        conn.setUseCaches(false);
         conn.setRequestProperty("Connection", "close");
     }
 
@@ -43,16 +43,19 @@ public class DefaultApiClient implements ApiClient {
         URL url = new URL("https", host, port, path);
         HttpURLConnection conn = null;
         try {
-            Log.d(TAG, "post: url=" + url);
             conn = (HttpURLConnection) url.openConnection();
-            setupClient(conn);
-
             conn.setRequestMethod("POST");
             conn.connect();
+            setupClient(conn);
+            Log.d(TAG, "post: url=" + url + ", conn=" + conn.hashCode());
 
             int responseCode = conn.getResponseCode();
+            Log.d(TAG, "status code=" + responseCode +
+                    " (" + conn.getResponseMessage() + "), conn=" + conn.hashCode());
             if (responseCode != HttpURLConnection.HTTP_OK) {
-                throw new ApiError("post: url=" + url + ", status code = " + responseCode + " " + conn.getResponseMessage());
+                throw new ApiError("post: url=" + url + ", status code=" +
+                        responseCode + " (" + conn.getResponseMessage() +
+                        "), conn=" + conn.hashCode());
             }
             return IOUtils.toString(conn.getInputStream());
         } finally {
@@ -84,14 +87,13 @@ public class DefaultApiClient implements ApiClient {
         try {
             String path = String.format("/v3/table/import/%s/%s/msgpack.gz", database, table);
             URL url = new URL("https", host, port, path);
-            Log.d(TAG, "importTable: url=" + url + ", data.len=" + data.length);
-
             conn = (HttpURLConnection) url.openConnection();
-            setupClient(conn);
-
             conn.setRequestMethod("PUT");
             conn.setRequestProperty("Content-Type", "application/octet-stream");
             conn.setRequestProperty("Content-Length", String.valueOf(data.length));
+            setupClient(conn);
+            Log.d(TAG, "importTable: url=" + url + ", data.len=" + data.length +
+                    ", conn=" + conn.hashCode());
 
             BufferedOutputStream out = null;
             try {
@@ -104,8 +106,12 @@ public class DefaultApiClient implements ApiClient {
             }
 
             int responseCode = conn.getResponseCode();
+            Log.d(TAG, "status code=" + responseCode +
+                    " (" + conn.getResponseMessage() + "), conn=" + conn.hashCode());
             if (responseCode != HttpURLConnection.HTTP_OK) {
-                throw new ApiError(conn.getResponseMessage());
+                throw new ApiError("importTable: url=" + url + ", status code=" +
+                                    responseCode + " (" + conn.getResponseMessage() +
+                                    "), conn=" + conn.hashCode());
             }
             return IOUtils.toString(conn.getInputStream());
         }
