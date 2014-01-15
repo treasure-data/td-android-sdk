@@ -12,6 +12,10 @@ public class Counter implements Iterable<Entry<String, Long>> {
         increment(key, 1);
     }
 
+    public Long get(String key) {
+        return map.get(key);
+    }
+
     public synchronized void increment(String key, long i) {
         Long v = map.get(key);
         if (v == null) {
@@ -19,6 +23,10 @@ public class Counter implements Iterable<Entry<String, Long>> {
             return;
         }
         map.put(key, v + i);
+    }
+
+    public synchronized void clear(String key) {
+        map.put(key, 0L);
     }
 
     public synchronized void clear() {

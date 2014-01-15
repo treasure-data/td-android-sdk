@@ -22,9 +22,17 @@ public abstract class AbstractTdLogger {
     private static final int BUFFER_FLUSH_SIZE = 1 * 1024 * 1024;   // TODO: tune up
     private static final String PACKER_KEY_DELIM = "#";
     // TODO: add updated_at
+
+    // map of database#table keys and all the data in records associated to each
     private final Map<String, BufferPacker> bufferPackerMap = new HashMap<String, BufferPacker>();
-    private final MessagePack msgpack = new MessagePack();
+    // map of database#table keys and number of records to each
+    // TODO mix in a single class with BufferPacker?
+    private final Counter bufferPackerCounterMap = new Counter();
+    // map-like object to store key-indexed counter and support updating them
     private final CounterContainer counterContainer = new CounterContainer();
+    private final MessagePack msgpack = new MessagePack();
+
+    // worker threads to pass the data to the Service through Intents
     protected RepeatingWorker flushWorker = new RepeatingWorker();
     private final Runnable flushTask = new Runnable() {
         @Override
@@ -38,6 +46,7 @@ public abstract class AbstractTdLogger {
     abstract void cleanup();
 
     public AbstractTdLogger() {
+        // start flushWorker by default
         this(true);
     }
 
@@ -67,33 +76,37 @@ public abstract class AbstractTdLogger {
         increment(database, table, key, 1);
     }
 
-    public void increment(String database, String table, String key, long i) {
+    // Generic counter increment function.
+    //    The counter indexed by 'key' gets incremented by 'amount'.
+    public void increment(String database, String table, String key, long amount) {
         getBufferPacker(database, table);   // prepare to flush()
-        counterContainer.increment(toBufferPackerKey(database, table), key, i);
+        counterContainer.increment(toBufferPackerKey(database, table), key, amount);
     }
 
-    private void moveCounterToBuffer(String database, String table) {
-        Log.d(TAG, "moveCounterToBuffer: database=" + database + ", table=" + table);
-        String key = toBufferPackerKey(database, table);
-        Counter counter = counterContainer.getCounter(key);
+    private void moveCounterToBuffer(String packerKey) {
+        Counter counter = counterContainer.getCounter(packerKey);
         if (counter == null) {
             return;
         }
 
+        Log.d(TAG, "moveCounterToBuffer: key=" + packerKey);
         for (Entry<String, Long> kv : counter) {
-            write(database, table, kv.getKey(), kv.getValue());
+            write(packerKey, kv.getKey(), kv.getValue());
         }
         counter.clear();
     }
 
-    public boolean write(String database, String table, String key, Object value, long timestamp) {
+    private boolean write(String packerKey, String key, Object value, long timestamp) {
         HashMap<String,Object> data = new HashMap<String, Object>();
         data.put(key, value);
-        return write(database, table, data, timestamp);
+        return write(packerKey, data, timestamp);
     }
 
-    public boolean write(String database, String table, String key, Object value) {
-        return write(database, table, key, value, 0);
+    // This method is used by moveCounterToBuffer to write the counter
+    //  to the bufferPackerMap. The timestamp is not provided and will be
+    //  generated based on system clock at the time of write.
+    private boolean write(String packerKey, String key, Object value) {
+        return write(packerKey, key, value, 0);
     }
 
     private BufferPacker getBufferPacker(String database, String table) {
@@ -111,10 +124,11 @@ public abstract class AbstractTdLogger {
                 }
             }
         }
+        bufferPackerCounterMap.increment(packerKey);
         return bufferPacker;
     }
 
-    private String toBufferPackerKey(String database, String table) {
+    protected String toBufferPackerKey(String database, String table) {
         return new StringBuilder(database).append(PACKER_KEY_DELIM).append(table).toString();
     }
 
@@ -122,8 +136,8 @@ public abstract class AbstractTdLogger {
         return bufferPackerKey.split(PACKER_KEY_DELIM);
     }
 
-    private synchronized void flushBufferPacker(String database, String table, BufferPacker bufferPacker) throws IOException {
-        moveCounterToBuffer(database, table);
+    private synchronized void flushBufferPacker(String packerKey, BufferPacker bufferPacker) throws IOException {
+        moveCounterToBuffer(packerKey);
         ByteArrayOutputStream out = null;
         try {
             if (bufferPacker.getBufferSize() == 0) {
@@ -133,23 +147,35 @@ public abstract class AbstractTdLogger {
             GZIPOutputStream gzipOutputStream = new GZIPOutputStream(out);
             gzipOutputStream.write(bufferPacker.toByteArray());
             gzipOutputStream.close();
-            outputData(database, table, out.toByteArray());
+            String[] databaseAndTable = fromBufferPackerKey(packerKey);
+            outputData(databaseAndTable[0], databaseAndTable[1], out.toByteArray());
         }
         finally {
             IOUtils.closeQuietly(out);
         }
         bufferPacker.clear();
+        bufferPackerCounterMap.clear(packerKey);
+    }
+
+    public boolean write(String database, String table, Map<String, Object>data) {
+        return write(database, table, data, 0);
     }
 
     public boolean write(String database, String table, Map<String, Object>data, long timestamp) {
-        BufferPacker bufferPacker = getBufferPacker(database, table);
+        return write(toBufferPackerKey(database, table), data, timestamp);
+    }
 
+    private boolean write(String packerKey, Map<String, Object>data, long timestamp) {
+        BufferPacker bufferPacker = getBufferPacker(packerKey);
         try {
             if (!data.containsKey("time")) {
-                data.put("time", timestamp == 0 ? System.currentTimeMillis() / 1000 : timestamp);
+                data.put("time", timestamp == 0 ?
+                        System.currentTimeMillis() / 1000 : timestamp);
             }
             bufferPacker.write(data);
-            Log.d(TAG, "write: bufsize=" + bufferPacker.getBufferSize());
+            bufferPackerCounterMap.increment(packerKey);
+            Log.d(TAG, "write: key=" + packerKey +
+                    ", bufsize=" + bufferPacker.getBufferSize());
         } catch (IOException e) {
             e.printStackTrace();
             return false;
@@ -157,7 +183,7 @@ public abstract class AbstractTdLogger {
 
         if (bufferPacker.getBufferSize() > BUFFER_FLUSH_SIZE) {
             try {
-                flushBufferPacker(database, table, bufferPacker);
+                flushBufferPacker(packerKey, bufferPacker);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -166,14 +192,10 @@ public abstract class AbstractTdLogger {
         return true;
     }
 
-    public boolean write(String database, String table, Map<String, Object>data) {
-        return write(database, table, data, 0);
-    }
-
-    public boolean flush(String database, String table) {
-        BufferPacker bufferPacker = getBufferPacker(database, table);
+    public boolean flush(String packerKey) {
+        BufferPacker bufferPacker = getBufferPacker(packerKey);
         try {
-            flushBufferPacker(database, table, bufferPacker);
+            flushBufferPacker(packerKey, bufferPacker);
             return true;
         }
         catch (Exception e) {
@@ -184,9 +206,8 @@ public abstract class AbstractTdLogger {
 
     public boolean flushAll() {
         boolean isSuccess = true;
-        for (String bufferPackerKey : bufferPackerMap.keySet()) {
-            String[] databaseAndTable = fromBufferPackerKey(bufferPackerKey);
-            if (!flush(databaseAndTable[0], databaseAndTable[1])) {
+        for (String packerKey : bufferPackerMap.keySet()) {
+            if (!flush(packerKey)) {
                 isSuccess = false;
             }
         }
