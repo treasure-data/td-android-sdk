@@ -135,7 +135,6 @@ public abstract class AbstractTdLogger {
                 }
             }
         }
-        bufferPackerCounterMap.increment(packerKey);
         return bufferPacker;
     }
 
