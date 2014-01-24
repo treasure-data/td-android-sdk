@@ -5,21 +5,23 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.treasure_data.androidsdk.apiclient.DbTableDescr;
 
-public class CounterContainer implements Iterable<Entry<String, Counter>>{
-    private Map<String, Counter> map = new HashMap<String, Counter>();
 
-    public synchronized void increment(String counterKey, String key, long i) {
-        Counter counter = map.get(counterKey);
+public class CounterContainer implements Iterable<Entry<DbTableDescr, Counter>>{
+    private Map<DbTableDescr, Counter> map = new HashMap<DbTableDescr, Counter>();
+
+    public synchronized void increment(DbTableDescr descr, String key, long amount) {
+        Counter counter = map.get(descr);
         if (counter == null) {
             counter = new Counter();
-            map.put(counterKey, counter);
+            map.put(descr, counter);
         }
-        counter.increment(key, i);
+        counter.increment(key, amount);
     }
 
-    public Counter getCounter(String counterKey) {
-        return map.get(counterKey);
+    public Counter getCounter(DbTableDescr descr) {
+        return map.get(descr);
     }
 
     public synchronized void clear() {
@@ -28,8 +30,12 @@ public class CounterContainer implements Iterable<Entry<String, Counter>>{
         }
     }
 
+    public synchronized void clear(DbTableDescr descr) {
+        map.remove(descr);
+    }
+
     @Override
-    public Iterator<Entry<String, Counter>> iterator() {
+    public Iterator<Entry<DbTableDescr, Counter>> iterator() {
         return map.entrySet().iterator();
     }
 }

@@ -15,17 +15,42 @@ public class TdTableImporter {
         this.apiClient = apiClient;
     }
 
-    public void output(String database, String table, byte[] data) throws IOException, ApiError {
+    private void createDatabase(DbTableDescr descr) throws IOException, ApiError {
+        final String database = descr.getDatabaseName();
+        Log.i(TAG, "creating new database=" + database);
+        apiClient.createDatabase(database);
+    }
+
+    private void createTable(DbTableDescr descr) throws IOException, ApiError {
+        final String database = descr.getDatabaseName();
+        final String table = descr.getTableName();
+
+        if(descr.getTableType() == DbItemTableDescr.TABLE_TYPE_ITEM) {
+            DbItemTableDescr itemDescr = (DbItemTableDescr) descr;
+            String pkName = itemDescr.getPrimaryKeyName();
+            String pkType = itemDescr.getPrimaryKeyType();
+            Log.i(TAG, "creating new item table=" + table +
+                    ", primary_key=" + pkName + ":" + pkType);
+            apiClient.createItemTable(database, table, pkName, pkType);
+        } else {
+            Log.i(TAG, "creating new log table=" + table);
+            apiClient.createTable(database, table);
+        }
+    }
+
+    public void output(DbTableDescr descr, byte[] data)
+            throws IOException, ApiError {
+        String database = descr.getDatabaseName();
+        String table = descr.getTableName();
+
         try {
             apiClient.importTable(database, table, data);
         } catch (FileNotFoundException e1) {
             try {
-                Log.i(TAG, "creating new table: " + table);
-                apiClient.createTable(database, table);
+                createTable(descr);
             } catch (FileNotFoundException e2) {
-                Log.i(TAG, "creating new database & table: database=" + database + ", table=" + table);
-                apiClient.createDatabase(database);
-                apiClient.createTable(database, table);
+                createDatabase(descr);
+                createTable(descr);
             }
             apiClient.importTable(database, table, data);
         }

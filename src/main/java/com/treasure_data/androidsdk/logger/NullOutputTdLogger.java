@@ -1,10 +1,12 @@
 package com.treasure_data.androidsdk.logger;
 
+import com.treasure_data.androidsdk.apiclient.DbTableDescr;
+
 
 public class NullOutputTdLogger extends AbstractTdLogger {
 
     @Override
-    boolean outputData(String database, String table, byte[] data) {
+    boolean outputData(DbTableDescr descr, byte[] data) {
         return true;
     }
 

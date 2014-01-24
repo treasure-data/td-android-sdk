@@ -6,6 +6,8 @@ import org.komamitsu.android.util.Log;
 import android.content.Context;
 import android.content.Intent;
 
+import com.treasure_data.androidsdk.apiclient.DbTableDescr;
+
 public class DefaultTdLogger extends AbstractTdLogger {
     private static final String TAG = DefaultTdLogger.class.getSimpleName();
     private final Context context;
@@ -18,8 +20,8 @@ public class DefaultTdLogger extends AbstractTdLogger {
     }
 
     @Override
-    boolean outputData(String database, String table, byte[] data) {
-        Intent intentForFlush = TdLoggerService.createIntentForFlush(database, table, data);
+    boolean outputData(DbTableDescr descr, byte[] data) {
+        Intent intentForFlush = TdLoggerService.createIntentForFlush(descr, data);
         context.sendBroadcast(intentForFlush);
         return true;
     }
