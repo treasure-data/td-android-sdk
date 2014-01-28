@@ -59,10 +59,19 @@ public class DefaultApiClient implements ApiClient {
                        .append("=")
                        .append(property.getValue());
                 }
-                OutputStreamWriter writer =
-                        new OutputStreamWriter(conn.getOutputStream());
-                writer.write(buf.toString());
-                writer.flush();
+                OutputStreamWriter writer = null;
+                try {
+                    writer = new OutputStreamWriter(conn.getOutputStream());
+                    writer.write(buf.toString());
+                    writer.flush();
+                }
+                catch (IOException ioe) {
+                    Log.e(TAG, "Cannot create OutputStreamWriter with this connection object.");
+                    throw ioe;
+                }
+                finally {
+                    IOUtils.closeQuietly(writer);
+                }
             } else {
                 conn.connect();
             }

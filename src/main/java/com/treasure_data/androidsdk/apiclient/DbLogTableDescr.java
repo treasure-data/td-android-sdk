@@ -1,36 +1,30 @@
 package com.treasure_data.androidsdk.apiclient;
 
-import java.security.InvalidParameterException;
-
 import android.os.Parcel;
 import android.os.Parcelable;
 
 public class DbLogTableDescr extends DbTableDescr {
-    private String mTimeColumnName;
+    private final String timeColumnName;
 
     public DbLogTableDescr(String dbName, String tableName,
                               String timeColumName) {
         super(dbName, tableName, DbTableDescr.TABLE_TYPE_LOG);
-        mTimeColumnName = timeColumName;
+        this.timeColumnName = timeColumName;
     }
 
-    // assigns mTimeColumnName to default 'time'
+    // assigns timeColumnName to default 'time'
     public DbLogTableDescr(String dbName, String tableName) {
-        super(dbName, tableName, DbTableDescr.TABLE_TYPE_LOG);
-        mTimeColumnName = "time";
+        this(dbName, tableName, "time");
     }
 
-    // assigns mTimeColumnName to default 'time'. Reads database and table
-    //  names from the String array. Checks if there at least 2 elements in
-    //  the array before proceeding.
-    public DbLogTableDescr(String[] dbTable)
-            throws InvalidParameterException {
-        super(dbTable[0], dbTable[1], DbTableDescr.TABLE_TYPE_LOG);
-        mTimeColumnName = "time";
+    // getters
+    public String getTimeColumnName() {
+        return timeColumnName;
     }
 
+    @Override
     public String toString() {
-        return (mDbName + "#" + mTableName + "(log," + mTimeColumnName + ")");
+        return (databaseName + "#" + tableName + "(log," + timeColumnName + ")");
     }
 
     //
@@ -40,25 +34,28 @@ public class DbLogTableDescr extends DbTableDescr {
 
     protected DbLogTableDescr(Parcel in) {
         super(in);
-        mTimeColumnName = in.readString();
+        timeColumnName = in.readString();
     }
 
+    @Override
     public void writeToParcel(Parcel out, int flags) {
         super.writeToParcel(out, flags);
-        out.writeString(mTimeColumnName);
+        out.writeString(timeColumnName);
     }
 
-    // not really useful AFAIK
+    @Override
     public int describeContents() {
         return 0;
     }
 
     public static final Parcelable.Creator<DbLogTableDescr> CREATOR
             = new Parcelable.Creator<DbLogTableDescr>() {
+        @Override
         public DbLogTableDescr createFromParcel(Parcel in) {
             return new DbLogTableDescr(in);
         }
 
+        @Override
         public DbLogTableDescr[] newArray(int size) {
             return new DbLogTableDescr[size];
         }

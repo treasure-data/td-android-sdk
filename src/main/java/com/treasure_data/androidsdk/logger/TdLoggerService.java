@@ -138,7 +138,6 @@ public class TdLoggerService extends Service {
             Log.d(TAG, "received intent " + intent);
             if (intent.getAction().equals(ACTION_FLUSH)) {
                 DbTableDescr descr = intent.getExtras().getParcelable(EXTRA_KEY_DBTBLDESCR);
-                descr.getTableType();
                 byte[] data = intent.getExtras().getByteArray(EXTRA_KEY_DATA);
                 // avoid concurrency issues with msgpackMap with adding data
                 //  to the msgpackMap[packerKey] Linked list (happens in this
@@ -157,14 +156,6 @@ public class TdLoggerService extends Service {
                 isClosing = true;
             }
         }
-    }
-
-    private static String toMsgpackMapKey(String database, String table) {
-        return new StringBuilder().append(database).append("#").append(table).toString();
-    }
-
-    private static String[] fromMsgpackMapKey(String key) {
-        return key.split("#");
     }
 
     public static Intent createIntentForFlush(DbTableDescr descr, byte[] data) {

@@ -6,34 +6,43 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 public class DbItemTableDescr extends DbTableDescr {
-    private String mPrimaryKeyName;
-    private String mPrimaryKeyType;
+    private final String primaryKeyName;
+    private final String primaryKeyType;
 
-    public DbItemTableDescr(String dbName, String tableName,
-                               String primaryKeyName, String primaryKeyType)
-        throws InvalidParameterException {
-
-        super(dbName, tableName, DbTableDescr.TABLE_TYPE_ITEM);
-        mPrimaryKeyName = primaryKeyName;
-        if (!primaryKeyType.equals("int") && !primaryKeyType.equals("string")) {
+    // additional validator for primaryKeyType
+    static private String validatePrimaryKeyType(String pkType)
+            throws InvalidParameterException {
+        validateName(pkType);
+        if (!pkType.equals("int") && !pkType.equals("string")) {
             throw new InvalidParameterException(
-                    "Invalid primary key specified - " +
-                    "only 'int' and 'string' supported at this moment.");
+                    "Invalid primary key specified '" + pkType + "'" +
+                    " - only 'int' and 'string' supported at this moment.");
         }
-        mPrimaryKeyType = primaryKeyType;
+        return pkType;
     }
 
+    // constructors
+    public DbItemTableDescr(String dbName, String tableName,
+                          String primaryKeyName, String primaryKeyType)
+            throws InvalidParameterException {
+        super(dbName, tableName, DbTableDescr.TABLE_TYPE_ITEM);
+        this.primaryKeyName = validateName(primaryKeyName);
+        this.primaryKeyType = validatePrimaryKeyType(primaryKeyType);
+    }
+
+    // getters
     public String getPrimaryKeyName() {
-        return mPrimaryKeyName;
+        return primaryKeyName;
     }
 
     public String getPrimaryKeyType() {
-        return mPrimaryKeyType;
+        return primaryKeyType;
     }
 
+    @Override
     public String toString() {
-        return (mDbName + "#" + mTableName +
-                "(item," + mPrimaryKeyName + ":" + mPrimaryKeyType + ")");
+        return (databaseName + "#" + tableName +
+                "(item," + primaryKeyName + ":" + primaryKeyType + ")");
     }
 
     //
@@ -43,27 +52,30 @@ public class DbItemTableDescr extends DbTableDescr {
 
     protected DbItemTableDescr(Parcel in) {
         super(in);
-        mPrimaryKeyName = in.readString();
-        mPrimaryKeyType = in.readString();
+        primaryKeyName = in.readString();
+        primaryKeyType = in.readString();
     }
 
+    @Override
     public void writeToParcel(Parcel out, int flags) {
         super.writeToParcel(out, flags);
-        out.writeString(mPrimaryKeyName);
-        out.writeString(mPrimaryKeyType);
+        out.writeString(primaryKeyName);
+        out.writeString(primaryKeyType);
     }
 
-    // not really useful AFAIK
+    @Override
     public int describeContents() {
         return 0;
     }
 
     public static final Parcelable.Creator<DbItemTableDescr> CREATOR
             = new Parcelable.Creator<DbItemTableDescr>() {
+        @Override
         public DbItemTableDescr createFromParcel(Parcel in) {
             return new DbItemTableDescr(in);
         }
 
+        @Override
         public DbItemTableDescr[] newArray(int size) {
             return new DbItemTableDescr[size];
         }

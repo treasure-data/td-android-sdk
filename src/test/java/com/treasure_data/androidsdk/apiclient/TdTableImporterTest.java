@@ -1,6 +1,6 @@
 package com.treasure_data.androidsdk.apiclient;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -40,7 +40,18 @@ public class TdTableImporterTest {
             if (createTableErrorIndexes.contains(callCount++)) {
                 throw new FileNotFoundException();
             }
-            events.add("ct:" + database + "#" + table);
+            events.add("clt:" + database + "#" + table);
+            return "OK";
+        }
+
+        @Override
+        public String createItemTable(String database, String table,
+                                      String pkName, String pkType)
+                throws IOException, ApiError {
+            if (createTableErrorIndexes.contains(callCount++)) {
+                throw new FileNotFoundException();
+            }
+            events.add("cit:" + database + "#" + table);
             return "OK";
         }
 
@@ -63,41 +74,95 @@ public class TdTableImporterTest {
     }
 
     @Test
-    public void testImportTableWithoutException() throws IOException, ApiError {
+    public void testImportLogTableWithoutException()
+            throws IOException, ApiError {
         ApiClient apiClient = new MockApiClient();
         MockApiClient mockApiClient = (MockApiClient) apiClient;
 
         TdTableImporter importer = new TdTableImporter(apiClient);
-        importer.output("testdb", "testtable", "testdata".getBytes());
+        importer.output(new DbLogTableDescr("testdb", "testtable"),
+                "testdata".getBytes());
         assertEquals(1, mockApiClient.events.size());
         assertEquals("it:testdb#testtable#testdata", mockApiClient.events.get(0));
     }
 
     @Test
-    public void testImportTableWithTableNotFound() throws IOException, ApiError {
+    public void testImportItemTableWithoutException()
+            throws IOException, ApiError {
+        ApiClient apiClient = new MockApiClient();
+        MockApiClient mockApiClient = (MockApiClient) apiClient;
+
+        TdTableImporter importer = new TdTableImporter(apiClient);
+        importer.output(
+                new DbItemTableDescr("testdb", "testtable", "pk_name", "int"),
+                "testdata".getBytes());
+        assertEquals(1, mockApiClient.events.size());
+        assertEquals("it:testdb#testtable#testdata", mockApiClient.events.get(0));
+    }
+
+    @Test
+    public void testImportLogTableWithTableNotFound()
+            throws IOException, ApiError {
         ApiClient apiClient = new MockApiClient();
         MockApiClient mockApiClient = (MockApiClient) apiClient;
         mockApiClient.importTableErrorIndexes.add(0);
 
         TdTableImporter importer = new TdTableImporter(apiClient);
-        importer.output("testdb", "testtable", "testdata".getBytes());
+        importer.output(new DbLogTableDescr("testdb", "testtable"),
+                "testdata".getBytes());
         assertEquals(2, mockApiClient.events.size());
-        assertEquals("ct:testdb#testtable", mockApiClient.events.get(0));
+        assertEquals("clt:testdb#testtable", mockApiClient.events.get(0));
         assertEquals("it:testdb#testtable#testdata", mockApiClient.events.get(1));
     }
 
     @Test
-    public void testImportTableWithDatabaseNotFound() throws IOException, ApiError {
+    public void testImportLogTableWithDatabaseNotFound()
+            throws IOException, ApiError {
         ApiClient apiClient = new MockApiClient();
         MockApiClient mockApiClient = (MockApiClient) apiClient;
         mockApiClient.importTableErrorIndexes.add(0);
         mockApiClient.createTableErrorIndexes.add(1);
 
         TdTableImporter importer = new TdTableImporter(apiClient);
-        importer.output("testdb", "testtable", "testdata".getBytes());
+        importer.output(new DbLogTableDescr("testdb", "testtable"),
+                "testdata".getBytes());
         assertEquals(3, mockApiClient.events.size());
         assertEquals("cd:testdb", mockApiClient.events.get(0));
-        assertEquals("ct:testdb#testtable", mockApiClient.events.get(1));
+        assertEquals("clt:testdb#testtable", mockApiClient.events.get(1));
+        assertEquals("it:testdb#testtable#testdata", mockApiClient.events.get(2));
+    }
+
+    @Test
+    public void testImportItemTableWithTableNotFound()
+            throws IOException, ApiError {
+        ApiClient apiClient = new MockApiClient();
+        MockApiClient mockApiClient = (MockApiClient) apiClient;
+        mockApiClient.importTableErrorIndexes.add(0);
+
+        TdTableImporter importer = new TdTableImporter(apiClient);
+        importer.output(
+                new DbItemTableDescr("testdb", "testtable", "pk_name", "int"),
+                "testdata".getBytes());
+        assertEquals(2, mockApiClient.events.size());
+        assertEquals("cit:testdb#testtable", mockApiClient.events.get(0));
+        assertEquals("it:testdb#testtable#testdata", mockApiClient.events.get(1));
+    }
+
+    @Test
+    public void testImportItemTableWithDatabaseNotFound()
+            throws IOException, ApiError {
+        ApiClient apiClient = new MockApiClient();
+        MockApiClient mockApiClient = (MockApiClient) apiClient;
+        mockApiClient.importTableErrorIndexes.add(0);
+        mockApiClient.createTableErrorIndexes.add(1);
+
+        TdTableImporter importer = new TdTableImporter(apiClient);
+        importer.output(
+                new DbItemTableDescr("testdb", "testtable", "pk_name", "int"),
+                "testdata".getBytes());
+        assertEquals(3, mockApiClient.events.size());
+        assertEquals("cd:testdb", mockApiClient.events.get(0));
+        assertEquals("cit:testdb#testtable", mockApiClient.events.get(1));
         assertEquals("it:testdb#testtable#testdata", mockApiClient.events.get(2));
     }
 }

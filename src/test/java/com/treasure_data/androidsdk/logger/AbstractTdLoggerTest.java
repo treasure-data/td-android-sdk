@@ -1,15 +1,15 @@
 package com.treasure_data.androidsdk.logger;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.GZIPInputStream;
@@ -24,10 +24,8 @@ import org.msgpack.type.Value;
 import org.msgpack.unpacker.MessagePackUnpacker;
 import org.msgpack.unpacker.UnpackerIterator;
 
-import com.treasure_data.androidsdk.apiclient.ApiClient;
-import com.treasure_data.androidsdk.apiclient.DefaultApiClient;
-import com.treasure_data.androidsdk.apiclient.DefaultApiClient.ApiError;
-import com.treasure_data.androidsdk.logger.AbstractTdLogger;
+import com.treasure_data.androidsdk.apiclient.DbLogTableDescr;
+import com.treasure_data.androidsdk.apiclient.DbTableDescr;
 import com.treasure_data.androidsdk.util.RepeatingWorker;
 
 public class AbstractTdLoggerTest {
@@ -35,14 +33,12 @@ public class AbstractTdLoggerTest {
     MockTdLogger logger;
 
     class Output {
-        String database;
-        String table;
+        DbTableDescr descr;
         ByteBuffer data;
 
-        public Output(String database, String table, ByteBuffer data) {
-        this.database = database;
-        this.table = table;
-        this.data = data;
+        public Output(DbTableDescr descr, ByteBuffer data) {
+            this.descr = descr;
+            this.data = data;
         }
     }
 
@@ -53,11 +49,6 @@ public class AbstractTdLoggerTest {
         public void start() {
             Log.d(TAG, "start");
             super.start();
-        }
-
-        @Override
-        public void setInterval(long intervalMilli) {
-            this.intervalMilli = intervalMilli;
         }
     }
 
@@ -76,9 +67,9 @@ public class AbstractTdLoggerTest {
         }
 
         @Override
-        boolean outputData(String database, String table, byte[] data) {
+        boolean outputData(DbTableDescr descr, byte[] data) {
             Log.d(TAG, "outputData");
-            outputs.add(new Output(database, table, ByteBuffer.wrap(data)));
+            outputs.add(new Output(descr, ByteBuffer.wrap(data)));
             return true;
         }
 
@@ -86,6 +77,22 @@ public class AbstractTdLoggerTest {
         void cleanup() {
             cleanUpCallCount++;
         }
+    }
+
+    private String getDb(int i) {
+        return logger.outputs.get(i).descr.getDatabaseName();
+    }
+
+    private String getTbl(int i) {
+        return logger.outputs.get(i).descr.getTableName();
+    }
+
+    private List<MapValue> getData(int i) throws IOException {
+        return parseMsgpack(logger.outputs.get(i).data.array());
+    }
+
+    private boolean isTimeField(Value v) {
+        return v.asIntegerValue().getLong() > 1000000000;
     }
 
     @Before
@@ -99,13 +106,84 @@ public class AbstractTdLoggerTest {
         }
     }
 
+    //
+    // write only (no flush)
+    //
+
     @Test
-    public void testWriteOnly() {
+    public void testSingleWriteOnlyToLogTable() {
         logger = new MockTdLogger();
         assertTrue(logger.write("testdb", "testtbl", "keykey", "valval"));
         assertEquals(0, logger.cleanUpCallCount);
         assertEquals(0, logger.outputs.size());
     }
+
+    // TODO test/spec for validation of time column single key/value pair
+
+    @Test
+    public void testMapWriteOnlyToLogTable() {
+        logger = new MockTdLogger();
+        Map<String, Object> data = new HashMap<String, Object>();
+        data.put("key1", "value1");
+        data.put("key2", "value2");
+        data.put("key3", "value3");
+        data.put("key4", "value4");
+        assertTrue(logger.write("testdb", "testtbl", data));
+        assertEquals(0, logger.cleanUpCallCount);
+        assertEquals(0, logger.outputs.size());
+    }
+
+    // TODO test/spec for validation of time column in map
+
+    // TODO writeItem should return false
+    @Test
+    public void testSingleWriteWithoutPkOnlyToItemTable() {
+        logger = new MockTdLogger();
+        assertTrue(logger.writeItem("testdb", "testtbl", "pk_name", "string",
+                "keykey", "valval"));
+        assertEquals(0, logger.cleanUpCallCount);
+        assertEquals(0, logger.outputs.size());
+    }
+
+    @Test
+    public void testSingleWriteWithPkOnlyToItemTable() {
+        logger = new MockTdLogger();
+        assertTrue(logger.writeItem("testdb", "testtbl", "pk_name", "int",
+                "pk_name", 11));
+        assertEquals(0, logger.cleanUpCallCount);
+        assertEquals(0, logger.outputs.size());
+    }
+
+    // TODO writeItem should return false
+    @Test
+    public void testMapWriteWithoutPkOnlyToItemTable() {
+        logger = new MockTdLogger();
+        Map<String, Object> data = new HashMap<String, Object>();
+        data.put("key1", "value1");
+        data.put("key2", "value2");
+        data.put("key3", "value3");
+        data.put("key4", "value4");
+        assertTrue(logger.writeItem("testdb", "testtbl", "pk_name", "string", data));
+        assertEquals(0, logger.cleanUpCallCount);
+        assertEquals(0, logger.outputs.size());
+    }
+
+    @Test
+    public void testMapWriteWithPkOnlyToItemTable() {
+        logger = new MockTdLogger();
+        Map<String, Object> data = new HashMap<String, Object>();
+        data.put("key1", "value1");
+        data.put("key2", "value2");
+        data.put("pkName", "value3");
+        data.put("key4", 4);
+        assertTrue(logger.writeItem("testdb", "testtbl", "pk_name", "int",
+                data));
+        assertEquals(0, logger.cleanUpCallCount);
+        assertEquals(0, logger.outputs.size());
+    }
+
+    // TODO test/spec for validation of primary key in map
+    // TODO test/spec for validation of primary key type in map
 
     @Test
     public void testIncrementOnly() {
@@ -134,27 +212,16 @@ public class AbstractTdLoggerTest {
         assertEquals(0, logger.outputs.size());
     }
 
-    private String getDb(int i) {
-        return logger.outputs.get(i).database;
-    }
-
-    private String getTbl(int i) {
-        return logger.outputs.get(i).table;
-    }
-
-    private List<MapValue> getData(int i) throws IOException {
-        return parseMsgpack(logger.outputs.get(i).data.array());
-    }
-
-    private boolean isTimeField(Value v) {
-        return v.asIntegerValue().getLong() > 1000000000;
-    }
-
+    //
+    // write and flush
+    //
     @Test
-    public void testWriteAndFlush() throws IOException {
+    public void testSingleWriteAndFlushToLogTable() throws IOException {
         logger = new MockTdLogger();
+
         assertTrue(logger.write("testdb", "testtbl", "keykey", "valval"));
-        logger.flush("testdb", "testtbl");
+        assertTrue(logger.flush(new DbLogTableDescr("testdb", "testtbl")));
+
         assertEquals(0, logger.cleanUpCallCount);
         assertEquals(1, logger.outputs.size());
 
@@ -177,9 +244,11 @@ public class AbstractTdLoggerTest {
     }
 
     @Test
-    public void testWriteAndFlushWithAutoFlush() throws IOException, InterruptedException {
+    public void testSinglelWriteAndAutoFlushToLogTable()
+            throws IOException, InterruptedException {
+        final long timeBase = MyRepeatingWorker.MIN_INTERVAL_MILLI + 10 * 1000;
+        MyRepeatingWorker.setInterval(timeBase);
         MyRepeatingWorker flushWorker = new MyRepeatingWorker();
-        flushWorker.setInterval(300);
         logger = new MockTdLogger(flushWorker);
         logger.startFlushWorker();
 
@@ -187,11 +256,11 @@ public class AbstractTdLoggerTest {
         assertEquals(0, logger.cleanUpCallCount);
         assertEquals(0, logger.outputs.size());
 
-        TimeUnit.MILLISECONDS.sleep(400);
+        TimeUnit.MILLISECONDS.sleep(timeBase + 10 * 1000);
         assertEquals(0, logger.cleanUpCallCount);
         assertEquals(1, logger.outputs.size());
 
-        TimeUnit.MILLISECONDS.sleep(400);
+        TimeUnit.MILLISECONDS.sleep(timeBase + 10 * 1000);
         assertEquals(0, logger.cleanUpCallCount);
         assertEquals(1, logger.outputs.size());
 
@@ -213,10 +282,22 @@ public class AbstractTdLoggerTest {
         }
     }
 
+    // TODO testSinglelWriteAndAutoFlushToLogTable with interval < minimum
+
+    // TODO testMapWriteAndFlushToLogTable
+    // TODO testMapWriteAndAutoFlushToLogTable
+
+    // TODO testSingleWriteAndFlushToItemTable
+    // TODO testSingleWriteAndAutoFlushToItemTable
+    // TODO testMapWriteAndFlushToItemTable
+    // TODO testMapWriteAndAutoFlushToItemTable
+
     @Test
-    public void testIncrementFlushWithAutoFlush() throws IOException, InterruptedException {
+    public void testIncrementFlushWithAutoFlush()
+            throws IOException, InterruptedException {
+        final long timeBase = MyRepeatingWorker.MIN_INTERVAL_MILLI + 10 * 1000;
+        MyRepeatingWorker.setInterval(timeBase);
         MyRepeatingWorker flushWorker = new MyRepeatingWorker();
-        flushWorker.setInterval(300);
         logger = new MockTdLogger(flushWorker);
         logger.startFlushWorker();
 
@@ -227,12 +308,12 @@ public class AbstractTdLoggerTest {
         assertEquals(0, logger.cleanUpCallCount);
         assertEquals(0, logger.outputs.size());
 
-        TimeUnit.MILLISECONDS.sleep(400);
+        TimeUnit.MILLISECONDS.sleep(timeBase + 10 * 1000);
         assertEquals(0, logger.cleanUpCallCount);
         Log.d(TAG, "checking logger.outputs.size()");
         assertEquals(1, logger.outputs.size());
 
-        TimeUnit.MILLISECONDS.sleep(400);
+        TimeUnit.MILLISECONDS.sleep(timeBase + 10 * 1000);
         assertEquals(0, logger.cleanUpCallCount);
         assertEquals(1, logger.outputs.size());
 
@@ -268,7 +349,7 @@ public class AbstractTdLoggerTest {
         logger.increment("testdb", "testtbl", "increkey1", 20);
         logger.increment("testdb", "testtbl", "increkey2", 3);
         logger.increment("testdb", "testtbl", "increkey2", 40);
-        logger.flush("testdb", "testtbl");
+        logger.flush(new DbLogTableDescr("testdb", "testtbl"));
         assertEquals(0, logger.cleanUpCallCount);
         assertEquals(1, logger.outputs.size());
 
@@ -326,8 +407,8 @@ public class AbstractTdLoggerTest {
         assertEquals(3, logger.outputs.size());
 
         for (Output output : logger.outputs) {
-            String database = output.database;
-            String table = output.table;
+            String database = output.descr.getDatabaseName();
+            String table = output.descr.getTableName();
             byte[] data = output.data.array();
             if (database.equals("testdb1") && table.equals("testtbl1")) {
                 List<MapValue> mapValues = parseMsgpack(data);
