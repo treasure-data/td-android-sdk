@@ -79,7 +79,7 @@ public class AbstractTdLoggerTest {
         }
 
         @Override
-        void setUploadWorkerInterval(long millis) {
+        public void setUploadWorkerInterval(long millis) {
             intervalChanged++;
         }
     }

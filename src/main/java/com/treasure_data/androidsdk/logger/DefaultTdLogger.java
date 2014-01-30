@@ -25,14 +25,14 @@ public class DefaultTdLogger extends AbstractTdLogger {
     }
 
     @Override
-    public boolean outputData(DbTableDescr descr, byte[] data) {
+    boolean outputData(DbTableDescr descr, byte[] data) {
         Intent intentForFlush = TdLoggerService.createIntentForFlush(descr, data);
         context.sendBroadcast(intentForFlush);
         return true;
     }
 
     @Override
-    public void cleanup() {
+    void cleanup() {
         Intent intentForClose = TdLoggerService.createIntentForClose();
         context.sendBroadcast(intentForClose);
     }
