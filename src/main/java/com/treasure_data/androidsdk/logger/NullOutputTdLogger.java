@@ -13,4 +13,8 @@ public class NullOutputTdLogger extends AbstractTdLogger {
     @Override
     void cleanup() {
     }
+
+    @Override
+    public void setUploadWorkerInterval(long intervalMillis) {
+    }
 }

@@ -53,17 +53,17 @@ public class AbstractTdLoggerTest {
     }
 
     private class MockTdLogger extends AbstractTdLogger {
-        private final String TAG = MyRepeatingWorker.class.getSimpleName();
-        int cleanUpCallCount;
+        private final String TAG = MockTdLogger.class.getSimpleName();
         volatile List<Output> outputs = new LinkedList<Output>();
+        int cleanUpCallCount;
+        int intervalChanged;
 
         public MockTdLogger() {
             super();
         }
 
-        public MockTdLogger(RepeatingWorker flushWorker) {
-            super(false);
-            setFlushWorker(flushWorker);
+        public MockTdLogger(RepeatingWorker flushWorker, boolean startWorker) {
+            super(flushWorker, startWorker);
         }
 
         @Override
@@ -76,6 +76,11 @@ public class AbstractTdLoggerTest {
         @Override
         void cleanup() {
             cleanUpCallCount++;
+        }
+
+        @Override
+        void setUploadWorkerInterval(long millis) {
+            intervalChanged++;
         }
     }
 
@@ -92,7 +97,7 @@ public class AbstractTdLoggerTest {
     }
 
     private boolean isTimeField(Value v) {
-        return v.asIntegerValue().getLong() > 1000000000;
+        return (v.asIntegerValue().getLong() > 1000000000);
     }
 
     @Before
@@ -113,7 +118,7 @@ public class AbstractTdLoggerTest {
     @Test
     public void testSingleWriteOnlyToLogTable() {
         logger = new MockTdLogger();
-        assertTrue(logger.write("testdb", "testtbl", "keykey", "valval"));
+        assertTrue(logger.writeLog("testdb", "testtbl", "keykey", "valval"));
         assertEquals(0, logger.cleanUpCallCount);
         assertEquals(0, logger.outputs.size());
     }
@@ -128,7 +133,7 @@ public class AbstractTdLoggerTest {
         data.put("key2", "value2");
         data.put("key3", "value3");
         data.put("key4", "value4");
-        assertTrue(logger.write("testdb", "testtbl", data));
+        assertTrue(logger.writeLog("testdb", "testtbl", data));
         assertEquals(0, logger.cleanUpCallCount);
         assertEquals(0, logger.outputs.size());
     }
@@ -219,7 +224,7 @@ public class AbstractTdLoggerTest {
     public void testSingleWriteAndFlushToLogTable() throws IOException {
         logger = new MockTdLogger();
 
-        assertTrue(logger.write("testdb", "testtbl", "keykey", "valval"));
+        assertTrue(logger.writeLog("testdb", "testtbl", "keykey", "valval"));
         assertTrue(logger.flush(new DbLogTableDescr("testdb", "testtbl")));
 
         assertEquals(0, logger.cleanUpCallCount);
@@ -246,21 +251,22 @@ public class AbstractTdLoggerTest {
     @Test
     public void testSinglelWriteAndAutoFlushToLogTable()
             throws IOException, InterruptedException {
-        final long timeBase = MyRepeatingWorker.MIN_INTERVAL_MILLI + 10 * 1000;
-        MyRepeatingWorker.setInterval(timeBase);
+        final long timeBase = MyRepeatingWorker.MIN_INTERVAL_MILLI + 1L * 1000L;
         MyRepeatingWorker flushWorker = new MyRepeatingWorker();
-        logger = new MockTdLogger(flushWorker);
+
+        logger = new MockTdLogger(flushWorker, false);
+        logger.setFlushWorkerInterval(timeBase);
         logger.startFlushWorker();
 
-        assertTrue(logger.write("testdb", "testtbl", "keykey", "valval"));
+        assertTrue(logger.writeLog("testdb", "testtbl", "keykey", "valval"));
         assertEquals(0, logger.cleanUpCallCount);
         assertEquals(0, logger.outputs.size());
 
-        TimeUnit.MILLISECONDS.sleep(timeBase + 10 * 1000);
+        TimeUnit.MILLISECONDS.sleep(timeBase + 2L * 1000L);
         assertEquals(0, logger.cleanUpCallCount);
         assertEquals(1, logger.outputs.size());
 
-        TimeUnit.MILLISECONDS.sleep(timeBase + 10 * 1000);
+        TimeUnit.MILLISECONDS.sleep(timeBase + 2L * 1000L);
         assertEquals(0, logger.cleanUpCallCount);
         assertEquals(1, logger.outputs.size());
 
@@ -295,10 +301,10 @@ public class AbstractTdLoggerTest {
     @Test
     public void testIncrementFlushWithAutoFlush()
             throws IOException, InterruptedException {
-        final long timeBase = MyRepeatingWorker.MIN_INTERVAL_MILLI + 10 * 1000;
-        MyRepeatingWorker.setInterval(timeBase);
+        final long timeBase = MyRepeatingWorker.MIN_INTERVAL_MILLI + 1L * 1000L;
         MyRepeatingWorker flushWorker = new MyRepeatingWorker();
-        logger = new MockTdLogger(flushWorker);
+        logger = new MockTdLogger(flushWorker, false);
+        logger.setFlushWorkerInterval(timeBase);
         logger.startFlushWorker();
 
         logger.increment("testdb", "testtbl", "increkey1", 1);
@@ -308,21 +314,22 @@ public class AbstractTdLoggerTest {
         assertEquals(0, logger.cleanUpCallCount);
         assertEquals(0, logger.outputs.size());
 
-        TimeUnit.MILLISECONDS.sleep(timeBase + 10 * 1000);
+        TimeUnit.MILLISECONDS.sleep(timeBase + 2L * 1000L);
         assertEquals(0, logger.cleanUpCallCount);
-        Log.d(TAG, "checking logger.outputs.size()");
         assertEquals(1, logger.outputs.size());
 
-        TimeUnit.MILLISECONDS.sleep(timeBase + 10 * 1000);
+        TimeUnit.MILLISECONDS.sleep(timeBase + 2L * 1000L);
         assertEquals(0, logger.cleanUpCallCount);
         assertEquals(1, logger.outputs.size());
+
+        logger.stopFlushWorker();
 
         int idx = 0;
         assertEquals("testdb", getDb(idx));
         assertEquals("testtbl", getTbl(idx));
         List<MapValue> mapValues = getData(idx);
 
-        assertEquals(2, mapValues.size());
+        assertEquals(1, mapValues.size());
         for (MapValue v : mapValues) {
             boolean timeExists = false;
             for (Entry<Value, Value> kv : v.entrySet()) {
@@ -358,7 +365,11 @@ public class AbstractTdLoggerTest {
         assertEquals("testtbl", getTbl(idx));
         List<MapValue> mapValues = getData(idx);
 
-        assertEquals(2, mapValues.size());
+        // all increments for a certain db/table make up 1 record.
+        // increments for different db/tables create separate records.
+        // Here: 1 record containing 2 fields (2 key/value counter pairs)
+        assertEquals(1, mapValues.size());
+
         for (MapValue v : mapValues) {
             boolean timeExists = false;
             for (Entry<Value, Value> kv : v.entrySet()) {
@@ -379,7 +390,7 @@ public class AbstractTdLoggerTest {
     }
 
    @Test
-    public void testMultiImportWithFlash() throws IOException {
+    public void testMultiImportWithFlush() throws IOException {
        _testMultiImport(true);
     }
 
@@ -392,7 +403,7 @@ public class AbstractTdLoggerTest {
         logger = new MockTdLogger();
         logger.increment("testdb1", "testtbl1", "increkey1", 1);
         logger.increment("testdb1", "testtbl1", "increkey1", 20);
-        assertTrue(logger.write("testdb1", "testtbl2", "keykey", "valval"));
+        assertTrue(logger.writeLog("testdb1", "testtbl2", "keykey", "valval"));
         logger.increment("testdb2", "testtbl1", "increkey2", 3);
         logger.increment("testdb2", "testtbl1", "increkey2", 40);
 

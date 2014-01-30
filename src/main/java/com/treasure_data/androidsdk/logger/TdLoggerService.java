@@ -30,8 +30,12 @@ public class TdLoggerService extends Service {
     private static final String TAG = TdLoggerService.class.getSimpleName();
     private static final String ACTION_FLUSH = TdLoggerService.class.getName() + ".ACTION_FLUSH";
     private static final String ACTION_CLOSE = TdLoggerService.class.getName() + ".ACTION_CLOSE";
+    private static final String ACTION_UPDATE_INTERVAL =
+                                               TdLoggerService.class.getName() + ".ACTION_UPDATE_INTERVAL";
+
     private static final String EXTRA_KEY_DATA = "data";
     private static final String EXTRA_KEY_DBTBLDESCR = "descr";
+    private static final String EXTRA_KEY_UPDATE_INTERVAL = "interval";
 
     private static final String RES_DEFTYPE = "string";
     private static final String API_SERVER_HOST = "api.treasure-data.com";
@@ -42,6 +46,7 @@ public class TdLoggerService extends Service {
     private LogReceiver logReceiver;
     private boolean isClosing;
     private String apikey;
+    private static long uploadIntervalMillis = RepeatingWorker.DEFAULT_INTERVAL_MILLI;
 
     @Override
     public void onCreate() {
@@ -125,6 +130,7 @@ public class TdLoggerService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         isClosing = false;
         synchronized (uploadWorker) {
+            applyUploadWorkerInterval();
             if (!uploadWorker.isRunning()) {
                 uploadWorker.start();
             }
@@ -155,6 +161,12 @@ public class TdLoggerService extends Service {
             else if (intent.getAction().equals(ACTION_CLOSE)) {
                 isClosing = true;
             }
+            else if (intent.getAction().equals(ACTION_UPDATE_INTERVAL)) {
+                int intervalMilli = intent.getIntExtra(EXTRA_KEY_UPDATE_INTERVAL, -1);
+                if (intervalMilli > 0) {
+                    applyUploadWorkerInterval();
+                }
+            }
         }
     }
 
@@ -170,5 +182,41 @@ public class TdLoggerService extends Service {
         Intent intent = new Intent();
         intent.setAction(ACTION_CLOSE);
         return intent;
+    }
+
+    public static Intent createIntentForUpdateInterval(long intervalMillis) {
+        Intent intent = new Intent();
+        intent.putExtra(EXTRA_KEY_UPDATE_INTERVAL, intervalMillis);
+        intent.setAction(ACTION_UPDATE_INTERVAL);
+        uploadIntervalMillis = intervalMillis;
+        return intent;
+    }
+
+    // TODO Javadoc
+    // This method is effective only if called before the service's
+    //  onStartCommand method is called.
+    // Since this is a static method, the requested interval will only
+    //  be applied when TdLoggerService#onStartCommand is executed as an
+    //  effect of a startService call of an Activity.
+    // For runtime interval changes please see
+    //  DefaultTdLogger#setUploadWorkerInterval.
+    public static void setUploadWorkerInterval(long millis) {
+        uploadIntervalMillis = millis;
+    }
+
+    // apply the most recent flush interval that was requested.
+    // NOTE:
+    //  newInterval will only be effective starting with the next flush
+    //  interval; the next flush will occur exactly oldInterval milliseconds
+    //  after the flush preceding it.
+    private void applyUploadWorkerInterval() {
+        long actualInterval = uploadWorker.setInterval(uploadIntervalMillis);
+        if (actualInterval < uploadIntervalMillis)
+            Log.w(TAG, "Requested uploadWorker's interval (" + uploadIntervalMillis +
+                    ") is smaller than the minimum allowed (" +
+                    actualInterval + ")");
+        Log.v(TAG, "Changing upload worker's interval to " +
+                actualInterval + " ms");
+        uploadIntervalMillis = actualInterval;
     }
 }

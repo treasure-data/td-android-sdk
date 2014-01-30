@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+// TODO for cleaner implementation implement Serializable or transmit strings using GSON to encode/decode
 public abstract class DbTableDescr implements Parcelable {
     //private static final String TAG = DbTblDescr.class.getSimpleName();
 

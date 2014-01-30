@@ -36,9 +36,10 @@ public abstract class AbstractTdLogger {
     // map-like object to store key-indexed counter and support updating them
     private final CounterContainer counterContainer = new CounterContainer();
     private final MessagePack msgpack = new MessagePack();
+    private long flushIntervalMillis = RepeatingWorker.DEFAULT_INTERVAL_MILLI;
 
     // worker thread to pass the data to the Service through Intents
-    protected RepeatingWorker flushWorker = new RepeatingWorker();
+    protected RepeatingWorker flushWorker;
     private final Runnable flushTask = new Runnable() {
         @Override
         public void run() {
@@ -49,70 +50,114 @@ public abstract class AbstractTdLogger {
     // these methods need to be implemented in the derived class
     abstract boolean outputData(DbTableDescr descr, byte[] data);
     abstract void cleanup();
+    public abstract void setUploadWorkerInterval(long intervalMillis);
 
+    // default constructor
+    //  NOTE: instantiates and starts the default flushWorker on call
     public AbstractTdLogger() {
-        // start flushWorker by default
-        this(true);
+        this(new RepeatingWorker(), true);
     }
 
-    public AbstractTdLogger(boolean startFlushWorkerOnInit) {
+    // constructor, loads the flushWorker and starts it on request.
+    //  the worker's execution interval is also set here
+    public AbstractTdLogger(RepeatingWorker worker, boolean startFlushWorkerOnInit) {
+        // instantiate worker
+        flushWorker = worker;
         flushWorker.setProcedure(flushTask);
+
+        // start worker if requested
         if (startFlushWorkerOnInit) {
             startFlushWorker();
         }
     }
 
-    protected void setFlushWorker(RepeatingWorker worker) {
-        if (flushWorker != null) {
-            flushWorker.stop();
+    // apply the most recent flush interval that was requested.
+    // NOTE:
+    //  newInterval will only be effective starting with the next flush
+    //  interval; the next flush will occur exactly oldInterval milliseconds
+    //  after the flush preceding it.
+    private void applyFlushWorkerInteval(long millis) {
+        long actualIntervalMillis = flushWorker.setInterval(flushIntervalMillis);
+        if (actualIntervalMillis < flushIntervalMillis) {
+            Log.w(TAG, "Requested flushWorker's interval " +
+                    "(" + flushIntervalMillis + ") is smaller than the minimum " +
+                    "allowed (" + actualIntervalMillis / 1000 + ")");
         }
-        flushWorker = worker;
-        flushWorker.setProcedure(flushTask);
+        flushIntervalMillis = actualIntervalMillis;
+        Log.v(TAG, "Changed flush worker's interval to " +
+                flushIntervalMillis + " ms");
     }
 
-    public static void setRepeatingWorkersInterval(long millis) {
-        long actualInterval = RepeatingWorker.setInterval(millis);
-        if (actualInterval < millis) {
-            Log.w(TAG,
-              "Requested interval (" + millis + ") is smaller than " +
-              "the minimum allowed (" + actualInterval / 1000 + ")");
-        }
-        Log.v(TAG, "Changed all RepeatingWorkers intervals to " + millis + " ms");
-    }
-
+    // start the flush worker.
+    // This method is intended to be used if the logger was created with
+    //  the alternate constructor AbstractTdLogger(RepeatingWorker, boolean)
+    //  and with the boolean set to false.
     public void startFlushWorker() {
         if (!flushWorker.isRunning()) {
+            applyFlushWorkerInteval(flushIntervalMillis);
             flushWorker.start();
         }
     }
 
-    // NOTE: increment only import data to a log table
-    public void increment(String database, String table, String key) {
-        increment(database, table, key, 1);
+    // stop the flush worker.
+    public void stopFlushWorker() {
+        if (flushWorker.isRunning()) {
+            flushWorker.stop();
+        }
     }
 
-    // NOTE: increment only import data to a log table
+    // set the flush worker's interval.
+    // If the flush worker is already running, apply the new interval
+    //  immediately.
+    // This method is best called before AbstractTdLogger#setFlushWorkerInterval
+    //  right after the logger is instantiated for the interval to take
+    //  immediately effect; e.g.:
+    //      AbstractTdLogger logger = new DefaultTdLogger(this);
+    //      logger.setFlushWorkerInterval(10000);
+    //      logger.startFlushWorker();
+    public void setFlushWorkerInterval(long millis) {
+        flushIntervalMillis = millis;
+        // apply immediately if the worker is running
+        if (flushWorker.isRunning())
+            applyFlushWorkerInteval(flushIntervalMillis);
+    }
+
+    //
+    // key/value map store for counters. These counters are written as
+    //  a single record every time the flush worker executes
+    //
+
+    // NOTE:
+    //  increment only imports data to a log table. Item table not supported.
     // Generic counter increment function.
     //    The counter indexed by 'key' gets incremented by 'amount'.
     public void increment(String database, String table, String key, long amount) {
-        // TODO necessary? It seems that the entry is created regardless of this call
-        // prepare to flush()
         DbLogTableDescr descr = new DbLogTableDescr(database, table);
-        getBufferPacker(descr);
+        getBufferPacker(descr);     // prepare to flush()
+        Log.d(TAG, "increment: key=" + descr +
+                " counter_key=" + key + " amount=" + amount);
         counterContainer.increment(descr, key, amount);
+    }
+
+    // NOTE: increment only imports data to a log table. Item table not supported.
+    public void increment(String database, String table, String key) {
+        increment(database, table, key, 1);
     }
 
     // NOTE: increment only imports data to a log table. Item table not supported.
     private void moveCounterToBuffer(DbTableDescr descr) {
         Counter counter = counterContainer.getCounter(descr);
-        if (counter == null) {
+        if (counter == null || counter.size() == 0) {
             return;
         }
 
-        Log.d(TAG, "moveCounterToBuffer: key=" + descr);
+        Map <String, Object> countersMap = new HashMap<String, Object> ();
         for (Entry<String, Long> kv : counter) {
-            write(descr, kv.getKey(), kv.getValue());
+            countersMap.put(kv.getKey(), kv.getValue());
         }
+        Log.d(TAG, "moveCounterToBuffer: key=" + descr +
+                " counters=" + counter.size());
+        writeLog(descr, countersMap, 0L);
         counter.clear();
     }
 
@@ -159,7 +204,7 @@ public abstract class AbstractTdLogger {
     }
 
     //
-    // write APIs
+    // writeLog APIs
     //
 
     //
@@ -167,34 +212,58 @@ public abstract class AbstractTdLogger {
     //
 
     // add a single key/value to the bufferPackerMap.
-    private boolean write(DbTableDescr descr, String key, Object value, long timestamp) {
+    private boolean writeLog(DbTableDescr descr, String key, Object value, long timestamp) {
         HashMap<String, Object> data = new HashMap<String, Object>();
         data.put(key, value);
-        return write(descr, data, timestamp);
+        return writeLog(descr, data, timestamp);
     }
 
-    // add a single key/value to the bufferPackerMap.
-    // The timestamp is not provided and will be generated based on system
-    //  clock at the time of write.
-    // It is also used by moveCounterToBuffer to write the counter status
-    //  at any point in time.
-    private boolean write(DbTableDescr descr, String key, Object value) {
-        return write(descr, key, value, 0);
-    }
+//    // add a single key/value to the bufferPackerMap.
+//    // The timestamp is not provided and will be generated based on system
+//    //  clock at the time of write.
+//    // It is also used by moveCounterToBuffer to write the counter status
+//    //  at any point in time.
+//    private boolean writeLog(DbTableDescr descr, String key, Object value) {
+//        return writeLog(descr, key, value, 0);
+//    }
 
-    // public API for writing a single key/value with timestamp
+    // public API for writing a single key/value with timestamp.
+    // Backwards compatible API.
+    // @deprecated refer to
+    //  boolean writeLog(String database, String table,
+    //                   String key, Object value, long timestamp)
     // TODO Javadoc
+    @Deprecated
     public boolean write(String database, String table,
             String key, Object value, long timestamp) {
         DbTableDescr descr = new DbLogTableDescr(database, table);
-        return write(descr, key, value, timestamp);
+        return writeLog(descr, key, value, timestamp);
+    }
+
+    // public API for writing a single key/value with timestamp.
+    // TODO Javadoc
+    public boolean writeLog(String database, String table,
+            String key, Object value, long timestamp) {
+        DbTableDescr descr = new DbLogTableDescr(database, table);
+        return writeLog(descr, key, value, timestamp);
+    }
+
+    // public API for writing a single key/value without timestamp.
+    //  The timestamp is generated using the system clock.
+    // Backwards compatible API.
+    // @deprecated refer to
+    //  boolean writeLog(String database, String table, String key, Object value)
+    // TODO Javadoc
+    @Deprecated
+    public boolean write(String database, String table, String key, Object value) {
+        return writeLog(database, table, key, value, 0);
     }
 
     // public API for writing a single key/value without timestamp.
     //  The timestamp is generated using the system clock.
     // TODO Javadoc
-    public boolean write(String database, String table, String key, Object value) {
-        return write(database, table, key, value, 0);
+    public boolean writeLog(String database, String table, String key, Object value) {
+        return writeLog(database, table, key, value, 0);
     }
 
     //
@@ -203,7 +272,7 @@ public abstract class AbstractTdLogger {
 
     // add the key/value pairs to the bufferPackerMap using the timestamp
     //  provided.
-    private boolean write(DbTableDescr descr, Map<String, Object>data, long timestamp) {
+    private boolean writeLog(DbTableDescr descr, Map<String, Object>data, long timestamp) {
         BufferPacker bufferPacker = getBufferPacker(descr);
         try {
             if (!data.containsKey("time")) {
@@ -214,7 +283,7 @@ public abstract class AbstractTdLogger {
                 bufferPacker.write(data);
             }
             bufferPackerCounterMap.increment(descr, DEFAULT_COUNTER_KEY, 1);
-            Log.d(TAG, "write: key=" + descr +
+            Log.d(TAG, "writeLog: key=" + descr +
                     ", bufsize=" + bufferPacker.getBufferSize());
         } catch (IOException e) {
             e.printStackTrace();
@@ -235,11 +304,41 @@ public abstract class AbstractTdLogger {
     // public API for writing a set of key/value pairs and associated timestamp
     //  into a table identified by database & table names, and timeColumn time
     //  column name.
+    // Backwards compatible API.
+    // @deprecated refer to
+    //  boolean writeLog(String database, String table, String timeColumn,
+    //                   Map<String, Object>data, long timestamp)
     // TODO Javadoc
+    @Deprecated
     public boolean write(String database, String table, String timeColumn,
             Map<String, Object>data, long timestamp) {
         DbTableDescr descr = new DbLogTableDescr(database, table, timeColumn);
-        return write(descr, data, timestamp);
+        return writeLog(descr, data, timestamp);
+    }
+
+    // public API for writing a set of key/value pairs and associated timestamp
+    //  into a table identified by database & table names, and timeColumn time
+    //  column name.
+    // TODO Javadoc
+    public boolean writeLog(String database, String table, String timeColumn,
+            Map<String, Object>data, long timestamp) {
+        DbTableDescr descr = new DbLogTableDescr(database, table, timeColumn);
+        return writeLog(descr, data, timestamp);
+    }
+
+    // public API for writing a set of key/value pairs with no associated
+    //  timestamp into a table identified by database & table names, and
+    //  timeColumn time column name.
+    // The timestamp is retrieved from system time.
+    // Backwards compatible API.
+    // @deprecated refer to
+    //  boolean writeLog(String database, String table, String timeColumn,
+    //                   Map<String, Object>data)
+    // TODO Javadoc
+    @Deprecated
+    public boolean write(String database, String table, String timeColumn,
+            Map<String, Object>data) {
+        return writeLog(database, table, timeColumn, data, 0);
     }
 
     // public API for writing a set of key/value pairs with no associated
@@ -247,9 +346,23 @@ public abstract class AbstractTdLogger {
     //  timeColumn time column name.
     // The timestamp is retrieved from system time.
     // TODO Javadoc
-    public boolean write(String database, String table, String timeColumn,
+    public boolean writeLog(String database, String table, String timeColumn,
             Map<String, Object>data) {
-        return write(database, table, timeColumn, data, 0);
+        return writeLog(database, table, timeColumn, data, 0);
+    }
+
+    // public API for writing a set of key/value pairs with no associated
+    //  timestamp. The table is identified by the the database and table name,
+    //  while the time column name is not provided and assumed to be 'time'
+    // The timestamp is retrieved from system time.
+    // Backwards compatible API.
+    // @deprecated refer to
+    //  boolean writeLog(String database, String table, Map<String, Object>data)
+    // TODO Javadoc
+    @Deprecated
+    public boolean write(String database, String table,
+            Map<String, Object>data) {
+        return writeLog(database, table, "time", data, 0);
     }
 
     // public API for writing a set of key/value pairs with no associated
@@ -257,18 +370,30 @@ public abstract class AbstractTdLogger {
     //  while the time column name is not provided and assumed to be 'time'
     // The timestamp is retrieved from system time.
     // TODO Javadoc
-    public boolean write(String database, String table,
+    public boolean writeLog(String database, String table,
             Map<String, Object>data) {
-        return write(database, table, "time", data, 0);
+        return writeLog(database, table, "time", data, 0);
+    }
+
+    // public API for writing a set of key/value pairs with associated
+    //  timestamp into a table identified by database and table names and
+    //  with time column name defaulting to 'time'.
+    // Backwards compatible API.
+    // @see boolean writeLog(String database, String table,
+    //                  Map<String, Object>data, long timestamp)
+    // TODO Javadoc
+    public boolean write(String database, String table,
+            Map<String, Object>data, long timestamp) {
+        return writeLog(database, table, "time", data, timestamp);
     }
 
     // public API for writing a set of key/value pairs with associated
     //  timestamp into a table identified by database and table names and
     //  with time column name defaulting to 'time'.
     // TODO Javadoc
-    public boolean write(String database, String table,
+    public boolean writeLog(String database, String table,
             Map<String, Object>data, long timestamp) {
-        return write(database, table, "time", data, timestamp);
+        return writeLog(database, table, "time", data, timestamp);
     }
 
     //
@@ -349,8 +474,9 @@ public abstract class AbstractTdLogger {
     }
 
     public void close() {
+        // flush buffered data one last time
         flushAll();
-
+        // close msgpack objects
         for (DbTableDescr descr : bufferPackerMap.keySet()) {
             try {
                 getBufferPacker(descr).close();
@@ -358,8 +484,9 @@ public abstract class AbstractTdLogger {
                 e.printStackTrace();
             }
         }
-
-        flushWorker.stop();
+        // stop the worker
+        stopFlushWorker();
+        // sent close message to the service
         cleanup();
     }
 

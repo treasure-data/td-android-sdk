@@ -40,6 +40,8 @@ public class DefaultApiClient implements ApiClient {
         conn.setRequestProperty("Authorization", "TD1 " + apikey);
         conn.setDoOutput(true);
         conn.setUseCaches(false);
+        // http://developer.android.com/reference/java/net/HttpURLConnection.html#setChunkedStreamingMode(int)
+        conn.setChunkedStreamingMode(0);
         conn.setRequestProperty("Connection", "close");
     }
 
@@ -50,6 +52,11 @@ public class DefaultApiClient implements ApiClient {
             conn = (HttpURLConnection) url.openConnection();
             setupClient(conn);
             conn.setRequestMethod("POST");
+            conn.connect();
+            Log.d(TAG, "post: url=" + url + ", conn=" + conn.hashCode());
+
+            // now the HTTP connection is open, the stream can be written/read
+
             if (properties != null && properties.size() > 0) {
                 StringBuffer buf = new StringBuffer();
                 for(Entry<String, String> property : properties.entrySet()) {
@@ -66,23 +73,25 @@ public class DefaultApiClient implements ApiClient {
                     writer.flush();
                 }
                 catch (IOException ioe) {
-                    Log.e(TAG, "Cannot create OutputStreamWriter with this connection object.");
+                    Log.e(TAG, "Cannot create OutputStreamWriter with this " +
+                            "connection object.");
                     throw ioe;
                 }
                 finally {
                     IOUtils.closeQuietly(writer);
                 }
-            } else {
-                conn.connect();
             }
-            Log.d(TAG, "post: url=" + url + ", conn=" + conn.hashCode());
+
+            // http://stackoverflow.com/questions/2151359/java-httpurlconnection-doesnt-connect-when-i-call-connect
+            // The connect() method just creates a connection. You have to
+            //  commit the request (by calling getInputStream(),
+            //  getResponseCode(), or getResponseMessage()) for the response to
+            //  be returned and processed.
 
             int responseCode = conn.getResponseCode();
             Log.d(TAG, "status code=" + responseCode +
                     " (" + conn.getResponseMessage() + "), conn=" + conn.hashCode());
-            if (responseCode == HttpURLConnection.HTTP_CONFLICT) {
-                Log.d(TAG, "Got conflict doing a POST request to url=" + path);
-            } else if (responseCode != HttpURLConnection.HTTP_OK) {
+            if (responseCode != HttpURLConnection.HTTP_OK) {
                 throw new ApiError("post: url=" + url +
                         ", status code=" + responseCode +
                         " (" + conn.getResponseMessage() + ")" +
@@ -110,7 +119,14 @@ public class DefaultApiClient implements ApiClient {
      */
     @Override
     public String createTable(String database, String table)
-                    throws IOException, ApiError {
+                throws IOException, ApiError {
+        return createLogTable(database, table);
+    }
+
+    // TODO Javadoc
+    @Override
+    public String createLogTable(String database, String table)
+                throws IOException, ApiError {
         String path = String.format("/v3/table/create/%s/%s/log", database, table);
         return post(path, null);
     }
@@ -143,8 +159,11 @@ public class DefaultApiClient implements ApiClient {
             conn.setRequestProperty("Content-Type", "application/octet-stream");
             conn.setRequestProperty("Content-Length", String.valueOf(data.length));
             setupClient(conn);
+            conn.connect();
             Log.d(TAG, "importTable: url=" + url + ", data.len=" + data.length +
                     " B, conn=" + conn.hashCode());
+
+            // now the HTTP connection is open, the stream can be written/read
 
             long duration = System.currentTimeMillis();
             BufferedOutputStream out = null;
@@ -157,6 +176,12 @@ public class DefaultApiClient implements ApiClient {
                 IOUtils.closeQuietly(out);
             }
             duration = System.currentTimeMillis() - duration;
+
+            // http://stackoverflow.com/questions/2151359/java-httpurlconnection-doesnt-connect-when-i-call-connect
+            // The connect() method just creates a connection. You have to
+            //  commit the request (by calling getInputStream(),
+            //  getResponseCode(), or getResponseMessage()) for the response to
+            //  be returned and processed.
 
             int responseCode = conn.getResponseCode();
             Log.d(TAG, "status code=" + responseCode +

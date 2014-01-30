@@ -16,6 +16,10 @@ public class Counter implements Iterable<Entry<String, Long>> {
         return map.get(key);
     }
 
+    public int size() {
+        return map.size();
+    }
+
     public synchronized void increment(String key, long i) {
         Long v = map.get(key);
         if (v == null) {

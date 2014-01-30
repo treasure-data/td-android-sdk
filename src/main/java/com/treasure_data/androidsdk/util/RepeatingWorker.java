@@ -8,12 +8,12 @@ import java.util.concurrent.TimeUnit;
 
 public class RepeatingWorker {
     public static final long DEFAULT_INTERVAL_MILLI = 10 * 60 * 1000;
-//    public static final long MIN_INTERVAL_MILLI =
-//            Debug.isDebuggerConnected() ? (5 * 1000) : (1 * 60 * 1000);
+    //public static final long MIN_INTERVAL_MILLI =
+    //        Debug.isDebuggerConnected() ? (5 * 1000) : (1 * 60 * 1000);
     public static final long MIN_INTERVAL_MILLI = 5 * 1000;
 
     private volatile ExecutorService executorService;
-    protected static volatile long intervalMilli = DEFAULT_INTERVAL_MILLI;
+    protected volatile long intervalMilli = DEFAULT_INTERVAL_MILLI;
     private BlockingQueue<Boolean> wakeupQueue = new LinkedBlockingQueue<Boolean>();
     private volatile Runnable procedure;
     private boolean isClosing = false;
@@ -22,12 +22,12 @@ public class RepeatingWorker {
         this.procedure = r;
     }
 
-    public static long setInterval(long intervalMilli) {
-        if (intervalMilli < MIN_INTERVAL_MILLI) {
-            intervalMilli = MIN_INTERVAL_MILLI;
+    public long setInterval(long milli) {
+        if (milli < MIN_INTERVAL_MILLI) {
+            milli = MIN_INTERVAL_MILLI;
         }
-        RepeatingWorker.intervalMilli = intervalMilli;
-        return intervalMilli;
+        this.intervalMilli = milli;
+        return milli;
     }
 
     public void start() {

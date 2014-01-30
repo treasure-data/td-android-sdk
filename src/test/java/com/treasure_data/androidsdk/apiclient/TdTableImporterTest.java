@@ -36,12 +36,17 @@ public class TdTableImporterTest {
         }
 
         @Override
-        public String createTable(String database, String table) throws IOException, ApiError {
+        public String createLogTable(String database, String table) throws IOException, ApiError {
             if (createTableErrorIndexes.contains(callCount++)) {
                 throw new FileNotFoundException();
             }
             events.add("clt:" + database + "#" + table);
             return "OK";
+        }
+
+        @Override
+        public String createTable(String database, String table) throws IOException, ApiError {
+            return createLogTable(database, table);
         }
 
         @Override
