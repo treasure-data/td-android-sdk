@@ -17,6 +17,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.Resources.NotFoundException;
 import android.os.IBinder;
 
 import com.treasure_data.androidsdk.apiclient.ApiClient;
@@ -53,7 +54,15 @@ public class TdLoggerService extends Service {
         Log.d(TAG, "onCreate: " + this);
 
         final ApiClient apiClient= new DefaultApiClient();
-        apikey = getString(getResources().getIdentifier("td_apikey", RES_DEFTYPE, getPackageName()));
+        try {
+            apikey = getString(getResources().getIdentifier(
+                        "td_apikey", RES_DEFTYPE, getPackageName()));
+        } catch(NotFoundException e) {
+            Log.e(TAG, "'td_apikey' string resource not found. " +
+                    "For the Service to properly function a valid API key " +
+                    "needs to be provided. Refer to the documentation.");
+            throw e;
+        }
         apiClient.init(apikey, API_SERVER_HOST, API_SERVER_PORT);
 
         final TdTableImporter tdTableImporter = new TdTableImporter(apiClient);
