@@ -48,6 +48,11 @@
       <name>Mitsunori Komatsu</name>
       <email>komamitsu@gmail.com</email>
     </developer>
+    <developer>
+      <id>mcaramello</id>
+      <name>Michele Caramello</name>
+      <email>michele.caramello@gmail.com</email>
+    </developer>
   </developers>
 
   <build>
