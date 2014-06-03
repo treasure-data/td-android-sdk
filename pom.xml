@@ -1,8 +1,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.treasure_data</groupId>
+  <groupId>com.treasuredata</groupId>
   <artifactId>td-android-sdk</artifactId>
-  <version>0.0.2-RC5</version>
+  <version>0.1.0-SNAPSHOT</version>
   <name>Android SDK for Treasure Data Cloud</name>
   <description>Android SDK for Treasure Data Cloud.</description>
   <url>https://github.com/treasure-data/td-android-sdk</url>
@@ -25,22 +25,6 @@
     <system>GitHub</system>
     <url>https://github.com/treasure-data/td-android-sdk/issues</url>
   </issueManagement>
-
-  <distributionManagement>
-    <downloadUrl>http://maven.treasure-data.com/com/treasure_data/td-android-sdk/</downloadUrl>
-    <repository>
-      <uniqueVersion>false</uniqueVersion>
-      <id>maven.treasure-data.com</id>
-      <name>Repository at maven.treasure-data.com</name>
-      <url>dav:http://maven.treasure-data.com</url>
-    </repository>
-    <snapshotRepository>
-      <uniqueVersion>false</uniqueVersion>
-      <id>maven.treasure-data.com</id>
-      <name>Snapshot Repository at maven.treasure-data.com</name>
-      <url>dav:http://maven.treasure-data.com/snapshot</url>
-    </snapshotRepository>
-  </distributionManagement>
 
   <developers>
     <developer>
@@ -86,13 +70,6 @@
         </executions>
       </plugin>
     </plugins>
-
-    <extensions>
-      <extension>
-        <groupId>org.apache.maven.wagon</groupId>
-        <artifactId>wagon-webdav-jackrabbit</artifactId>
-      </extension>
-    </extensions>
   </build>
 
   <dependencies>
@@ -102,45 +79,32 @@
   		<version>4.1.1.4</version>
   		<scope>provided</scope>
   	</dependency>
+
   	<dependency>
   		<groupId>junit</groupId>
   		<artifactId>junit</artifactId>
   		<version>4.11</version>
   		<scope>test</scope>
   	</dependency>
-  	<dependency>
-  		<groupId>org.msgpack</groupId>
-  		<artifactId>msgpack</artifactId>
-  		<version>0.6.8</version>
-        <exclusions>
-            <exclusion>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-            </exclusion>
-        </exclusions>
-  	</dependency>
-  	<dependency>
-  		<groupId>commons-io</groupId>
-  		<artifactId>commons-io</artifactId>
-  		<version>2.4</version>
-  	</dependency>
-  	<dependency>
-  		<groupId>commons-lang</groupId>
-  		<artifactId>commons-lang</artifactId>
-  		<version>2.6</version>
-  	</dependency>
+
   	<dependency>
   		<groupId>org.komamitsu</groupId>
   		<artifactId>android-logger-bridge</artifactId>
   		<version>0.0.1</version>
   	</dependency>
+
+    <dependency>
+      <!--
+        <groupId>io.keen</groupId>
+        <artifactId>keen-client-api-android</artifactId>
+        <version>2.0.0-rc1</version>
+      -->
+      <groupId>io.keen.client</groupId>
+      <artifactId>android</artifactId>
+      <version>3.0</version>
+      <scope>system</scope>
+      <systemPath>${basedir}/libs/KeenClient-Android.jar</systemPath>
+    </dependency>
   </dependencies>
 
-  <repositories>
-    <repository>
-      <id>treasure-data.com</id>
-      <name>Treasure Data's Maven Repository</name>
-      <url>http://maven.treasure-data.com/</url>
-    </repository>
-  </repositories>
 </project>
