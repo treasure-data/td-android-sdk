@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.treasure_data</groupId>
   <artifactId>td-android-sdk</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.0.2-RC5</version>
   <name>Android SDK for Treasure Data Cloud</name>
   <description>Android SDK for Treasure Data Cloud.</description>
   <url>https://github.com/treasure-data/td-android-sdk</url>
@@ -47,6 +47,11 @@
       <id>komamitsu</id>
       <name>Mitsunori Komatsu</name>
       <email>komamitsu@gmail.com</email>
+    </developer>
+    <developer>
+      <id>mcaramello</id>
+      <name>Michele Caramello</name>
+      <email>michele.caramello@gmail.com</email>
     </developer>
   </developers>
 
