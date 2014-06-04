@@ -94,16 +94,9 @@
   	</dependency>
 
     <dependency>
-      <!--
         <groupId>io.keen</groupId>
-        <artifactId>keen-client-api-android</artifactId>
+        <artifactId>keen-client-java-core</artifactId>
         <version>2.0.0-rc1</version>
-      -->
-      <groupId>io.keen.client</groupId>
-      <artifactId>android</artifactId>
-      <version>3.0</version>
-      <scope>system</scope>
-      <systemPath>${basedir}/libs/KeenClient-Android.jar</systemPath>
     </dependency>
   </dependencies>
 
