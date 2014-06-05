@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-public class TDHttpHandler extends UrlConnectionHttpHandler {
+class TDHttpHandler extends UrlConnectionHttpHandler {
     private static final int DEFAULT_CONNECT_TIMEOUT = 30000;
     private static final int DEFAULT_READ_TIMEOUT = 30000;
     private static final String TAG = TDHttpHandler.class.getSimpleName();
@@ -39,12 +39,6 @@ public class TDHttpHandler extends UrlConnectionHttpHandler {
         connection.setRequestProperty("Content-Type", "application/json");
         connection.setRequestProperty("X-TD-Data-Type", "k");
         connection.setRequestProperty("X-TD-Write-Key", apiKey);
-
-        /*
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        request.body.writeTo(outputStream);
-        Log.d(TAG, "sendRequest, request.body:" + new String(outputStream.toByteArray()));
-        */
 
         connection.setDoOutput(true);
         request.body.writeTo(connection.getOutputStream());

@@ -10,6 +10,7 @@ import android.view.View.OnTouchListener;
 import android.widget.Toast;
 import com.treasuredata.android.TreasureData;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -24,8 +25,13 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        td = new TreasureData(this, "your_api_key");
-        td.enableLogging();
+        try {
+            td = new TreasureData(this, "your_api_key");
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        }
+        TreasureData.enableLogging();
 
         List<Pair<Integer, String>> targets = Arrays.asList(
                 new Pair<Integer, String>(R.id.navi_help, "navi_help"),
@@ -38,7 +44,6 @@ public class MainActivity extends Activity {
             int id = target.first;
             final String label = target.second;
             View v = findViewById(id);
-            final TreasureData finalTd = td;
             v.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {

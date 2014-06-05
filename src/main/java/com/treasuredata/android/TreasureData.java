@@ -1,34 +1,25 @@
 package com.treasuredata.android;
 
 import android.content.Context;
-import io.keen.client.android.AndroidKeenClientBuilder;
-import io.keen.client.java.KeenClient;
-import io.keen.client.java.KeenLogging;
-import io.keen.client.java.KeenProject;
-import org.komamitsu.android.util.Log;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 public class TreasureData {
     private static final String TAG = TreasureData.class.getSimpleName();
-    private final KeenClient client;
+    private final TDClient client;
 
-    public TreasureData(Context context, String apiKey) {
-        AndroidKeenClientBuilder builder = new AndroidKeenClientBuilder(context);
-        builder.setHttpHandler(new TDHttpHandler(apiKey));
-        client = builder.build();
-        client.setDebugMode(true);
-        KeenProject project = new KeenProject("_treasure data_", "dummy_write_key", "dummy_read_key");
-        client.setDefaultProject(project);
+    public TreasureData(Context context, String apiKey) throws IOException {
+        client = new TDClient(context, apiKey);
     }
 
-    public void enableLogging() {
-        KeenLogging.enableLogging();
+    public static void enableLogging() {
+        TDClient.enableLogging();
     }
 
-    public void disableLogging() {
-        KeenLogging.disableLogging();
+    public static void disableLogging() {
+        TDClient.disableLogging();
     }
 
     public void event(String database, String table, String key, String value) {
@@ -40,11 +31,10 @@ public class TreasureData {
     public void event(String database, String table, Map<String, Object> record) {
         StringBuilder sb = new StringBuilder();
         sb.append(database).append(".").append(table);
-        client.addEvent(sb.toString(), record, null);
+        client.queueEvent(sb.toString(), record, null);
     }
 
     public void upload() {
-        Log.i(TAG, "upload, active?:" + client.isActive());
-        client.sendQueuedEvents();
+        client.sendQueuedEventsAsync();
     }
 }
