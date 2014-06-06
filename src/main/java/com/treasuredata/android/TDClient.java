@@ -10,19 +10,24 @@ import java.util.concurrent.Executors;
 
 class TDClient extends KeenClient {
     private static final String TAG = TDClient.class.getSimpleName();
+    private static String apiEndpoint;
 
     TDClient(Context context, String apiKey) throws IOException {
         super(
                 new TDClientBuilder()
-                        .withHttpHandler(new TDHttpHandler(apiKey))
+                        .withHttpHandler(new TDHttpHandler(apiKey, apiEndpoint))
                         .withEventStore(new TDEventStore(context.getCacheDir()))
                         .withJsonHandler(new TDJsonHandler())
                         .withPublishExecutor(Executors.newSingleThreadExecutor())
         );
-        setDebugMode(true);
+        // setDebugMode(true);
         KeenProject project = new KeenProject("_treasure data_", "dummy_write_key", "dummy_read_key");
         setDefaultProject(project);
         setActive(true);
+    }
+
+    static void setApiEndpoint(String apiEndpoint) {
+        TDClient.apiEndpoint = apiEndpoint;
     }
 
     // Only for test

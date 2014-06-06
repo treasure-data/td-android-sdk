@@ -53,6 +53,10 @@ public class TreasureData {
         TDClient.disableLogging();
     }
 
+    public static void initializeApiEndpoint(String apiEndpoint) {
+        TDClient.setApiEndpoint(apiEndpoint);
+    }
+
     public void addEvent(String database, String table, String key, String value) {
         HashMap<String, Object> record = new HashMap<String, Object>(1);
         record.put(key, value);

@@ -29,6 +29,7 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         try {
+            // TreasureData.initializeApiEndpoint("https://anotherapi.treasuredata.com/android/v3/event");
             td = new TreasureData(this, "your_api_key");
 
             // For callback, optional.

@@ -12,21 +12,25 @@ class TDHttpHandler extends UrlConnectionHttpHandler {
     private static final int DEFAULT_CONNECT_TIMEOUT = 30000;
     private static final int DEFAULT_READ_TIMEOUT = 30000;
     private static final String TAG = TDHttpHandler.class.getSimpleName();
+    private static final String DEFAULT_API_ENDPOINT = "http://in-staging.treasuredata.com/android/v3/event";
 
     private final String apiKey;
+    private final String apiEndpoint;
 
-    public TDHttpHandler(String apiKey) {
-        Log.d(TAG, "init, apiKey:" + apiKey);
+    public TDHttpHandler(String apiKey, String apiEndpoint) {
         if (apiKey == null) {
             throw new IllegalArgumentException("apiKey is null");
         }
+        if (apiEndpoint == null) {
+            apiEndpoint = DEFAULT_API_ENDPOINT;
+        }
         this.apiKey = apiKey;
+        this.apiEndpoint = apiEndpoint;
     }
 
     protected HttpURLConnection openConnection(Request request) throws IOException {
-        // TODO: Make it configurable
         // URL url = new URL("https://in.treasuredata.com/android/v3/event");
-        URL url = new URL("http://in-staging.treasuredata.com/android/v3/event");
+        URL url = new URL(this.apiEndpoint);
         HttpURLConnection result = (HttpURLConnection) url.openConnection();
         result.setConnectTimeout(DEFAULT_CONNECT_TIMEOUT);
         result.setReadTimeout(DEFAULT_READ_TIMEOUT);
