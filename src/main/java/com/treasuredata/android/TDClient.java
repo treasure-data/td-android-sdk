@@ -25,6 +25,12 @@ class TDClient extends KeenClient {
         setActive(true);
     }
 
+    // Only for test
+    @Deprecated
+    TDClient() {
+        super(new TDClientBuilder());
+    }
+
     public static void enableLogging() {
         KeenLogging.enableLogging();
     }

@@ -2,12 +2,14 @@ package com.treasuredata.android.demo;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.util.Log;
 import android.util.Pair;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 import android.widget.Toast;
+import com.treasuredata.android.TDCallback;
 import com.treasuredata.android.TreasureData;
 
 import java.io.IOException;
@@ -18,7 +20,44 @@ import java.util.Map;
 
 
 public class MainActivity extends Activity {
+    private static final String TAG = MainActivity.class.getSimpleName();
     private TreasureData td;
+
+    class AddEventCallback implements TDCallback {
+        String eventName;
+
+        @Override
+        public void onSuccess() {
+            String message = "TreasureData.addEvent:onSuccess[" + eventName + "]";
+            Log.d(TAG, message);
+            Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onError(Exception e) {
+            String message = "TreasureData.addEvent:onError[" + eventName + ": " + e + "]";
+            Log.d(TAG, message);
+            Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    class UploadEventsCallback implements TDCallback {
+        @Override
+        public void onSuccess() {
+            String message = "TreasureData.uploadEvents:onSuccess";
+            Log.d(TAG, message);
+        }
+
+        @Override
+        public void onError(Exception e) {
+            String message = "TreasureData.uploadEvents:onError[" + e + "]";
+            Log.d(TAG, message);
+        }
+    }
+
+    private AddEventCallback addEventCallback = new AddEventCallback();
+
+    private UploadEventsCallback uploadEventsCallback = new UploadEventsCallback();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,6 +66,8 @@ public class MainActivity extends Activity {
 
         try {
             td = new TreasureData(this, "your_api_key");
+            td.setAddEventCallBack(addEventCallback);
+            td.setUploadEventsCallBack(uploadEventsCallback);
         } catch (IOException e) {
             e.printStackTrace();
             return;
@@ -49,23 +90,23 @@ public class MainActivity extends Activity {
                 public void onClick(View v) {
                     final Map event = new HashMap<String, Object>(1);
                     event.put(label, v.toString());
-                    td.event("testdb", "demotbl", event);
-                    Toast.makeText(MainActivity.this, "TreasureData.event(testdb, testtbl, " + label + ", " + v.toString() + ")", Toast.LENGTH_SHORT).show();
+                    td.addEvent("testdb", "demotbl", event);
+                    addEventCallback.eventName = label;
                 }
             });
         }
         findViewById(R.id.image).setOnTouchListener(new OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent ev) {
-                td.event("testdb", "demotbl", "image", ev.toString());
-                Toast.makeText(MainActivity.this, "TreasureData.event(testdb, testtbl, image, " + ev.toString() + ")", Toast.LENGTH_SHORT).show();
+                addEventCallback.eventName = "image";
+                td.addEvent("testdb", "demotbl", "image", ev.toString());
                 return false;
             }
         });
         findViewById(R.id.navi_signup).setOnTouchListener(new OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
-                td.upload();
+                td.uploadEvents();
                 return false;
             }
         });
