@@ -1,6 +1,6 @@
 # td-android-sdk
 
-td-android-sdk is a library to send any data to Treasure Data storage directly from Android applications without td-agent(fluentd). td-android-sdk is so small that it's easy to use for Android application development.
+td-android-sdk is a library to send any data to Treasure Data storage directly from Android applications without Treasure Agent (fluentd). td-android-sdk is so small that it's easy to use for Android application development.
 
 ## Requirement
 
@@ -26,13 +26,13 @@ If you're using maven, add the following directives to your pom.xml
       <dependency>
         <groupId>com.treasure_data</groupId>
         <artifactId>td-android-sdk</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>0.0.2</version>
       </dependency>
     </dependencies>
 
 ### Jar file
 
-Or put td-android-sdk.jar into (YOUR_ANDROID_PROJECT)/libs.
+Or put td-android-sdk-0.0.2-SNAPSHOT.jar into (YOUR_ANDROID_PROJECT)/libs.
 
 ## Settings
 
