@@ -30,7 +30,9 @@ public class MainActivity extends Activity {
 
         try {
             // TreasureData.initializeApiEndpoint("https://anotherapi.treasuredata.com/android/v3/event");
-            td = new TreasureData(this, "your_api_key");
+            TreasureData.initializeDefaultApiKey("your_default_api_key");
+            td = new TreasureData(this);
+            // td = new TreasureData(this, "your_api_key");
 
             // For callback, optional.
             td.setAddEventCallBack(addEventCallback);

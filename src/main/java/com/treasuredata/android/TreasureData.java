@@ -19,12 +19,30 @@ public class TreasureData {
     private volatile KeenCallback uploadEventsKeenCallBack = createKeenCallback(LABEL_UPLOAD_EVENTS, null);;
 
     public TreasureData(Context context, String apiKey) throws IOException {
+        if (apiKey == null && TDClient.getDefaultApiKey() == null) {
+            throw new IllegalStateException("initializeApiKey() hasn't called yet");
+        }
         client = new TDClient(context, apiKey);
     }
 
-    // Only for testing
-    @Deprecated
-    TreasureData() {
+    public TreasureData(Context context) throws IOException {
+        this(context, null);
+    }
+
+    public static void enableLogging() {
+        TDClient.enableLogging();
+    }
+
+    public static void disableLogging() {
+        TDClient.disableLogging();
+    }
+
+    public static void initializeApiEndpoint(String apiEndpoint) {
+        TDClient.setApiEndpoint(apiEndpoint);
+    }
+
+    public static void initializeDefaultApiKey(String defaultApiKey) {
+        TDClient.setDefaultApiKey(defaultApiKey);
     }
 
     public synchronized void setAddEventCallBack(TDCallback callBack) {
@@ -43,18 +61,6 @@ public class TreasureData {
 
     public TDCallback getUploadEventsCallBack() {
         return this.uploadEventsCallBack;
-    }
-
-    public static void enableLogging() {
-        TDClient.enableLogging();
-    }
-
-    public static void disableLogging() {
-        TDClient.disableLogging();
-    }
-
-    public static void initializeApiEndpoint(String apiEndpoint) {
-        TDClient.setApiEndpoint(apiEndpoint);
     }
 
     public void addEvent(String database, String table, String key, String value) {
@@ -93,6 +99,12 @@ public class TreasureData {
         return keenCallback;
     }
 
+    // Only for testing
+    @Deprecated
+    TreasureData() {
+    }
+
+    @Deprecated
     void setClient(TDClient mockClient) {
         this.client = mockClient;
     }

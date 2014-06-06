@@ -43,7 +43,21 @@ class TDHttpHandler extends UrlConnectionHttpHandler {
         connection.setRequestProperty("Content-Type", "application/json");
         connection.setRequestProperty("X-TD-Data-Type", "k");
         connection.setRequestProperty("X-TD-Write-Key", apiKey);
-
+        /*
+        for (Map.Entry<String, List<String>> header : connection.getHeaderFields().entrySet()) {
+            boolean needDelimiter = false;
+            StringBuilder buf = new StringBuilder();
+            for (String v : header.getValue()) {
+                if (needDelimiter) {
+                    buf.append(", ");
+                }
+                needDelimiter = true;
+                buf.append(v);
+            }
+            Log.d(TAG, "sendRequest(header): k=[" + header.getKey() + "], v=[" + buf.toString() + "]");
+        }
+        */
+        Log.d(TAG, "sendRequest: apiKey=" + apiKey);
         connection.setDoOutput(true);
         request.body.writeTo(connection.getOutputStream());
         Log.d(TAG, "sendRequest, connection:" + connection + ", request:" + request);
