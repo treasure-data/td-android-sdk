@@ -117,6 +117,7 @@ public class DefaultApiClient implements ApiClient {
     /* (non-Javadoc)
      * @see com.treasure_data.td_logger.android.ApiClient#createTable(java.lang.String, java.lang.String)
      */
+    @Deprecated
     @Override
     public String createTable(String database, String table)
                 throws IOException, ApiError {

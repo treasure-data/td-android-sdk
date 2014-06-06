@@ -34,7 +34,7 @@ public class TdTableImporter {
             apiClient.createItemTable(database, table, pkName, pkType);
         } else {
             Log.i(TAG, "creating new log table=" + table);
-            apiClient.createTable(database, table);
+            apiClient.createLogTable(database, table);
         }
     }
 

@@ -21,8 +21,8 @@ import com.treasure_data.androidsdk.util.RepeatingWorker;
 
 
 public abstract class AbstractTdLogger {
-
     private static final String TAG = AbstractTdLogger.class.getSimpleName();
+
     private static final int BUFFER_FLUSH_SIZE = 1 * 1024 * 1024;   // TODO: tune up
     // TODO: add updated_at
 
