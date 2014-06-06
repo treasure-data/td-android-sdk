@@ -28,10 +28,10 @@
             style="@style/NaviLabel"
         />
         <TextView
-            android:id="@+id/navi_signup"
-            android:text="Signup"
+            android:id="@+id/upload"
+            android:text="Upload"
             style="@style/NaviLabel"
-        />
+            android:background="#ffaacda0"/>
     </LinearLayout>
     <LinearLayout
         android:orientation="horizontal"

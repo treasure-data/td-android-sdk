@@ -23,6 +23,71 @@ public class MainActivity extends Activity {
     private static final String TAG = MainActivity.class.getSimpleName();
     private TreasureData td;
 
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        try {
+            td = new TreasureData(this, "your_api_key");
+
+            // For callback, optional.
+            td.setAddEventCallBack(addEventCallback);
+            td.setUploadEventsCallBack(uploadEventsCallback);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        }
+        TreasureData.enableLogging();
+
+        List<Pair<Integer, String>> targets = Arrays.asList(
+                new Pair<Integer, String>(R.id.navi_help, "navi_help"),
+                new Pair<Integer, String>(R.id.navi_news, "navi_news"),
+                new Pair<Integer, String>(R.id.navi_play, "navi_play")
+        );
+
+        for (Pair<Integer, String> target : targets) {
+            int id = target.first;
+            final String label = target.second;
+            View v = findViewById(id);
+            v.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    final Map event = new HashMap<String, Object>(1);
+                    event.put("label", label);
+                    event.put("id", v.getId());
+                    event.put("left", v.getLeft());
+                    event.put("right", v.getRight());
+                    event.put("top", v.getTop());
+                    event.put("bottom", v.getBottom());
+
+                    addEventCallback.eventName = label;
+                    td.addEvent("testdb", "demotbl", event);
+                }
+            });
+        }
+
+        findViewById(R.id.image).setOnTouchListener(new OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent ev) {
+                addEventCallback.eventName = "image";
+                td.addEvent("testdb", "demotbl", "image", ev.toString());
+                return false;
+            }
+        });
+
+        findViewById(R.id.upload).setOnTouchListener(new OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                td.uploadEvents();
+                return false;
+            }
+        });
+    }
+
+    /*
+     * These are only for callback, Optional.
+     */
     class AddEventCallback implements TDCallback {
         String eventName;
 
@@ -58,57 +123,4 @@ public class MainActivity extends Activity {
     private AddEventCallback addEventCallback = new AddEventCallback();
 
     private UploadEventsCallback uploadEventsCallback = new UploadEventsCallback();
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        try {
-            td = new TreasureData(this, "your_api_key");
-            td.setAddEventCallBack(addEventCallback);
-            td.setUploadEventsCallBack(uploadEventsCallback);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return;
-        }
-        TreasureData.enableLogging();
-
-        List<Pair<Integer, String>> targets = Arrays.asList(
-                new Pair<Integer, String>(R.id.navi_help, "navi_help"),
-                new Pair<Integer, String>(R.id.navi_news, "navi_news"),
-                new Pair<Integer, String>(R.id.navi_play, "navi_play")
-//                new Pair<Integer, String>(R.id.navi_signup, "navi_signup")
-        );
-
-        for (Pair<Integer, String> target : targets) {
-            int id = target.first;
-            final String label = target.second;
-            View v = findViewById(id);
-            v.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    final Map event = new HashMap<String, Object>(1);
-                    event.put(label, v.toString());
-                    td.addEvent("testdb", "demotbl", event);
-                    addEventCallback.eventName = label;
-                }
-            });
-        }
-        findViewById(R.id.image).setOnTouchListener(new OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent ev) {
-                addEventCallback.eventName = "image";
-                td.addEvent("testdb", "demotbl", "image", ev.toString());
-                return false;
-            }
-        });
-        findViewById(R.id.navi_signup).setOnTouchListener(new OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                td.uploadEvents();
-                return false;
-            }
-        });
-    }
 }
