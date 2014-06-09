@@ -3,8 +3,11 @@ package com.treasuredata.android;
 import android.content.Context;
 import io.keen.client.java.KeenClient;
 import io.keen.client.java.KeenProject;
+import org.komamitsu.android.util.Log;
 
+import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 import java.io.IOException;
+import java.security.MessageDigest;
 import java.util.concurrent.Executors;
 
 class TDClient extends KeenClient {
@@ -21,8 +24,7 @@ class TDClient extends KeenClient {
                         .withPublishExecutor(Executors.newSingleThreadExecutor())
         );
         // setDebugMode(true);
-        KeenProject project = new KeenProject("_treasure data_", "dummy_write_key", "dummy_read_key");
-        setDefaultProject(project);
+        setApiKey(apiKey);
         setActive(true);
     }
 
@@ -40,7 +42,21 @@ class TDClient extends KeenClient {
 
     // Only for test
     @Deprecated
-    TDClient() {
+    TDClient(String apiKey) {
         super(new TDClientBuilder());
+        setApiKey(apiKey);
+    }
+
+    private void setApiKey(String apiKey) {
+        String projectId = null;
+        try {
+            MessageDigest md5 = MessageDigest.getInstance("MD5");
+            projectId = "_td " + (new HexBinaryAdapter()).marshal(md5.digest(apiKey.getBytes()));
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to create md5 instance", e);
+            projectId = "_td default";
+        }
+        KeenProject project = new KeenProject(projectId, "dummy_write_key", "dummy_read_key");
+        setDefaultProject(project);
     }
 }
