@@ -2,7 +2,6 @@ package com.treasuredata.android;
 
 import android.content.Context;
 import io.keen.client.java.KeenClient;
-import io.keen.client.java.KeenLogging;
 import io.keen.client.java.KeenProject;
 
 import java.io.IOException;
@@ -43,13 +42,5 @@ class TDClient extends KeenClient {
     @Deprecated
     TDClient() {
         super(new TDClientBuilder());
-    }
-
-    public static void enableLogging() {
-        KeenLogging.enableLogging();
-    }
-
-    public static void disableLogging() {
-        KeenLogging.disableLogging();
     }
 }

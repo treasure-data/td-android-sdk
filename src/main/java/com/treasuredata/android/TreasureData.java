@@ -22,6 +22,7 @@ public class TreasureData {
         if (apiKey == null && TDClient.getDefaultApiKey() == null) {
             throw new IllegalStateException("initializeApiKey() hasn't called yet");
         }
+        TDLogging.enableLogging();
         client = new TDClient(context, apiKey);
     }
 
@@ -30,11 +31,11 @@ public class TreasureData {
     }
 
     public static void enableLogging() {
-        TDClient.enableLogging();
+        TDLogging.enableLogging();
     }
 
     public static void disableLogging() {
-        TDClient.disableLogging();
+        TDLogging.disableLogging();
     }
 
     public static void initializeApiEndpoint(String apiEndpoint) {
@@ -90,7 +91,9 @@ public class TreasureData {
 
             @Override
             public void onFailure(Exception e) {
-                Log.e(TAG, methodName + " failed: " + e.getMessage());
+                if (TDLogging.isEnabled())
+                    Log.e(TAG, methodName + " failed: " + e.getMessage());
+
                 if (callback != null) {
                     callback.onError(e);
                 }

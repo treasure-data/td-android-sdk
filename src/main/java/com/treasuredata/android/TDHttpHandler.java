@@ -66,7 +66,6 @@ class TDHttpHandler extends UrlConnectionHttpHandler {
         }
         result.setConnectTimeout(DEFAULT_CONNECT_TIMEOUT);
         result.setReadTimeout(DEFAULT_READ_TIMEOUT);
-        Log.d(TAG, "openConnection, request:" + request + ", result:" + result);
         return result;
     }
 
@@ -89,16 +88,13 @@ class TDHttpHandler extends UrlConnectionHttpHandler {
             Log.d(TAG, "sendRequest(header): k=[" + header.getKey() + "], v=[" + buf.toString() + "]");
         }
         */
-        Log.d(TAG, "sendRequest: apiKey=" + apiKey);
         connection.setDoOutput(true);
         request.body.writeTo(connection.getOutputStream());
-        Log.d(TAG, "sendRequest, connection:" + connection + ", request:" + request);
     }
 
     @Override
     protected Response readResponse(HttpURLConnection connection) throws IOException {
         Response response = super.readResponse(connection);
-        Log.d(TAG, "readResponse: isSuccess=" + response.isSuccess());
         return response;
     }
 
