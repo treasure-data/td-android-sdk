@@ -22,7 +22,6 @@ public class TreasureData {
         if (apiKey == null && TDClient.getDefaultApiKey() == null) {
             throw new IllegalStateException("initializeApiKey() hasn't called yet");
         }
-        TDLogging.enableLogging();
         client = new TDClient(context, apiKey);
     }
 
