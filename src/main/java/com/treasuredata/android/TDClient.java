@@ -1,6 +1,7 @@
 package com.treasuredata.android;
 
 import android.content.Context;
+import io.keen.client.java.GlobalPropertiesEvaluator;
 import io.keen.client.java.KeenClient;
 import io.keen.client.java.KeenProject;
 import org.komamitsu.android.util.Log;
@@ -8,6 +9,9 @@ import org.komamitsu.android.util.Log;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.Executors;
 
 class TDClient extends KeenClient {
@@ -26,6 +30,14 @@ class TDClient extends KeenClient {
         // setDebugMode(true);
         setApiKey(apiKey == null ? TDClient.defaultApiKey : apiKey);
         setActive(true);
+        setGlobalPropertiesEvaluator(new GlobalPropertiesEvaluator() {
+            @Override
+            public Map<String, Object> getGlobalProperties(String s) {
+                Map<String, Object> properties = new HashMap<String, Object>(1);
+                properties.put("#UUID", UUID.randomUUID().toString());
+                return properties;
+            }
+        });
     }
 
     static void setDefaultApiKey(String defaultApiKey) {
