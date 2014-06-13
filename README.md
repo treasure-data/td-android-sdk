@@ -1,10 +1,7 @@
-# td-android-sdk
+TreasureData Android SDK
+===============
 
-td-android-sdk is a library to send any data to Treasure Data storage directly from Android applications without td-agent(fluentd). td-android-sdk is so small that it's easy to use for Android application development.
-
-## Requirement
-
-Android OS >= 2.2
+Android SDK for [TreasureData](http://www.treasuredata.com/). With this SDK, you can import the events on your applications into TreasureData easily.
 
 ## Installation
 
@@ -12,88 +9,118 @@ You can install td-android-sdk into your Android project in the following ways.
 
 ### Maven
 
-If you're using maven, add the following directives to your pom.xml
+If you use maven, add the following directives to your pom.xml
 
-    <repositories>
-      <repository>
-        <id>treasure-data.com</id>
-        <name>Treasure Data's Maven Repository</name>
-        <url>http://maven.treasure-data.com/</url>
-      </repository>
-    </repositories>
+```
+  <dependency>
+    <groupId>com.treasuredata</groupId>
+    <artifactId>td-android-sdk</artifactId>
+    <version>0.1.0</version>
+  </dependency>
+```
 
-    <dependencies>
-      <dependency>
-        <groupId>com.treasure_data</groupId>
-        <artifactId>td-android-sdk</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
-      </dependency>
-    </dependencies>
+This SDK has an example Android application project(td-android-sdk-demo). The pom.xml would be a good reference.
 
 ### Jar file
 
 Or put td-android-sdk.jar into (YOUR_ANDROID_PROJECT)/libs.
 
-## Settings
-
-### AndroidManifest.xml
-
-Ensure that your app requests INTERNET permission by adding this line to your AndroidManifest.xml.
-
-    <uses-permission android:name="android.permission.INTERNET" />
-
-In addition to it, add the following lines to allow to run TdLoggerService
-
-    <application>
-        <service android:name="com.treasure_data.androidsdk.logger.TdLoggerService"></service>
-    </application>
-
-#### res/values/td.xml
-
-Write your API key in res/values/td.xml.
-
-    <resources>
-        <string name="td_apikey">1Qaz2WSx3eDc4RfvBGt56yHnMjU78ik</string>
-    </resources>
-
 ## Usage
 
-### Instantiate TdLogger
+### Instantiate TreasureData object with your API key
 
-Usually, DefaultTdLogger is best because it's non-blocking and robust.
+```
+public class ExampleActivity extends Activity {
+    private TreasureData td;
 
-    TdLogger logger = new DefaultTdLogger();
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+          :
+        td = new TreasureData(this, "your_api_key");
+          :
+```
 
-### Increment counter
+or
 
-If you want to only increment some counters, you might as well use TdLogger.increment() APIs. They aggregate the values and use less memory and network.
+```
+        TreasureData.initializeDefaultApiKey("your_default_api_key");
+        TreasureData td = new TreasureData(this);
 
-    viewNaviSignUp.setOnClickListener(new OnClickListener() {
+```
+
+To create a new write-only user for the application and use the API key of the user here is recommended. With multi-user feature of TreasureData, you can add a new user easily.
+
+### Add Events
+
+```
+    View v = findViewById(R.id.button);
+    v.setOnClickListener(new OnClickListener() {
         @Override
         public void onClick(View v) {
-            logger.increment("foo_db", "bar_tbl", "navi_signup");
-                :
+            final Map event = new HashMap<String, Object>();
+            event.put("id", v.getId());
+            event.put("left", v.getLeft());
+            event.put("right", v.getRight());
+            event.put("top", v.getTop());
+            event.put("bottom", v.getBottom());
 
-### Send record
+            td.addEvent("testdb", "testtbl", event);
+        }
+    });
+```
 
-Of course, you can send various information other than counter.
+or
 
-    viewLargeImage.setOnTouchListener(new OnTouchListener() {
+
+```
+    View v = findViewById(R.id.image);
+    v.setOnTouchListener(new OnTouchListener() {
         @Override
         public boolean onTouch(View v, MotionEvent ev) {
-            logger.write("foo_db", "bar_tbl", "large_image_touch", ev.toString());
-                :
+            td.addEvent("testdb", "testtbl", "event", ev.getAction());
+            return false;
+        }
+    });
+```
 
-### Flushing buffered data
+Specify the database and table to which you want to import the events.
 
-TdLogger.write() and increment() only buffer the data without sending it to Treasure Data storage. The data will be sent automatically at regular intervals.
+### Upload Events to TreasureData
 
-### Cleaning up
 
-When you finish using TdLogger, you need to call TdLogger.close() in order to release its resources.
+```
+    findViewById(R.id.upload).setOnTouchListener(new OnTouchListener() {
+        @Override
+        public boolean onTouch(View view, MotionEvent motionEvent) {
+            td.uploadEvents();
+            return false;
+        }
+    });
+```
 
-    logger.close()
+The sent events is going to be buffered for a few minutes before they get imported into TreasureData storage.
 
-## Example
 
-This project includes an Android example project. Let's run example/td-android-sdk-demo as Android project.
+### Get success/error callback
+
+You can know the result of addEvent() and uploadEvents() with TDCallback.
+
+
+```
+    td.setUploadEventsCallBack(new TDCallback() {
+        @Override
+        public void onSuccess() {
+            Log.i("Example", "success!");
+        }
+
+        @Override
+        public void onError(Exception e) {
+            Log.w("Example", "error: " + e.toString());
+        }
+    });
+
+```
+
+
