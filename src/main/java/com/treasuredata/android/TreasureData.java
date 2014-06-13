@@ -7,11 +7,14 @@ import org.komamitsu.android.util.Log;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 public class TreasureData {
     private static final String TAG = TreasureData.class.getSimpleName();
     private static final String LABEL_ADD_EVENT = "addEvent";
     private static final String LABEL_UPLOAD_EVENTS = "uploadEvents";
+    private static final Pattern DATABASE_NAME_PATTERN = Pattern.compile("^[0-9a-z_]{3,255}$");
+    private static final Pattern TABLE_NAME_PATTERN = Pattern.compile("^[0-9a-z_]{3,255}$");
     private TDClient client;
     private volatile TDCallback addEventCallBack;
     private volatile TDCallback uploadEventsCallBack;
@@ -78,6 +81,12 @@ public class TreasureData {
     }
 
     public void addEvent(String database, String table, Map<String, Object> record) {
+        if (!(DATABASE_NAME_PATTERN.matcher(database).find() && TABLE_NAME_PATTERN.matcher(table).find())) {
+            String errmsg = String.format("database and table need to be consist of lower letters, numbers or '_': database=%s, table=%s", database, table);
+            Log.e(TAG, errmsg);
+            addEventCallBack.onError(new IllegalArgumentException(errmsg));
+            return;
+        }
         StringBuilder sb = new StringBuilder();
         sb.append(database).append(".").append(table);
         client.queueEvent(null, sb.toString(), record, null, this.addEventKeenCallBack);
