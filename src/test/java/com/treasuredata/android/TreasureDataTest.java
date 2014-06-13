@@ -96,11 +96,11 @@ public class TreasureDataTest extends TestCase {
     public void testApiKey() throws IOException, NoSuchAlgorithmException {
         String apikey1 = DUMMY_API_KEY + "1";
         MockTDClient client1 = new MockTDClient(apikey1);
-        System.out.println("client1.getDefaultProject().getProjectId()=" + client1.getDefaultProject().getProjectId());
+        // System.out.println("client1.getDefaultProject().getProjectId()=" + client1.getDefaultProject().getProjectId());
 
         String apikey2 = DUMMY_API_KEY + "2";
         MockTDClient client2 = new MockTDClient(apikey2);
-        System.out.println("client2.getDefaultProject().getProjectId()=" + client2.getDefaultProject().getProjectId());
+        // System.out.println("client2.getDefaultProject().getProjectId()=" + client2.getDefaultProject().getProjectId());
 
         assertNotSame(client1.getDefaultProject().getProjectId(), client2.getDefaultProject().getProjectId());
     }

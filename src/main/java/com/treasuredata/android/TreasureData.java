@@ -88,7 +88,8 @@ public class TreasureData {
     public void addEvent(String database, String table, Map<String, Object> record) {
         if (!(DATABASE_NAME_PATTERN.matcher(database).find() && TABLE_NAME_PATTERN.matcher(table).find())) {
             String errmsg = String.format("database and table need to be consist of lower letters, numbers or '_': database=%s, table=%s", database, table);
-            Log.e(TAG, errmsg);
+            if (TDLogging.isEnabled())
+                Log.e(TAG, errmsg);
             addEventCallBack.onError(new IllegalArgumentException(errmsg));
             return;
         }
