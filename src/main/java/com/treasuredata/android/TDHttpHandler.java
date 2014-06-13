@@ -25,7 +25,7 @@ class TDHttpHandler extends UrlConnectionHttpHandler {
     private static final int DEFAULT_CONNECT_TIMEOUT = 30000;
     private static final int DEFAULT_READ_TIMEOUT = 30000;
     private static final String TAG = TDHttpHandler.class.getSimpleName();
-    private static final String DEFAULT_API_ENDPOINT = "https://in.treasuredata.com/android/v3/event";
+    private static final String DEFAULT_API_ENDPOINT = "https://in.treasuredata.com/android/v3";
     private static volatile boolean isEventCompression = true;
 
     private final SSLContext sslContext;
@@ -69,7 +69,7 @@ class TDHttpHandler extends UrlConnectionHttpHandler {
     }
 
     protected HttpURLConnection openConnection(Request request) throws IOException {
-        URL url = new URL(this.apiEndpoint);
+        URL url = new URL(String.format("%s/event", this.apiEndpoint));
         HttpURLConnection result = (HttpURLConnection) url.openConnection();
         if (url.getProtocol().equals("https")) {
             HttpsURLConnection httpsURLConnection = (HttpsURLConnection) result;
