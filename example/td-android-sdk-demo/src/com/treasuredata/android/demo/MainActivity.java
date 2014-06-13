@@ -59,7 +59,7 @@ public class MainActivity extends Activity {
             v.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    final Map event = new HashMap<String, Object>(1);
+                    final Map event = new HashMap<String, Object>();
                     event.put("label", label);
                     event.put("id", v.getId());
                     event.put("left", v.getLeft());
