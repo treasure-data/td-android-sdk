@@ -1,5 +1,6 @@
 package com.treasuredata.android;
 
+import android.os.Build;
 import io.keen.client.java.http.Request;
 import io.keen.client.java.http.Response;
 import io.keen.client.java.http.UrlConnectionHttpHandler;
@@ -20,6 +21,7 @@ import java.security.cert.CertificateFactory;
 import java.util.zip.DeflaterInputStream;
 
 class TDHttpHandler extends UrlConnectionHttpHandler {
+    static volatile String VERSION = "0.0.0";
     private static final int DEFAULT_CONNECT_TIMEOUT = 30000;
     private static final int DEFAULT_READ_TIMEOUT = 30000;
     private static final String TAG = TDHttpHandler.class.getSimpleName();
@@ -83,6 +85,7 @@ class TDHttpHandler extends UrlConnectionHttpHandler {
         connection.setRequestProperty("Content-Type", "application/json");
         connection.setRequestProperty("X-TD-Data-Type", "k");
         connection.setRequestProperty("X-TD-Write-Key", apiKey);
+        connection.setRequestProperty("User-Agent", String.format("TD-Android-SDK/%s (%s %s)", VERSION, Build.MODEL, Build.VERSION.RELEASE));
         connection.setDoOutput(true);
 
         try {
