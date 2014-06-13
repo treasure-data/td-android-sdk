@@ -28,7 +28,7 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // TreasureData.initializeApiEndpoint("https://anotherapi.treasuredata.com/android/v3/event");
+        // TreasureData.initializeApiEndpoint("https://anotherapi.treasuredata.com/android/v3");
         TreasureData.initializeDefaultApiKey("your_default_api_key");
         // TreasureData.enableLogging();
         // TreasureData.disableEventCompression();
