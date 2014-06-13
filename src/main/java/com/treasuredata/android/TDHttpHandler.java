@@ -8,8 +8,7 @@ import org.komamitsu.android.util.Log;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.KeyManagementException;
@@ -18,16 +17,26 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
+import java.util.zip.DeflaterInputStream;
 
 class TDHttpHandler extends UrlConnectionHttpHandler {
     private static final int DEFAULT_CONNECT_TIMEOUT = 30000;
     private static final int DEFAULT_READ_TIMEOUT = 30000;
     private static final String TAG = TDHttpHandler.class.getSimpleName();
     private static final String DEFAULT_API_ENDPOINT = "https://in.treasuredata.com/android/v3/event";
+    private static volatile boolean isEventCompression = true;
 
     private final SSLContext sslContext;
     private final String apiKey;
     private final String apiEndpoint;
+
+    public static void disableEventCompression() {
+        isEventCompression = false;
+    }
+
+    public static void enableEventCompression() {
+        isEventCompression = true;
+    }
 
     public TDHttpHandler(String apiKey, String apiEndpoint) {
         if (apiKey == null) {
@@ -74,22 +83,29 @@ class TDHttpHandler extends UrlConnectionHttpHandler {
         connection.setRequestProperty("Content-Type", "application/json");
         connection.setRequestProperty("X-TD-Data-Type", "k");
         connection.setRequestProperty("X-TD-Write-Key", apiKey);
-        /*
-        for (Map.Entry<String, List<String>> header : connection.getHeaderFields().entrySet()) {
-            boolean needDelimiter = false;
-            StringBuilder buf = new StringBuilder();
-            for (String v : header.getValue()) {
-                if (needDelimiter) {
-                    buf.append(", ");
-                }
-                needDelimiter = true;
-                buf.append(v);
-            }
-            Log.d(TAG, "sendRequest(header): k=[" + header.getKey() + "], v=[" + buf.toString() + "]");
-        }
-        */
         connection.setDoOutput(true);
-        request.body.writeTo(connection.getOutputStream());
+
+        try {
+            if (isEventCompression) {
+                connection.setRequestProperty("Content-Encoding", "deflate");
+                ByteArrayOutputStream srcOutputStream = new ByteArrayOutputStream();
+                request.body.writeTo(srcOutputStream);
+                byte[] srcBytes = srcOutputStream.toByteArray();
+
+                BufferedInputStream compressedInputStream = new BufferedInputStream(new DeflaterInputStream(new ByteArrayInputStream(srcBytes)));
+                byte[] buf = new byte[256];
+                while (compressedInputStream.available() > 0) {
+                    int readLen = compressedInputStream.read(buf);
+                    connection.getOutputStream().write(buf, 0, readLen);
+                }
+            }
+            else {
+                request.body.writeTo(connection.getOutputStream());
+            }
+        }
+        finally {
+            connection.getOutputStream().close();
+        }
     }
 
     @Override

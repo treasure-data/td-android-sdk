@@ -45,6 +45,14 @@ public class TreasureData {
         TDClient.setDefaultApiKey(defaultApiKey);
     }
 
+    public static void enableEventCompression() {
+        TDHttpHandler.enableEventCompression();
+    }
+
+    public static void disableEventCompression() {
+        TDHttpHandler.disableEventCompression();
+    }
+
     public synchronized void setAddEventCallBack(TDCallback callBack) {
         this.addEventCallBack = callBack;
         this.addEventKeenCallBack = createKeenCallback(LABEL_ADD_EVENT, callBack);
@@ -99,6 +107,10 @@ public class TreasureData {
             }
         };
         return keenCallback;
+    }
+
+    public void setDebugMode(boolean debug) {
+        client.setDebugMode(debug);
     }
 
     // Only for testing

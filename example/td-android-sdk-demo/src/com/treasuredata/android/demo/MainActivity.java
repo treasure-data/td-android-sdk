@@ -28,20 +28,23 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // TreasureData.initializeApiEndpoint("https://anotherapi.treasuredata.com/android/v3/event");
+        TreasureData.initializeDefaultApiKey("your_default_api_key");
+        // TreasureData.enableLogging();
+        // TreasureData.disableEventCompression();
+
         try {
-            // TreasureData.initializeApiEndpoint("https://anotherapi.treasuredata.com/android/v3/event");
-            TreasureData.initializeDefaultApiKey("your_default_api_key");
             td = new TreasureData(this);
             // td = new TreasureData(this, "your_api_key");
-
-            // For callback, optional.
-            td.setAddEventCallBack(addEventCallback);
-            td.setUploadEventsCallBack(uploadEventsCallback);
+            // td.setDebugMode(true);
         } catch (IOException e) {
             e.printStackTrace();
             return;
         }
-        TreasureData.enableLogging();
+
+        // For callback, optional.
+        td.setAddEventCallBack(addEventCallback);
+        td.setUploadEventsCallBack(uploadEventsCallback);
 
         List<Pair<Integer, String>> targets = Arrays.asList(
                 new Pair<Integer, String>(R.id.navi_help, "navi_help"),
