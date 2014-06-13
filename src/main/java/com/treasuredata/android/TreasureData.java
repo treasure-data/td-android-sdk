@@ -79,7 +79,7 @@ public class TreasureData {
         return this.uploadEventsCallBack;
     }
 
-    public void addEvent(String database, String table, String key, String value) {
+    public void addEvent(String database, String table, String key, Object value) {
         HashMap<String, Object> record = new HashMap<String, Object>(1);
         record.put(key, value);
         addEvent(database, table, record);
