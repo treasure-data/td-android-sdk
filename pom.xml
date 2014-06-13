@@ -43,6 +43,7 @@
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.1</version>
         <configuration>
           <source>1.6</source>
           <target>1.6</target>
@@ -51,14 +52,17 @@
 
       <plugin>
         <artifactId>maven-eclipse-plugin</artifactId>
+        <version>2.9</version>
       </plugin>
 
       <plugin>
         <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.9.1</version>
       </plugin>
 
       <plugin>
         <artifactId>maven-source-plugin</artifactId>
+        <version>2.2.1</version>
         <executions>
           <execution>
             <id>attach-sources</id>
