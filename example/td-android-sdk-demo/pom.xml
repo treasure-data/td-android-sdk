@@ -15,9 +15,9 @@
         </dependency>
 
         <dependency>
-        	<groupId>com.treasuredata</groupId>
-        	<artifactId>td-android-sdk</artifactId>
-        	<version>0.1.0-SNAPSHOT</version>
+            <groupId>com.treasuredata</groupId>
+            <artifactId>td-android-sdk</artifactId>
+            <version>0.1.0</version>
         </dependency>
     </dependencies>
 
