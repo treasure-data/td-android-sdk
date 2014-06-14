@@ -19,11 +19,11 @@ If you use maven, add the following directives to your pom.xml
   </dependency>
 ```
 
-This SDK has an example Android application project(td-android-sdk-demo). The pom.xml would be a good reference.
+This SDK has [an example Android application project](https://github.com/treasure-data/td-android-sdk/tree/master/example/td-android-sdk-demo). The pom.xml would be a good reference.
 
 ### Jar file
 
-Or put td-android-sdk.jar into (YOUR_ANDROID_PROJECT)/libs.
+Or put [td-android-sdk-x.x.x.jar](http://search.maven.org/remotecontent?filepath=com/treasuredata/td-android-sdk/0.1.0/td-android-sdk-0.1.0.jar) into (YOUR_ANDROID_PROJECT)/libs.
 
 ## Usage
 
