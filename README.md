@@ -23,7 +23,7 @@ This SDK has [an example Android application project](https://github.com/treasur
 
 ### Jar file
 
-Or put [td-android-sdk-x.x.x.jar](http://search.maven.org/remotecontent?filepath=com/treasuredata/td-android-sdk/0.1.0/td-android-sdk-0.1.0.jar) into (YOUR_ANDROID_PROJECT)/libs.
+Or put td-android-sdk-x.x.x-shaded.jar (get the latest [here](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.treasuredata%22%20AND%20a%3A%22td-android-sdk%22)) into (YOUR_ANDROID_PROJECT)/libs.
 
 ## Usage
 
