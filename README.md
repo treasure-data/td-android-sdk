@@ -50,7 +50,13 @@ or
 
 ```
 
-To create a new write-only user for the application and use the API key of the user here is recommended. With multi-user feature of TreasureData, you can add a new user easily.
+We recommend to use a write-only API key for the SDK. To obtain one, please:
+
+1. Login into the Treasure Data Console at http://console.treasuredata.com;
+2. Visit your Profile page at http://console.treasuredata.com/users/current;
+3. Insert your password under the 'API Keys' panel;
+4. In the bottom part of the panel, under 'Write-Only API keys', either copy the API key or click on 'Generate New' and copy the new API key.
+
 
 ### Add Events
 
@@ -121,6 +127,25 @@ You can know the result of addEvent() and uploadEvents() with TDCallback.
         }
     });
 
+```
+
+## Additioanl Configuration
+
+### Endpoint
+
+The API endpoint (default: https://in.treasuredata.com/android/v3) can be modified using the `initializeApiEndpoint` API after the TreasureData client constructor has been called and the underlying client initialized. For example:
+
+```
+        td = new TreasureData(this, "your_api_key");
+        td.initializeApiEndpoint("https://in.treasuredata.com/android/v3");
+```
+
+or
+
+```
+        TreasureData.initializeDefaultApiKey("your_default_api_key");
+        TreasureData td = new TreasureData(this);
+        td.initializeApiEndpoint("https://in.treasuredata.com/android/v3");
 ```
 
 
