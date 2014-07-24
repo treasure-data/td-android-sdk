@@ -24,7 +24,7 @@ public class TreasureData {
     private volatile TDCallback addEventCallBack;
     private volatile TDCallback uploadEventsCallBack;
     private volatile KeenCallback addEventKeenCallBack = createKeenCallback(LABEL_ADD_EVENT, null);
-    private volatile KeenCallback uploadEventsKeenCallBack = createKeenCallback(LABEL_UPLOAD_EVENTS, null);;
+    private volatile KeenCallback uploadEventsKeenCallBack = createKeenCallback(LABEL_UPLOAD_EVENTS, null);
 
     public TreasureData(Context context, String apiKey) throws IOException {
         if (apiKey == null && TDClient.getDefaultApiKey() == null) {
@@ -51,6 +51,10 @@ public class TreasureData {
 
     public static void initializeDefaultApiKey(String defaultApiKey) {
         TDClient.setDefaultApiKey(defaultApiKey);
+    }
+
+    public static void initializeEncryptionKey(String encryptionKey) {
+        TDClient.setEncryptionKey(encryptionKey);
     }
 
     public static void enableEventCompression() {

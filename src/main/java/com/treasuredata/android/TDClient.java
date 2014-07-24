@@ -18,13 +18,14 @@ class TDClient extends KeenClient {
     private static final String TAG = TDClient.class.getSimpleName();
     private static String defaultApiKey;
     private static String apiEndpoint;
+    private static String encryptionKey;
 
     TDClient(Context context, String apiKey) throws IOException {
         super(
                 new TDClientBuilder()
                         .withHttpHandler(new TDHttpHandler((apiKey == null ? TDClient.defaultApiKey : apiKey), apiEndpoint))
                         .withEventStore(new TDEventStore(context.getCacheDir()))
-                        .withJsonHandler(new TDJsonHandler())
+                        .withJsonHandler(new TDJsonHandler(encryptionKey))
                         .withPublishExecutor(Executors.newSingleThreadExecutor())
         );
         // setDebugMode(true);
@@ -50,6 +51,10 @@ class TDClient extends KeenClient {
 
     static void setApiEndpoint(String apiEndpoint) {
         TDClient.apiEndpoint = apiEndpoint;
+    }
+
+    public static void setEncryptionKey(String encryptionKey) {
+        TDClient.encryptionKey = encryptionKey;
     }
 
     // Only for test

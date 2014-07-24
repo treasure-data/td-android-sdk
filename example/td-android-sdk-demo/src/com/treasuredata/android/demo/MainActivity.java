@@ -30,7 +30,8 @@ public class MainActivity extends Activity {
 
         // TreasureData.initializeApiEndpoint("https://anotherapi.treasuredata.com");
         TreasureData.initializeDefaultApiKey("your_default_api_key");
-        // TreasureData.enableLogging();
+        TreasureData.enableLogging();
+        TreasureData.initializeEncryptionKey("hello world");
         // TreasureData.disableEventCompression();
 
         try {

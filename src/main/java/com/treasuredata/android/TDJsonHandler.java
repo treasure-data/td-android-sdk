@@ -1,32 +1,72 @@
 package com.treasuredata.android;
 
+import android.util.Base64;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.MapType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import io.keen.client.java.KeenJsonHandler;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.spec.SecretKeySpec;
+import java.io.*;
+import java.security.InvalidKeyException;
+import java.security.MessageDigest;
 import java.text.SimpleDateFormat;
 import java.util.Map;
 import java.util.TimeZone;
 
-/**
- * Implementation of the Keen JSON handler interface using the Jackson JSON library.
- *
- * @author Kevin Litwack (kevin@kevinlitwack.com)
- * @since 2.0.0
- */
+class EncryptionIOException extends IOException {
+    EncryptionIOException(Throwable cause) {
+        super(cause);
+    }
+}
+
+class DecryptionIOException extends IOException {
+    DecryptionIOException(Throwable cause) {
+        super(cause);
+    }
+}
+
 class TDJsonHandler implements KeenJsonHandler {
     private static final String TAG = TDJsonHandler.class.getSimpleName();
+    private final SecretKeySpec secretKeySpec;
+    private final Cipher cipher;
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public Map<String, Object> readJson(Reader reader) throws IOException {
-        return mapper.readValue(reader, MAP_TYPE);
+        return readJson(reader, false);
+    }
+
+    @Override
+    public Map<String, Object> readJsonWithoutDecryption(Reader reader) throws IOException {
+        return readJson(reader, true);
+    }
+
+    private Map<String, Object> readJson(Reader reader, boolean withoutDecryption) throws IOException {
+        if (withoutDecryption || secretKeySpec == null) {
+            return mapper.readValue(reader, MAP_TYPE);
+        }
+        else {
+            BufferedReader bufferedReader = new BufferedReader(reader);
+            StringBuilder buf = new StringBuilder();
+            while (true) {
+                String line = bufferedReader.readLine();
+                if (line == null)
+                    break;
+
+                buf.append(line).append("\n");
+            }
+
+            try {
+                byte[] decryptedBytes = decrypt(Base64.decode(buf.toString(), Base64.DEFAULT));
+                return mapper.readValue(decryptedBytes, MAP_TYPE);
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new DecryptionIOException(e);
+            }
+        }
     }
 
     /**
@@ -34,7 +74,40 @@ class TDJsonHandler implements KeenJsonHandler {
      */
     @Override
     public void writeJson(Writer writer, Map<String, ?> value) throws IOException {
-        mapper.writeValue(writer, value);
+        writeJson(writer, value, false);
+    }
+
+    @Override
+    public void writeJsonWithoutEncryption(Writer writer, Map<String, ?> value) throws IOException {
+        writeJson(writer, value, true);
+    }
+
+    private void writeJson(Writer writer, Map<String, ?> value, boolean withoutEncryption) throws IOException {
+        if (withoutEncryption || secretKeySpec == null) {
+            mapper.writeValue(writer, value);
+        }
+        else {
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(byteArrayOutputStream));
+            mapper.writeValue(bufferedWriter, value);
+            try {
+                byte[] encryptedBytes = encrypt(byteArrayOutputStream.toByteArray());
+                writer.write(Base64.encodeToString(encryptedBytes, Base64.DEFAULT));
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new EncryptionIOException(e);
+            }
+        }
+    }
+
+    private byte[] encrypt(byte[] data) throws InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
+        cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec);
+        return cipher.doFinal(data);
+    }
+
+    private byte[] decrypt(byte[] encData) throws InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
+        cipher.init(Cipher.DECRYPT_MODE, secretKeySpec);
+        return cipher.doFinal(encData);
     }
 
     ///// DEFAULT ACCESS CONSTRUCTORS /////
@@ -43,6 +116,25 @@ class TDJsonHandler implements KeenJsonHandler {
      * Constructs a new Jackson JSON handler.
      */
     TDJsonHandler() {
+        this(null);
+    }
+
+    TDJsonHandler(String encryptionKeyword) {
+        SecretKeySpec secretKeySpec = null;
+        Cipher cipher = null;
+        if (encryptionKeyword != null) {
+            try {
+                MessageDigest digester = MessageDigest.getInstance("MD5");
+                digester.update(encryptionKeyword.getBytes(), 0, encryptionKeyword.getBytes().length);
+                secretKeySpec = new SecretKeySpec(digester.digest(), "AES");
+                cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        this.secretKeySpec = secretKeySpec;
+        this.cipher = cipher;
+
         mapper = new ObjectMapper();
         mapper.setDateFormat(SRC_DATA_FORMAT);
     }
