@@ -85,26 +85,45 @@ public class TreasureData {
     }
 
     public void addEvent(String database, String table, String key, Object value) {
-        HashMap<String, Object> record = new HashMap<String, Object>(1);
-        record.put(key, value);
-        addEvent(database, table, record);
+        addEventWithCallback(database, table, key, value, null);
     }
 
     public void addEvent(String database, String table, Map<String, Object> record) {
+        addEventWithCallback(database, table, record, null);
+    }
+
+    public void addEventWithCallback(String database, String table, String key, Object value, TDCallback callback) {
+        HashMap<String, Object> record = new HashMap<String, Object>(1);
+        record.put(key, value);
+        addEventWithCallback(database, table, record, callback);
+    }
+
+    public void addEventWithCallback(String database, String table, Map<String, Object> record, TDCallback callback) {
+        if (callback == null) {
+            callback = addEventCallBack;
+        }
+
         if (!(DATABASE_NAME_PATTERN.matcher(database).find() && TABLE_NAME_PATTERN.matcher(table).find())) {
-            String errmsg = String.format("database and table need to be consist of lower letters, numbers or '_': database=%s, table=%s", database, table);
+            String errMsg = String.format("database and table need to be consist of lower letters, numbers or '_': database=%s, table=%s", database, table);
             if (TDLogging.isEnabled())
-                Log.e(TAG, errmsg);
-            addEventCallBack.onError(KeenClient.ERROR_CODE_INVALID_PARAM, new IllegalArgumentException(errmsg));
+                Log.e(TAG, errMsg);
+            callback.onError(KeenClient.ERROR_CODE_INVALID_PARAM, new IllegalArgumentException(errMsg));
             return;
         }
         StringBuilder sb = new StringBuilder();
         sb.append(database).append(".").append(table);
-        client.queueEvent(null, sb.toString(), record, null, this.addEventKeenCallBack);
+        client.queueEvent(null, sb.toString(), record, null, createKeenCallback(LABEL_ADD_EVENT, callback));
     }
 
     public void uploadEvents() {
-        client.sendQueuedEventsAsync(null, uploadEventsKeenCallBack);
+        uploadEventsWithCallback(null);
+    }
+
+    public void uploadEventsWithCallback(TDCallback callback) {
+        if (callback == null) {
+            callback = uploadEventsCallBack;
+        }
+        client.sendQueuedEventsAsync(null, createKeenCallback(LABEL_UPLOAD_EVENTS, callback));
     }
 
     private static KeenClient.KeenCallbackWithErrorCode createKeenCallback(final String methodName, final TDCallback callback) {

@@ -43,9 +43,9 @@ public class MainActivity extends Activity {
             return;
         }
 
-        // For callback, optional.
+        // For default callback, optional.
         td.setAddEventCallBack(addEventCallback);
-        td.setUploadEventsCallBack(uploadEventsCallback);
+        // td.setUploadEventsCallBack(uploadEventsCallback);
 
         List<Pair<Integer, String>> targets = Arrays.asList(
                 new Pair<Integer, String>(R.id.navi_help, "navi_help"),
@@ -69,7 +69,7 @@ public class MainActivity extends Activity {
                     event.put("bottom", v.getBottom());
 
                     addEventCallback.eventName = label;
-                    td.addEvent("testdb", "demotbl", event);
+                    td.addEventWithCallback("testdb", "demotbl", event, addEventCallback);
                 }
             });
         }
@@ -78,6 +78,7 @@ public class MainActivity extends Activity {
             @Override
             public boolean onTouch(View v, MotionEvent ev) {
                 addEventCallback.eventName = "image";
+                // Use default callback
                 td.addEvent("testdb", "demotbl", "image", ev.toString());
                 return false;
             }
@@ -86,7 +87,7 @@ public class MainActivity extends Activity {
         findViewById(R.id.upload).setOnTouchListener(new OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
-                td.uploadEvents();
+                td.uploadEventsWithCallback(uploadEventsCallback);
                 return false;
             }
         });
