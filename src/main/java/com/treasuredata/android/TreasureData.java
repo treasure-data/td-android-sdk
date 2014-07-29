@@ -2,6 +2,7 @@ package com.treasuredata.android;
 
 import android.content.Context;
 import io.keen.client.java.KeenCallback;
+import io.keen.client.java.KeenClient;
 import org.komamitsu.android.util.Log;
 
 import java.io.IOException;
@@ -94,7 +95,7 @@ public class TreasureData {
             String errmsg = String.format("database and table need to be consist of lower letters, numbers or '_': database=%s, table=%s", database, table);
             if (TDLogging.isEnabled())
                 Log.e(TAG, errmsg);
-            addEventCallBack.onError(new IllegalArgumentException(errmsg));
+            addEventCallBack.onError(KeenClient.ERROR_CODE_INVALID_PARAM, new IllegalArgumentException(errmsg));
             return;
         }
         StringBuilder sb = new StringBuilder();
@@ -106,8 +107,10 @@ public class TreasureData {
         client.sendQueuedEventsAsync(null, uploadEventsKeenCallBack);
     }
 
-    private static KeenCallback createKeenCallback(final String methodName, final TDCallback callback) {
-       KeenCallback keenCallback = new KeenCallback() {
+    private static KeenClient.KeenCallbackWithErrorCode createKeenCallback(final String methodName, final TDCallback callback) {
+        KeenClient.KeenCallbackWithErrorCode keenCallback = new KeenClient.KeenCallbackWithErrorCode() {
+            private String currentErrorCode;
+
             @Override
             public void onSuccess() {
                 if (callback != null) {
@@ -121,9 +124,19 @@ public class TreasureData {
                     Log.e(TAG, methodName + " failed: " + e.getMessage());
 
                 if (callback != null) {
-                    callback.onError(e);
+                    callback.onError(getErrorCode(), e);
                 }
             }
+
+           @Override
+           public void setErrorCode(String errorCode) {
+               this.currentErrorCode = errorCode;
+           }
+
+           @Override
+           public String getErrorCode() {
+               return this.currentErrorCode;
+           }
         };
         return keenCallback;
     }

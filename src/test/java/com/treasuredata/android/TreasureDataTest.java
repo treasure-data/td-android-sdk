@@ -1,6 +1,7 @@
 package com.treasuredata.android;
 
 import io.keen.client.java.KeenCallback;
+import io.keen.client.java.KeenClient;
 import io.keen.client.java.KeenProject;
 import junit.framework.TestCase;
 
@@ -15,10 +16,14 @@ public class TreasureDataTest extends TestCase {
     boolean onSuccessCalledForUploadEvents;
     Exception exceptionOnFailedCalledForAddEvent;
     Exception exceptionOnFailedCalledForUploadEvents;
+    String errorCodeForAddEvent;
+    String errorCodeForUploadEvents;
 
     class MockTDClient extends TDClient {
         Exception exceptionOnQueueEventCalled;
         Exception exceptionOnSendQueuedEventsCalled;
+        String errorCodeOnQueueEventCalled;
+        String errorCodeOnSendQueuedEventsCalled;
 
         MockTDClient(String apiKey) throws IOException {
             super(apiKey);
@@ -30,7 +35,14 @@ public class TreasureDataTest extends TestCase {
                 callback.onSuccess();
             }
             else {
-                callback.onFailure(exceptionOnQueueEventCalled);
+                if (callback instanceof KeenCallbackWithErrorCode) {
+                    KeenCallbackWithErrorCode callbackWithErrorCode = (KeenCallbackWithErrorCode) callback;
+                    callbackWithErrorCode.setErrorCode(errorCodeOnQueueEventCalled);
+                    callbackWithErrorCode.onFailure(exceptionOnQueueEventCalled);
+                }
+                else {
+                    callback.onFailure(exceptionOnQueueEventCalled);
+                }
             }
         }
 
@@ -40,6 +52,9 @@ public class TreasureDataTest extends TestCase {
                 callback.onSuccess();
             }
             else {
+                if (callback instanceof KeenCallbackWithErrorCode) {
+                    ((KeenCallbackWithErrorCode) callback).setErrorCode(errorCodeOnSendQueuedEventsCalled);
+                }
                 callback.onFailure(exceptionOnSendQueuedEventsCalled);
             }
         }
@@ -57,6 +72,8 @@ public class TreasureDataTest extends TestCase {
         onSuccessCalledForUploadEvents = false;
         exceptionOnFailedCalledForAddEvent = null;
         exceptionOnFailedCalledForUploadEvents = null;
+        errorCodeForAddEvent = null;
+        errorCodeForUploadEvents = null;
     }
 
     private void enableCallbackForAddEvent() {
@@ -65,12 +82,14 @@ public class TreasureDataTest extends TestCase {
             public void onSuccess() {
                 onSuccessCalledForAddEvent = true;
                 exceptionOnFailedCalledForAddEvent = null;
+                errorCodeForAddEvent = null;
             }
 
             @Override
-            public void onError(Exception e) {
+            public void onError(String errorCode, Exception e) {
                 onSuccessCalledForAddEvent = false;
                 exceptionOnFailedCalledForAddEvent = e;
+                errorCodeForAddEvent = errorCode;
             }
         };
         td.setAddEventCallBack(callback);
@@ -82,12 +101,14 @@ public class TreasureDataTest extends TestCase {
             public void onSuccess() {
                 onSuccessCalledForUploadEvents = true;
                 exceptionOnFailedCalledForUploadEvents = null;
+                errorCodeForUploadEvents = null;
             }
 
             @Override
-            public void onError(Exception e) {
+            public void onError(String errorCode, Exception e) {
                 onSuccessCalledForUploadEvents = false;
                 exceptionOnFailedCalledForUploadEvents = e;
+                errorCodeForUploadEvents = errorCode;
             }
         };
         td.setUploadEventsCallBack(callback);
@@ -122,13 +143,16 @@ public class TreasureDataTest extends TestCase {
         td.addEvent("db_", "tbl", "key", "val");
         assertTrue(onSuccessCalledForAddEvent);
         assertNull(exceptionOnFailedCalledForAddEvent);
+        assertNull(errorCodeForAddEvent);
         assertFalse(onSuccessCalledForUploadEvents);
         assertNull(exceptionOnFailedCalledForUploadEvents);
+        assertNull(errorCodeForUploadEvents);
     }
 
     public void testAddEventWithError() throws IOException {
         MockTDClient client = new MockTDClient(DUMMY_API_KEY);
         client.exceptionOnQueueEventCalled = new IOException("hello world");
+        client.errorCodeOnQueueEventCalled = KeenClient.ERROR_CODE_STORAGE_ERROR;
         td.setClient(client);
 
         enableCallbackForAddEvent();
@@ -138,8 +162,10 @@ public class TreasureDataTest extends TestCase {
         assertFalse(onSuccessCalledForAddEvent);
         assertTrue(exceptionOnFailedCalledForAddEvent instanceof IOException);
         assertEquals("hello world", exceptionOnFailedCalledForAddEvent.getMessage());
+        assertEquals(KeenClient.ERROR_CODE_STORAGE_ERROR, errorCodeForAddEvent);
         assertFalse(onSuccessCalledForUploadEvents);
         assertNull(exceptionOnFailedCalledForUploadEvents);
+        assertNull(errorCodeForUploadEvents);
     }
 
     public void testAddEventWithDatabaseNameError() throws IOException {
@@ -153,8 +179,10 @@ public class TreasureDataTest extends TestCase {
             td.addEvent(db, "tbl", "key", "val");
             assertFalse(onSuccessCalledForAddEvent);
             assertTrue(exceptionOnFailedCalledForAddEvent instanceof IllegalArgumentException);
+            assertEquals(KeenClient.ERROR_CODE_INVALID_PARAM, errorCodeForAddEvent);
             assertFalse(onSuccessCalledForUploadEvents);
             assertNull(exceptionOnFailedCalledForUploadEvents);
+            assertNull(errorCodeForUploadEvents);
         }
     }
 
@@ -169,8 +197,10 @@ public class TreasureDataTest extends TestCase {
             td.addEvent(tbl, "tbl", "key", "val");
             assertFalse(onSuccessCalledForAddEvent);
             assertTrue(exceptionOnFailedCalledForAddEvent instanceof IllegalArgumentException);
+            assertEquals(KeenClient.ERROR_CODE_INVALID_PARAM, errorCodeForAddEvent);
             assertFalse(onSuccessCalledForUploadEvents);
             assertNull(exceptionOnFailedCalledForUploadEvents);
+            assertNull(errorCodeForUploadEvents);
         }
     }
 
@@ -184,13 +214,16 @@ public class TreasureDataTest extends TestCase {
         td.uploadEvents();
         assertFalse(onSuccessCalledForAddEvent);
         assertNull(exceptionOnFailedCalledForAddEvent);
+        assertNull(errorCodeForAddEvent);
         assertTrue(onSuccessCalledForUploadEvents);
         assertNull(exceptionOnFailedCalledForUploadEvents);
+        assertNull(errorCodeForUploadEvents);
     }
 
     public void testUploadEventsWithError() throws IOException {
         MockTDClient client = new MockTDClient(DUMMY_API_KEY);
         client.exceptionOnSendQueuedEventsCalled = new IllegalArgumentException("foo bar");
+        client.errorCodeOnSendQueuedEventsCalled = KeenClient.ERROR_CODE_NETWORK_ERROR;
         td.setClient(client);
 
         enableCallbackForAddEvent();
@@ -200,7 +233,9 @@ public class TreasureDataTest extends TestCase {
         assertFalse(onSuccessCalledForAddEvent);
         assertNull(exceptionOnFailedCalledForAddEvent);
         assertFalse(onSuccessCalledForUploadEvents);
+        assertNull(errorCodeForAddEvent);
         assertTrue(exceptionOnFailedCalledForUploadEvents instanceof IllegalArgumentException);
         assertEquals("foo bar", exceptionOnFailedCalledForUploadEvents.getMessage());
+        assertEquals(KeenClient.ERROR_CODE_NETWORK_ERROR, errorCodeForUploadEvents);
     }
 }

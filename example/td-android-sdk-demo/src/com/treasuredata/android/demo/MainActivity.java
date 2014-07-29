@@ -106,8 +106,8 @@ public class MainActivity extends Activity {
         }
 
         @Override
-        public void onError(Exception e) {
-            String message = "TreasureData.addEvent:onError[" + eventName + ": " + e + "]";
+        public void onError(String errorCode, Exception e) {
+            String message = "TreasureData.addEvent:onError[" + eventName + ": errorCode=" + errorCode + ", ex=" + e + "]";
             Log.d(TAG, message);
             Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
         }
@@ -121,8 +121,8 @@ public class MainActivity extends Activity {
         }
 
         @Override
-        public void onError(Exception e) {
-            String message = "TreasureData.uploadEvents:onError[" + e + "]";
+        public void onError(String errorCode, Exception e) {
+            String message = "TreasureData.uploadEvents:onError[" + errorCode + ": errorCode=" + errorCode + ", ex=" + e + "]";
             Log.d(TAG, message);
         }
     }
