@@ -1,10 +1,12 @@
 package com.treasuredata.android;
 
 import android.util.Base64;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.MapType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import io.keen.client.java.KeenJsonHandler;
+import org.komamitsu.android.util.Log;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -17,21 +19,9 @@ import java.text.SimpleDateFormat;
 import java.util.Map;
 import java.util.TimeZone;
 
-class EncryptionIOException extends IOException {
-    EncryptionIOException(Throwable cause) {
-        super(cause);
-    }
-}
-
-class DecryptionIOException extends IOException {
-    DecryptionIOException(Throwable cause) {
-        super(cause);
-    }
-}
-
 class TDJsonHandler implements KeenJsonHandler {
     private static final String TAG = TDJsonHandler.class.getSimpleName();
-    private final SecretKeySpec secretKeySpec;
+    private SecretKeySpec secretKeySpec;
     private final Cipher cipher;
 
     @Override
@@ -59,12 +49,18 @@ class TDJsonHandler implements KeenJsonHandler {
                 buf.append(line).append("\n");
             }
 
+            String data = buf.toString();
             try {
-                byte[] decryptedBytes = decrypt(Base64.decode(buf.toString(), Base64.DEFAULT));
+                byte[] decryptedBytes = decrypt(Base64.decode(data, Base64.DEFAULT));
                 return mapper.readValue(decryptedBytes, MAP_TYPE);
             } catch (Exception e) {
-                e.printStackTrace();
-                throw new DecryptionIOException(e);
+                Log.w(TAG, "Decryption failed. Trying to handle this event as a plain", e);
+                try {
+                    return mapper.readValue(data, MAP_TYPE);
+                } catch (Exception ee) {
+                    Log.w(TAG, "This event can't be handled as a plain");
+                    return null;
+                }
             }
         }
     }
@@ -94,8 +90,8 @@ class TDJsonHandler implements KeenJsonHandler {
                 byte[] encryptedBytes = encrypt(byteArrayOutputStream.toByteArray());
                 writer.write(Base64.encodeToString(encryptedBytes, Base64.DEFAULT));
             } catch (Exception e) {
-                e.printStackTrace();
-                throw new EncryptionIOException(e);
+                Log.w(TAG, "Encryption failed. Storing this event as a plain", e);
+                secretKeySpec = null;
             }
         }
     }
