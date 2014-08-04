@@ -21,7 +21,7 @@ import java.security.cert.CertificateFactory;
 import java.util.zip.DeflaterInputStream;
 
 class TDHttpHandler extends UrlConnectionHttpHandler {
-    static volatile String VERSION = "0.0.0";
+    static volatile String VERSION = "0.1.3";
     private static final int DEFAULT_CONNECT_TIMEOUT = 30000;
     private static final int DEFAULT_READ_TIMEOUT = 30000;
     private static final String TAG = TDHttpHandler.class.getSimpleName();

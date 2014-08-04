@@ -15,7 +15,7 @@ If you use maven, add the following directives to your pom.xml
   <dependency>
     <groupId>com.treasuredata</groupId>
     <artifactId>td-android-sdk</artifactId>
-    <version>0.1.1</version>
+    <version>0.1.3</version>
   </dependency>
 ```
 
@@ -65,6 +65,30 @@ We recommend to use a write-only API key for the SDK. To obtain one, please:
     v.setOnClickListener(new OnClickListener() {
         @Override
         public void onClick(View v) {
+        
+            final Map event = new HashMap<String, Object>();
+            event.put("id", v.getId());
+            event.put("left", v.getLeft());
+            event.put("right", v.getRight());
+            event.put("top", v.getTop());
+            event.put("bottom", v.getBottom());
+
+            td.addEventWithCallback("testdb", "testtbl", event, new TDCallback() {
+                @Override
+                public void onSuccess() {
+                    Log.i("ExampleApp", "success!");
+                }
+                @Override
+                public void onError(String errorCode, Exception e) {
+                    Log.w("ExampleApp", "errorCode: " + errorCode + ", detail: " + e.toString());
+                }
+            });
+        }
+    });
+```
+Or, simply
+
+```
             final Map event = new HashMap<String, Object>();
             event.put("id", v.getId());
             event.put("left", v.getLeft());
@@ -73,22 +97,6 @@ We recommend to use a write-only API key for the SDK. To obtain one, please:
             event.put("bottom", v.getBottom());
 
             td.addEvent("testdb", "testtbl", event);
-        }
-    });
-```
-
-or
-
-
-```
-    View v = findViewById(R.id.image);
-    v.setOnTouchListener(new OnTouchListener() {
-        @Override
-        public boolean onTouch(View v, MotionEvent ev) {
-            td.addEvent("testdb", "testtbl", "event", ev.getAction());
-            return false;
-        }
-    });
 ```
 
 Specify the database and table to which you want to import the events.
@@ -100,34 +108,49 @@ Specify the database and table to which you want to import the events.
     findViewById(R.id.upload).setOnTouchListener(new OnTouchListener() {
         @Override
         public boolean onTouch(View view, MotionEvent motionEvent) {
-            td.uploadEvents();
+        
+            td.uploadEventsWithCallback(new TDCallback() {
+                @Override
+                public void onSuccess() {
+                    Log.i("ExampleApp", "success!");
+                }
+                @Override
+                public void onError(String errorCode, Exception e) {
+                    Log.w("ExampleApp", "errorCode: " + errorCode + ", detail: " + e.toString());
+                }
+            });
+            
             return false;
         }
     });
 ```
+Or, simply
+
+```
+            td.uploadEvents();
+```
 
 The sent events is going to be buffered for a few minutes before they get imported into TreasureData storage.
 
+## About Error Code
 
-### Get success/error callback
+`TreasureData#addEventWithCallback()` and `uploadEventsWithCallback()` call back `TDCallback#onError()` method with `errorCode` argument. This argument is useful to know the cause type of the error. There are the following error codes.
 
-You can know the result of addEvent() and uploadEvents() with TDCallback.
+- "init_error"
+  - The initialization failed.
+- "invalid_param"
+  - The parameter passed to the API was invalid
+- "invalid_event"
+  - The event was invalid
+- "data_conversion"
+  - Failed to convert the data to/from JSON
+- "storage_error"
+  - Failed to read/write data in the storage
+- "network_error"
+  - Failed to communicate with the server due to network problem
+- "server_response"
+  - The server returned an error response
 
-
-```
-    td.setUploadEventsCallBack(new TDCallback() {
-        @Override
-        public void onSuccess() {
-            Log.i("Example", "success!");
-        }
-
-        @Override
-        public void onError(Exception e) {
-            Log.w("Example", "error: " + e.toString());
-        }
-    });
-
-```
 
 ## Additioanl Configuration
 
@@ -148,4 +171,6 @@ or
         td.initializeApiEndpoint("https://in.treasuredata.com/android/v3");
 ```
 
+### Encryption key
 
+If you've set an encryption key via `TreasureData.initializeEncryptionKey()`, our SDK saves the event data as encrypted when called `addEvent` or `addEventWithCallback`.
