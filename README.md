@@ -174,3 +174,9 @@ or
 ### Encryption key
 
 If you've set an encryption key via `TreasureData.initializeEncryptionKey()`, our SDK saves the event data as encrypted when called `addEvent` or `addEventWithCallback`.
+
+```
+        TreasureData.initializeEncryptionKey("hello world");
+            :
+        td.addEventWithCallback(...)
+```
