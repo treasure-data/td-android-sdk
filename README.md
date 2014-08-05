@@ -159,16 +159,8 @@ The sent events is going to be buffered for a few minutes before they get import
 The API endpoint (default: https://in.treasuredata.com) can be modified using the `initializeApiEndpoint` API after the TreasureData client constructor has been called and the underlying client initialized. For example:
 
 ```
+        TreasureData.initializeApiEndpoint("https://in.treasuredata.com");
         td = new TreasureData(this, "your_api_key");
-        td.initializeApiEndpoint("https://in.treasuredata.com");
-```
-
-or
-
-```
-        TreasureData.initializeDefaultApiKey("your_default_api_key");
-        TreasureData td = new TreasureData(this);
-        td.initializeApiEndpoint("https://in.treasuredata.com");
 ```
 
 ### Encryption key
