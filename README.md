@@ -31,23 +31,22 @@ Or put td-android-sdk-x.x.x-shaded.jar (get the latest [here](http://search.mave
 
 ```
 public class ExampleActivity extends Activity {
-    private TreasureData td;
+  private TreasureData td;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-          :
-        td = new TreasureData(this, "your_api_key");
-          :
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.activity_main);
+      :
+    td = new TreasureData(this, "your_api_key");
 ```
 
 or
 
 ```
-        TreasureData.initializeDefaultApiKey("your_default_api_key");
-        TreasureData td = new TreasureData(this);
-
+    TreasureData.initializeDefaultApiKey("your_default_api_key");
+      :
+    TreasureData td = new TreasureData(this);
 ```
 
 We recommend to use a write-only API key for the SDK. To obtain one, please:
@@ -61,42 +60,43 @@ We recommend to use a write-only API key for the SDK. To obtain one, please:
 ### Add Events
 
 ```
-    View v = findViewById(R.id.button);
-    v.setOnClickListener(new OnClickListener() {
-        @Override
-        public void onClick(View v) {
-        
-            final Map event = new HashMap<String, Object>();
-            event.put("id", v.getId());
-            event.put("left", v.getLeft());
-            event.put("right", v.getRight());
-            event.put("top", v.getTop());
-            event.put("bottom", v.getBottom());
+  View v = findViewById(R.id.button);
+  v.setOnClickListener(new OnClickListener() {
+    @Override
+    public void onClick(View v) {
 
-            td.addEventWithCallback("testdb", "testtbl", event, new TDCallback() {
-                @Override
-                public void onSuccess() {
-                    Log.i("ExampleApp", "success!");
-                }
-                @Override
-                public void onError(String errorCode, Exception e) {
-                    Log.w("ExampleApp", "errorCode: " + errorCode + ", detail: " + e.toString());
-                }
-            });
+      final Map event = new HashMap<String, Object>();
+      event.put("id", v.getId());
+      event.put("left", v.getLeft());
+      event.put("right", v.getRight());
+      event.put("top", v.getTop());
+      event.put("bottom", v.getBottom());
+
+      td.addEventWithCallback("testdb", "testtbl", event, new TDCallback() {
+        @Override
+        public void onSuccess() {
+          Log.i("ExampleApp", "success!");
         }
-    });
+
+        @Override
+        public void onError(String errorCode, Exception e) {
+          Log.w("ExampleApp", "errorCode: " + errorCode + ", detail: " + e.toString());
+        }
+      });
+    }
+  });
 ```
 Or, simply
 
 ```
-            final Map event = new HashMap<String, Object>();
-            event.put("id", v.getId());
-            event.put("left", v.getLeft());
-            event.put("right", v.getRight());
-            event.put("top", v.getTop());
-            event.put("bottom", v.getBottom());
+  final Map event = new HashMap<String, Object>();
+  event.put("id", v.getId());
+  event.put("left", v.getLeft());
+  event.put("right", v.getRight());
+  event.put("top", v.getTop());
+  event.put("bottom", v.getBottom());
 
-            td.addEvent("testdb", "testtbl", event);
+  td.addEvent("testdb", "testtbl", event);
 ```
 
 Specify the database and table to which you want to import the events.
@@ -105,29 +105,29 @@ Specify the database and table to which you want to import the events.
 
 
 ```
-    findViewById(R.id.upload).setOnTouchListener(new OnTouchListener() {
+  findViewById(R.id.upload).setOnTouchListener(new OnTouchListener() {
+    @Override
+    public boolean onTouch(View view, MotionEvent motionEvent) {
+      td.uploadEventsWithCallback(new TDCallback() {
         @Override
-        public boolean onTouch(View view, MotionEvent motionEvent) {
-        
-            td.uploadEventsWithCallback(new TDCallback() {
-                @Override
-                public void onSuccess() {
-                    Log.i("ExampleApp", "success!");
-                }
-                @Override
-                public void onError(String errorCode, Exception e) {
-                    Log.w("ExampleApp", "errorCode: " + errorCode + ", detail: " + e.toString());
-                }
-            });
-            
-            return false;
+        public void onSuccess() {
+          Log.i("ExampleApp", "success!");
         }
-    });
+
+        @Override
+        public void onError(String errorCode, Exception e) {
+          Log.w("ExampleApp", "errorCode: " + errorCode + ", detail: " + e.toString());
+        }
+      });
+            
+      return false;
+    }
+  });
 ```
 Or, simply
 
 ```
-            td.uploadEvents();
+    td.uploadEvents();
 ```
 
 The sent events is going to be buffered for a few minutes before they get imported into TreasureData storage.
@@ -159,8 +159,8 @@ The sent events is going to be buffered for a few minutes before they get import
 The API endpoint (default: https://in.treasuredata.com) can be modified using the `initializeApiEndpoint` API after the TreasureData client constructor has been called and the underlying client initialized. For example:
 
 ```
-        TreasureData.initializeApiEndpoint("https://in.treasuredata.com");
-        td = new TreasureData(this, "your_api_key");
+    TreasureData.initializeApiEndpoint("https://in.treasuredata.com");
+    td = new TreasureData(this, "your_api_key");
 ```
 
 ### Encryption key
@@ -168,7 +168,7 @@ The API endpoint (default: https://in.treasuredata.com) can be modified using th
 If you've set an encryption key via `TreasureData.initializeEncryptionKey()`, our SDK saves the event data as encrypted when called `addEvent` or `addEventWithCallback`.
 
 ```
-        TreasureData.initializeEncryptionKey("hello world");
-            :
-        td.addEventWithCallback(...)
+    TreasureData.initializeEncryptionKey("hello world");
+        :
+    td.addEventWithCallback(...)
 ```
