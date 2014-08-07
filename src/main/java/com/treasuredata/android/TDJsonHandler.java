@@ -36,7 +36,12 @@ class TDJsonHandler implements KeenJsonHandler {
 
     private Map<String, Object> readJson(Reader reader, boolean withoutDecryption) throws IOException {
         if (withoutDecryption || secretKeySpec == null) {
-            return mapper.readValue(reader, MAP_TYPE);
+            try {
+                return mapper.readValue(reader, MAP_TYPE);
+            } catch (Exception e) {
+                Log.w(TAG, "This event can't be handled as a plain", e);
+                return null;
+            }
         }
         else {
             BufferedReader bufferedReader = new BufferedReader(reader);
@@ -58,7 +63,7 @@ class TDJsonHandler implements KeenJsonHandler {
                 try {
                     return mapper.readValue(data, MAP_TYPE);
                 } catch (Exception ee) {
-                    Log.w(TAG, "This event can't be handled as a plain");
+                    Log.w(TAG, "This event can't be handled as a plain", ee);
                     return null;
                 }
             }
