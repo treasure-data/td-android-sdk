@@ -1,3 +1,7 @@
+Release 0.1.4
+
+* Fix some bugs related to encryption
+
 Release 0.1.3
 
 * Improve error handling with TreasureData#addEventWithCallback() and TreasureData#uploadEventsWithCallback()
