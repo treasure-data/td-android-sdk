@@ -172,3 +172,56 @@ If you've set an encryption key via `TreasureData.initializeEncryptionKey()`, ou
         :
     td.addEventWithCallback(...)
 ```
+
+## Use Cases
+
+### Collect Installation Event
+
+You can collect the installation event of your application installed via Google Play as follows.
+
+- AndroidManifest.xml
+
+```
+<manifest>
+    <application>
+        <receiver android:name=".InstallationReceiver" android:exported="true">
+            <intent-filter>
+                <action android:name="com.android.vending.INSTALL_REFERRER" />
+            </intent-filter>
+        </receiver>
+    </application>
+</manifest>
+```
+
+- InstallationReceiver
+
+```
+/*
+ * For installation event test.
+ * $ adb shell
+ * # am broadcast -a com.android.vending.INSTALL_REFERRER \
+ *       -n com.treasuredata.android.demo/.InstallationReceiver \
+ *       --es "referrer" "utm_source=test_source&utm_medium=test_medium&…"
+ */
+public class InstallationReceiver extends BroadcastReceiver {
+    @Override
+    public void onReceive(Context context, Intent intent) {
+        try {
+            TreasureData.enableLogging();
+            final TreasureData td = new TreasureData(context, "your_default_api_key");
+            HashMap<String, Object> referrer = new HashMap<String, Object>();
+            referrer.put("type", "install_referrer");
+            for (String kv : intent.getStringExtra("referrer").split("&")) {
+                String[] kAndV = kv.split("=", 2);
+                if (kAndV.length >= 2) {
+                    referrer.put(kAndV[0], kAndV[1]);
+                }
+            }
+            td.addEvent("testdb", "demotbl", referrer);
+            td.uploadEvents();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
