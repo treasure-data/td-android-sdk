@@ -1,6 +1,7 @@
 package com.treasuredata.android.demo;
 
 import android.app.Activity;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.Pair;
@@ -41,6 +42,22 @@ public class MainActivity extends Activity {
         } catch (IOException e) {
             e.printStackTrace();
             return;
+        }
+
+        final SharedPreferences prefs = getSharedPreferences("my_application", MODE_PRIVATE);
+        if (!prefs.getBoolean("hasLaunchedOnce", false)) {
+            td.addEventWithCallback("testdb", "demotbl", "installed", true, new TDCallback() {
+                @Override
+                public void onSuccess() {
+                    prefs.edit().putBoolean("hasLaunchedOnce", true).commit();
+                    td.uploadEvents();
+                }
+
+                @Override
+                public void onError(String errorCode, Exception e) {
+                    Log.w(TAG, "TreasureData.addEvent:onError errorCode=" + errorCode + ", ex=" + e);
+                }
+            });
         }
 
         // For default callback, optional.

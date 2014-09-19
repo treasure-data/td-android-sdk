@@ -175,7 +175,34 @@ If you've set an encryption key via `TreasureData.initializeEncryptionKey()`, ou
 
 ## Use Cases
 
-### Collect Installation Event
+### Collect The First Run Event (Installation Event)
+
+You can collect the first run event of your application like this. Probably, this event can be used as an installation event.
+
+```
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
+{
+    [TreasureData initializeWithApiKey:@"your_api_key"];
+
+    if (![[NSUserDefaults standardUserDefaults] boolForKey:@"HasLaunchedOnce"]) {
+        [[TreasureData sharedInstance] addEventWithCallback:@{ @"event": @"installed" }
+						 database:@"database_a"
+						    table:@"table_b"
+						onSuccess:^(){
+						    [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"HasLaunchedOnce"];
+						    [[NSUserDefaults standardUserDefaults] synchronize];
+						    [[TreasureData sharedInstance] uploadEvents];
+						}
+						  onError:^(NSString* errorCode, NSString* message) {
+						      NSLog(@"addEvent: error. errorCode=%@, message=%@", errorCode, message);
+						  }];
+    }
+    
+    return YES;
+}
+```
+
+### Collect Installation Referrer Information From Google Play
 
 You can collect the installation event of your application installed via Google Play as follows.
 
