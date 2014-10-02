@@ -50,6 +50,12 @@ class TDHttpHandler extends UrlConnectionHttpHandler {
         this.apiKey = apiKey;
         this.apiEndpoint = apiEndpoint;
 
+        // Use Android bundled certificate if the endpoint is other than the default one.
+        if (!this.apiEndpoint.equals(DEFAULT_API_ENDPOINT)) {
+            this.sslContext = null;
+            return;
+        }
+
         SSLContext sslContext = null;
         String errorLabel = "createSSLContext error: ";
         try {
