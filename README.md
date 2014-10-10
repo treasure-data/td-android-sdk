@@ -180,26 +180,26 @@ If you've set an encryption key via `TreasureData.initializeEncryptionKey()`, ou
 You can collect the first run event of your application like this. Probably, this event can be used as an installation event.
 
 ```
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
-{
-    [TreasureData initializeWithApiKey:@"your_api_key"];
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+          :
+        final SharedPreferences prefs = getSharedPreferences("my_application", MODE_PRIVATE);
+        if (!prefs.getBoolean("hasLaunchedOnce", false)) {
+            TreasureData td = new TreasureData(this);
+            td.addEventWithCallback("testdb", "demotbl", "installed", true, new TDCallback() {
+                @Override
+                public void onSuccess() {
+                    prefs.edit().putBoolean("hasLaunchedOnce", true).commit();
+                    td.uploadEvents();
+                }
 
-    if (![[NSUserDefaults standardUserDefaults] boolForKey:@"HasLaunchedOnce"]) {
-        [[TreasureData sharedInstance] addEventWithCallback:@{ @"event": @"installed" }
-						 database:@"database_a"
-						    table:@"table_b"
-						onSuccess:^(){
-						    [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"HasLaunchedOnce"];
-						    [[NSUserDefaults standardUserDefaults] synchronize];
-						    [[TreasureData sharedInstance] uploadEvents];
-						}
-						  onError:^(NSString* errorCode, NSString* message) {
-						      NSLog(@"addEvent: error. errorCode=%@, message=%@", errorCode, message);
-						  }];
-    }
-    
-    return YES;
-}
+                @Override
+                public void onError(String errorCode, Exception e) {
+                    Log.w(TAG, "TreasureData.addEvent:onError errorCode=" + errorCode + ", ex=" + e);
+                }
+            });
+        }
+          :
 ```
 
 ### Collect Installation Referrer Information From Google Play
