@@ -20,6 +20,7 @@ public class TreasureData {
     static {
         TDHttpHandler.VERSION = TreasureData.VERSION;
     }
+    private static TreasureData sharedInstance;
 
     private TDClient client;
     private volatile TDCallback addEventCallBack;
@@ -27,14 +28,37 @@ public class TreasureData {
     private volatile KeenCallback addEventKeenCallBack = createKeenCallback(LABEL_ADD_EVENT, null);
     private volatile KeenCallback uploadEventsKeenCallBack = createKeenCallback(LABEL_UPLOAD_EVENTS, null);
 
-    public TreasureData(Context context, String apiKey) throws IOException {
-        if (apiKey == null && TDClient.getDefaultApiKey() == null) {
-            throw new IllegalStateException("initializeApiKey() hasn't called yet");
-        }
-        client = new TDClient(context, apiKey);
+    public static TreasureData initializeSharedInstance(Context context, String apiKey) {
+        sharedInstance = new TreasureData(context, apiKey);
+        return sharedInstance;
     }
 
-    public TreasureData(Context context) throws IOException {
+    public static TreasureData initializeSharedInstance(Context context) {
+        return initializeSharedInstance(context, null);
+    }
+
+    public static TreasureData sharedInstance() {
+        if (sharedInstance == null) {
+            Log.w(TAG, "sharedInstance is initialized properly");
+            return new NullTreasureData();
+        }
+        return sharedInstance;
+    }
+
+    public TreasureData(Context context, String apiKey) {
+        if (apiKey == null && TDClient.getDefaultApiKey() == null) {
+            Log.e(TAG, "initializeApiKey() hasn't called yet");
+            return;
+        }
+
+        try {
+            client = new TDClient(context.getApplicationContext(), apiKey);
+        } catch (IOException e) {
+            Log.e(TAG, "Failed to construct TreasureData object", e);
+        }
+    }
+
+    public TreasureData(Context context) {
         this(context, null);
     }
 
@@ -99,6 +123,11 @@ public class TreasureData {
     }
 
     public void addEventWithCallback(String database, String table, Map<String, Object> record, TDCallback callback) {
+        if (client == null) {
+            Log.w(TAG, "TDClient is null");
+            return;
+        }
+
         if (callback == null) {
             callback = addEventCallBack;
         }
@@ -120,6 +149,11 @@ public class TreasureData {
     }
 
     public void uploadEventsWithCallback(TDCallback callback) {
+        if (client == null) {
+            Log.w(TAG, "TDClient is null");
+            return;
+        }
+
         if (callback == null) {
             callback = uploadEventsCallBack;
         }
@@ -161,6 +195,11 @@ public class TreasureData {
     }
 
     public void setDebugMode(boolean debug) {
+        if (client == null) {
+            Log.w(TAG, "TDClient is null");
+            return;
+        }
+
         client.setDebugMode(debug);
     }
 
@@ -172,5 +211,53 @@ public class TreasureData {
     @Deprecated
     void setClient(TDClient mockClient) {
         this.client = mockClient;
+    }
+
+    static class NullTreasureData extends TreasureData {
+        @Override
+        public synchronized void setAddEventCallBack(TDCallback callBack) {
+        }
+
+        @Override
+        public TDCallback getAddEventCallBack() {
+            return null;
+        }
+
+        @Override
+        public synchronized void setUploadEventsCallBack(TDCallback callBack) {
+        }
+
+        @Override
+        public TDCallback getUploadEventsCallBack() {
+            return null;
+        }
+
+        @Override
+        public void addEvent(String database, String table, String key, Object value) {
+        }
+
+        @Override
+        public void addEvent(String database, String table, Map<String, Object> record) {
+        }
+
+        @Override
+        public void addEventWithCallback(String database, String table, String key, Object value, TDCallback callback) {
+        }
+
+        @Override
+        public void addEventWithCallback(String database, String table, Map<String, Object> record, TDCallback callback) {
+        }
+
+        @Override
+        public void uploadEvents() {
+        }
+
+        @Override
+        public void uploadEventsWithCallback(TDCallback callback) {
+        }
+
+        @Override
+        public void setDebugMode(boolean debug) {
+        }
     }
 }

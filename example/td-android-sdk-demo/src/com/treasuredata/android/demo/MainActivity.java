@@ -13,7 +13,6 @@ import android.widget.Toast;
 import com.treasuredata.android.TDCallback;
 import com.treasuredata.android.TreasureData;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -22,34 +21,27 @@ import java.util.Map;
 
 public class MainActivity extends Activity {
     private static final String TAG = MainActivity.class.getSimpleName();
-    private TreasureData td;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         // TreasureData.initializeApiEndpoint("https://mobile-ybi.jp-east.idcfcloud.com");
-        TreasureData.initializeDefaultApiKey("your_default_api_key");
+        // TreasureData.initializeDefaultApiKey("your_default_api_key");
         TreasureData.enableLogging();
         TreasureData.initializeEncryptionKey("hello world");
         // TreasureData.disableEventCompression();
 
-        try {
-            td = new TreasureData(this);
-            // td = new TreasureData(this, "your_api_key");
-            // td.setDebugMode(true);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return;
-        }
+        TreasureData.initializeSharedInstance(this, "your_default_api_key");
+        TreasureData.sharedInstance().setDebugMode(true);
 
         final SharedPreferences prefs = getSharedPreferences("my_application", MODE_PRIVATE);
         if (!prefs.getBoolean("hasLaunchedOnce", false)) {
-            td.addEventWithCallback("testdb", "demotbl", "installed", true, new TDCallback() {
+            TreasureData.sharedInstance().addEventWithCallback("testdb", "demotbl", "installed", true, new TDCallback() {
                 @Override
                 public void onSuccess() {
                     prefs.edit().putBoolean("hasLaunchedOnce", true).commit();
-                    td.uploadEvents();
+                    TreasureData.sharedInstance().uploadEvents();
                 }
 
                 @Override
@@ -60,7 +52,7 @@ public class MainActivity extends Activity {
         }
 
         // For default callback, optional.
-        td.setAddEventCallBack(addEventCallback);
+        TreasureData.sharedInstance().setAddEventCallBack(addEventCallback);
         // td.setUploadEventsCallBack(uploadEventsCallback);
 
         List<Pair<Integer, String>> targets = Arrays.asList(
@@ -85,7 +77,7 @@ public class MainActivity extends Activity {
                     event.put("bottom", v.getBottom());
 
                     addEventCallback.eventName = label;
-                    td.addEventWithCallback("testdb", "demotbl", event, addEventCallback);
+                    TreasureData.sharedInstance().addEventWithCallback("testdb", "demotbl", event, addEventCallback);
                 }
             });
         }
@@ -95,7 +87,7 @@ public class MainActivity extends Activity {
             public boolean onTouch(View v, MotionEvent ev) {
                 addEventCallback.eventName = "image";
                 // Use default callback
-                td.addEvent("testdb", "demotbl", "image", ev.toString());
+                TreasureData.sharedInstance().addEvent("testdb", "demotbl", "image", ev.toString());
                 return false;
             }
         });
@@ -103,7 +95,7 @@ public class MainActivity extends Activity {
         findViewById(R.id.upload).setOnTouchListener(new OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
-                td.uploadEventsWithCallback(uploadEventsCallback);
+                TreasureData.sharedInstance().uploadEventsWithCallback(uploadEventsCallback);
                 return false;
             }
         });
