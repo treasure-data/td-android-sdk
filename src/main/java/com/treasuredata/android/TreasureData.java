@@ -1,6 +1,8 @@
 package com.treasuredata.android;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.os.Build;
 import io.keen.client.java.KeenCallback;
 import io.keen.client.java.KeenClient;
 import org.komamitsu.android.util.Log;
@@ -8,6 +10,7 @@ import org.komamitsu.android.util.Log;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 public class TreasureData {
@@ -17,9 +20,22 @@ public class TreasureData {
     private static final String LABEL_UPLOAD_EVENTS = "uploadEvents";
     private static final Pattern DATABASE_NAME_PATTERN = Pattern.compile("^[0-9a-z_]{3,255}$");
     private static final Pattern TABLE_NAME_PATTERN = Pattern.compile("^[0-9a-z_]{3,255}$");
+    private static final String SHARED_PREF_NAME = "td_sdk_info";
+    private static final String SHARED_PREF_KEY_UUID = "uuid";
+    private static final String AUTO_KEY_UUID = "td_uuid";
+    private static final String AUTO_KEY_BOARD = "td_board";
+    private static final String AUTO_KEY_BRAND = "td_brand";
+    private static final String AUTO_KEY_DEVICE = "td_device";
+    private static final String AUTO_KEY_DISPLAY = "td_display";
+    private static final String AUTO_KEY_MODEL = "td_model";
+    private static final String AUTO_KEY_OS_VER = "td_os_ver";
+    private static final String AUTO_KEY_OS_TYPE = "td_os_type";
+    private static final String OS_TYPE = "Android";
+
     static {
         TDHttpHandler.VERSION = TreasureData.VERSION;
     }
+
     private static TreasureData sharedInstance;
 
     private TDClient client;
@@ -27,6 +43,9 @@ public class TreasureData {
     private volatile TDCallback uploadEventsCallBack;
     private volatile KeenCallback addEventKeenCallBack = createKeenCallback(LABEL_ADD_EVENT, null);
     private volatile KeenCallback uploadEventsKeenCallBack = createKeenCallback(LABEL_UPLOAD_EVENTS, null);
+    private volatile boolean autoAppendUniqId;
+    private volatile boolean autoAppendModelInformation;
+    private String uuid;
 
     public static TreasureData initializeSharedInstance(Context context, String apiKey) {
         sharedInstance = new TreasureData(context, apiKey);
@@ -45,14 +64,29 @@ public class TreasureData {
         return sharedInstance;
     }
 
+    public String getUUID(Context context) {
+        SharedPreferences sharedPreferences = context.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
+        synchronized (this) {
+            String uuid = sharedPreferences.getString(SHARED_PREF_KEY_UUID, null);
+            if (uuid == null) {
+                uuid = UUID.randomUUID().toString();
+                sharedPreferences.edit().putString(SHARED_PREF_KEY_UUID, uuid).commit();
+            }
+            return uuid;
+        }
+    }
+
     public TreasureData(Context context, String apiKey) {
+        Context applicationContext = context.getApplicationContext();
+        uuid = getUUID(applicationContext);
+
         if (apiKey == null && TDClient.getDefaultApiKey() == null) {
             Log.e(TAG, "initializeApiKey() hasn't called yet");
             return;
         }
 
         try {
-            client = new TDClient(context.getApplicationContext(), apiKey);
+            client = new TDClient(applicationContext.getApplicationContext(), apiKey);
         } catch (IOException e) {
             Log.e(TAG, "Failed to construct TreasureData object", e);
         }
@@ -122,6 +156,21 @@ public class TreasureData {
         addEventWithCallback(database, table, record, callback);
     }
 
+    public void appendUniqId(Map<String, Object> record) {
+        record.put(AUTO_KEY_UUID, uuid);
+    }
+
+    public void appendModelInformation(Map<String, Object> record) {
+        record.put(AUTO_KEY_BOARD, Build.BOARD);
+        record.put(AUTO_KEY_BRAND, Build.BRAND);
+        record.put(AUTO_KEY_DEVICE, Build.DEVICE);
+        record.put(AUTO_KEY_DISPLAY, Build.DISPLAY);
+        record.put(AUTO_KEY_DEVICE, Build.DEVICE);
+        record.put(AUTO_KEY_MODEL, Build.MODEL);
+        record.put(AUTO_KEY_OS_VER, Build.VERSION.SDK_INT);
+        record.put(AUTO_KEY_OS_TYPE, OS_TYPE);
+    }
+
     public void addEventWithCallback(String database, String table, Map<String, Object> record, TDCallback callback) {
         if (client == null) {
             Log.w(TAG, "TDClient is null");
@@ -130,6 +179,14 @@ public class TreasureData {
 
         if (callback == null) {
             callback = addEventCallBack;
+        }
+
+        if (autoAppendUniqId) {
+            appendUniqId(record);
+        }
+
+        if (autoAppendModelInformation) {
+            appendModelInformation(record);
         }
 
         if (!(DATABASE_NAME_PATTERN.matcher(database).find() && TABLE_NAME_PATTERN.matcher(table).find())) {
@@ -201,6 +258,14 @@ public class TreasureData {
         }
 
         client.setDebugMode(debug);
+    }
+
+    public void setAutoAppendUniqId(boolean autoAppendUniqId) {
+        this.autoAppendUniqId = autoAppendUniqId;
+    }
+
+    public void setAutoAppendModelInformation(boolean autoAppendModelInformation) {
+        this.autoAppendModelInformation = autoAppendModelInformation;
     }
 
     // Only for testing
