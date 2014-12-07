@@ -34,8 +34,8 @@ public class MainActivity extends Activity {
 
         TreasureData.initializeSharedInstance(this, "your_default_api_key");
         TreasureData.sharedInstance().setDebugMode(true);
-        TreasureData.sharedInstance().setAutoAppendUniqId(true);
-        TreasureData.sharedInstance().setAutoAppendModelInformation(true);
+        TreasureData.sharedInstance().enableAutoAppendUniqId();
+        TreasureData.sharedInstance().enableAutoAppendModelInformation();
 
         final SharedPreferences prefs = getSharedPreferences("my_application", MODE_PRIVATE);
         if (!prefs.getBoolean("hasLaunchedOnce", false)) {

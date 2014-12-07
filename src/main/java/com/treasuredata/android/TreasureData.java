@@ -260,12 +260,20 @@ public class TreasureData {
         client.setDebugMode(debug);
     }
 
-    public void setAutoAppendUniqId(boolean autoAppendUniqId) {
-        this.autoAppendUniqId = autoAppendUniqId;
+    public void disableAutoAppendUniqId() {
+        this.autoAppendUniqId = false;
     }
 
-    public void setAutoAppendModelInformation(boolean autoAppendModelInformation) {
-        this.autoAppendModelInformation = autoAppendModelInformation;
+    public void enableAutoAppendUniqId() {
+        this.autoAppendUniqId = true;
+    }
+
+    public void disableAutoAppendModelInformation() {
+        this.autoAppendModelInformation = false;
+    }
+
+    public void enableAutoAppendModelInformation() {
+        this.autoAppendModelInformation = true;
     }
 
     // Only for testing
