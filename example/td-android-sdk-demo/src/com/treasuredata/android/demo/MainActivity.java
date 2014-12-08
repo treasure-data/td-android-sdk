@@ -1,7 +1,6 @@
 package com.treasuredata.android.demo;
 
 import android.app.Activity;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.Pair;
@@ -12,7 +11,6 @@ import android.view.View.OnTouchListener;
 import android.widget.Toast;
 import com.treasuredata.android.TDCallback;
 import com.treasuredata.android.TreasureData;
-import sun.applet.Main;
 
 import java.util.Arrays;
 import java.util.HashMap;
