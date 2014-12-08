@@ -12,6 +12,7 @@ import android.view.View.OnTouchListener;
 import android.widget.Toast;
 import com.treasuredata.android.TDCallback;
 import com.treasuredata.android.TreasureData;
+import sun.applet.Main;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -37,13 +38,21 @@ public class MainActivity extends Activity {
         TreasureData.sharedInstance().enableAutoAppendUniqId();
         TreasureData.sharedInstance().enableAutoAppendModelInformation();
 
-        final SharedPreferences prefs = getSharedPreferences("my_application", MODE_PRIVATE);
-        if (!prefs.getBoolean("hasLaunchedOnce", false)) {
-            TreasureData.sharedInstance().addEventWithCallback("testdb", "demotbl", "installed", true, new TDCallback() {
+        if (TreasureData.sharedInstance().isFirstRun(this)) {
+            TreasureData.sharedInstance().addEventWithCallback("testdb", "demotbl", "first_run", true, new TDCallback() {
                 @Override
                 public void onSuccess() {
-                    prefs.edit().putBoolean("hasLaunchedOnce", true).commit();
-                    TreasureData.sharedInstance().uploadEvents();
+                    TreasureData.sharedInstance().uploadEventsWithCallback(new TDCallback() {
+                        @Override
+                        public void onSuccess() {
+                            TreasureData.sharedInstance().clearFirstRun(MainActivity.this);
+                        }
+
+                        @Override
+                        public void onError(String errorCode, Exception e) {
+                            Log.w(TAG, "TreasureData.uploadEvent:onError errorCode=" + errorCode + ", ex=" + e);
+                        }
+                    });
                 }
 
                 @Override

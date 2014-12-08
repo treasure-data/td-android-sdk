@@ -22,6 +22,7 @@ public class TreasureData {
     private static final Pattern TABLE_NAME_PATTERN = Pattern.compile("^[0-9a-z_]{3,255}$");
     private static final String SHARED_PREF_NAME = "td_sdk_info";
     private static final String SHARED_PREF_KEY_UUID = "uuid";
+    private static final String SHARED_PREF_KEY_FIRST_RUN = "first_run";
     private static final String AUTO_KEY_UUID = "td_uuid";
     private static final String AUTO_KEY_BOARD = "td_board";
     private static final String AUTO_KEY_BRAND = "td_brand";
@@ -64,8 +65,12 @@ public class TreasureData {
         return sharedInstance;
     }
 
+    private SharedPreferences getSharedPreference(Context context) {
+        return context.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
+    }
+
     public String getUUID(Context context) {
-        SharedPreferences sharedPreferences = context.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = getSharedPreference(context);
         synchronized (this) {
             String uuid = sharedPreferences.getString(SHARED_PREF_KEY_UUID, null);
             if (uuid == null) {
@@ -73,6 +78,20 @@ public class TreasureData {
                 sharedPreferences.edit().putString(SHARED_PREF_KEY_UUID, uuid).commit();
             }
             return uuid;
+        }
+    }
+
+    public boolean isFirstRun(Context context) {
+        SharedPreferences sharedPreferences = getSharedPreference(context);
+        synchronized (this) {
+            return sharedPreferences.getBoolean(SHARED_PREF_KEY_FIRST_RUN, true);
+        }
+    }
+
+    public void clearFirstRun(Context context) {
+        SharedPreferences sharedPreferences = getSharedPreference(context);
+        synchronized (this) {
+            sharedPreferences.edit().putBoolean(SHARED_PREF_KEY_FIRST_RUN, false).commit();
         }
     }
 
