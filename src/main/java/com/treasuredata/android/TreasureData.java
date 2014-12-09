@@ -295,6 +295,14 @@ public class TreasureData {
         this.autoAppendModelInformation = true;
     }
 
+    public void disableAutoRetryUploading() {
+        client.disableAutoRetryUploading();
+    }
+
+    public void enableAutoRetryUploading() {
+        client.enableAutoRetryUploading();
+    }
+
     // Only for testing
     @Deprecated
     TreasureData() {
@@ -350,6 +358,52 @@ public class TreasureData {
 
         @Override
         public void setDebugMode(boolean debug) {
+        }
+
+        @Override
+        public void disableAutoAppendUniqId() {
+        }
+
+        @Override
+        public void enableAutoAppendUniqId() {
+        }
+
+        @Override
+        public void disableAutoAppendModelInformation() {
+        }
+
+        @Override
+        public void enableAutoAppendModelInformation() {
+        }
+
+        @Override
+        public void enableAutoRetryUploading() {
+        }
+
+        @Override
+        public void disableAutoRetryUploading() {
+        }
+
+        @Override
+        public void appendUniqId(Map<String, Object> record) {
+        }
+
+        @Override
+        public void appendModelInformation(Map<String, Object> record) {
+        }
+
+        @Override
+        public boolean isFirstRun(Context context) {
+            return false;
+        }
+
+        @Override
+        public void clearFirstRun(Context context) {
+        }
+
+        @Override
+        public String getUUID(Context context) {
+            return null;
         }
     }
 }

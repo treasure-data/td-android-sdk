@@ -32,9 +32,10 @@ public class MainActivity extends Activity {
         // TreasureData.disableEventCompression();
 
         TreasureData.initializeSharedInstance(this, "your_default_api_key");
-        TreasureData.sharedInstance().setDebugMode(true);
+        TreasureData.sharedInstance().setDebugMode(false);
         TreasureData.sharedInstance().enableAutoAppendUniqId();
         TreasureData.sharedInstance().enableAutoAppendModelInformation();
+        // TreasureData.sharedInstance().disableAutoRetryUploading();
 
         if (TreasureData.sharedInstance().isFirstRun(this)) {
             TreasureData.sharedInstance().addEventWithCallback("testdb", "demotbl", "first_run", true, new TDCallback() {

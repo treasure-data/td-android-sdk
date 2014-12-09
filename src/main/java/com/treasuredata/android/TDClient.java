@@ -57,6 +57,14 @@ class TDClient extends KeenClient {
         TDClient.encryptionKey = encryptionKey;
     }
 
+    public void disableAutoRetryUploading() {
+        enableRetryUploading = false;
+    }
+
+    public void enableAutoRetryUploading() {
+        enableRetryUploading = true;
+    }
+
     // Only for test
     @Deprecated
     TDClient(String apiKey) {
