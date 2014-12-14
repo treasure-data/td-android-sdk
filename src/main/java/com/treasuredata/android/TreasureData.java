@@ -41,7 +41,8 @@ public class TreasureData {
 
     private static TreasureData sharedInstance;
 
-    private TDClient client;    // This should be `final' but isn't because of testability...
+    private final TDClient client;
+    private final String uuid;
     private volatile String defaultDatabase;
     private volatile TDCallback addEventCallBack;
     private volatile TDCallback uploadEventsCallBack;
@@ -49,8 +50,7 @@ public class TreasureData {
     private volatile KeenCallback uploadEventsKeenCallBack = createKeenCallback(LABEL_UPLOAD_EVENTS, null);
     private volatile boolean autoAppendUniqId;
     private volatile boolean autoAppendModelInformation;
-    protected String uuid;    // This should be `final' but isn't because of testability...
-    protected volatile String sessionId;
+    private volatile String sessionId;
 
     public static TreasureData initializeSharedInstance(Context context, String apiKey) {
         sharedInstance = new TreasureData(context, apiKey);
@@ -103,16 +103,18 @@ public class TreasureData {
         Context applicationContext = context.getApplicationContext();
         uuid = getUUID(applicationContext);
 
+        TDClient client = null;
         if (apiKey == null && TDClient.getDefaultApiKey() == null) {
             Log.e(TAG, "initializeApiKey() hasn't called yet");
-            return;
         }
-
-        try {
-            client = new TDClient(applicationContext.getApplicationContext(), apiKey);
-        } catch (IOException e) {
-            Log.e(TAG, "Failed to construct TreasureData object", e);
+        else {
+            try {
+                client = new TDClient(applicationContext.getApplicationContext(), apiKey);
+            } catch (IOException e) {
+                Log.e(TAG, "Failed to construct TreasureData object", e);
+            }
         }
+        this.client = client;
     }
 
     public TreasureData(Context context) {
@@ -376,15 +378,16 @@ public class TreasureData {
 
     // Only for testing
     @Deprecated
-    TreasureData() {
-    }
-
-    @Deprecated
-    void setClient(TDClient mockClient) {
+    TreasureData(TDClient mockClient, String uuid) {
         this.client = mockClient;
+        this.uuid = uuid;
     }
 
     static class NullTreasureData extends TreasureData {
+        public NullTreasureData() {
+            super((TDClient)null, null);
+        }
+
         @Override
         public synchronized void setAddEventCallBack(TDCallback callBack) {
         }

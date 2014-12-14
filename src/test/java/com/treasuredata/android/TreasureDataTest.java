@@ -7,8 +7,7 @@ import junit.framework.TestCase;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
-import java.util.Map;
+import java.util.*;
 
 public class TreasureDataTest extends TestCase {
     private static final String DUMMY_API_KEY = "dummy_api_key";
@@ -19,11 +18,21 @@ public class TreasureDataTest extends TestCase {
     String errorCodeForAddEvent;
     String errorCodeForUploadEvents;
 
+    class Event {
+        String tag;
+        Map<String, Object> event;
+        Event(String tag, Map<String, Object>event) {
+            this.tag = tag;
+            this.event = event;
+        }
+    }
+
     class MockTDClient extends TDClient {
         Exception exceptionOnQueueEventCalled;
         Exception exceptionOnSendQueuedEventsCalled;
         String errorCodeOnQueueEventCalled;
         String errorCodeOnSendQueuedEventsCalled;
+        List<Event> addedEvent = new ArrayList<Event>();
 
         MockTDClient(String apiKey) throws IOException {
             super(apiKey);
@@ -32,6 +41,7 @@ public class TreasureDataTest extends TestCase {
         @Override
         public void queueEvent(KeenProject project, String eventCollection, Map<String, Object> event, Map<String, Object> keenProperties, KeenCallback callback) {
             if (exceptionOnQueueEventCalled == null) {
+                addedEvent.add(new Event(eventCollection, event));
                 callback.onSuccess();
             }
             else {
@@ -63,7 +73,6 @@ public class TreasureDataTest extends TestCase {
     private TreasureData td;
 
     public void setUp() throws IOException {
-        td = new TreasureData();
         init();
     }
 
@@ -128,14 +137,61 @@ public class TreasureDataTest extends TestCase {
 
     public void testAddEventAndUploadEventsWithoutCallBack() throws IOException {
         MockTDClient client = new MockTDClient(DUMMY_API_KEY);
-        td.setClient(client);
+        td = new TreasureData(client, null);
         td.addEvent("db_", "tbl", "key", "val");
         td.uploadEvents();
+        assertEquals(1, client.addedEvent.size());
+        assertEquals("db_.tbl", client.addedEvent.get(0).tag);
+        assertEquals(1, client.addedEvent.get(0).event.size());
+        assertTrue(client.addedEvent.get(0).event.containsKey("key"));
+        assertTrue(client.addedEvent.get(0).event.containsValue("val"));
+    }
+
+    public void testAddEventAndUploadEventsWithDefaultDatabaseWithoutCallBack() throws IOException {
+        MockTDClient client = new MockTDClient(DUMMY_API_KEY);
+        td = new TreasureData(client, null);
+        td.setDefaultDatabase("db_");
+        td.addEvent("tbl", "key", "val");
+        td.uploadEvents();
+        assertEquals(1, client.addedEvent.size());
+        assertEquals("db_.tbl", client.addedEvent.get(0).tag);
+        assertEquals(1, client.addedEvent.get(0).event.size());
+        assertTrue(client.addedEvent.get(0).event.containsKey("key"));
+        assertTrue(client.addedEvent.get(0).event.containsValue("val"));
+    }
+
+    public void testAddEventWithMapAndUploadEventsWithoutCallBack() throws IOException {
+        MockTDClient client = new MockTDClient(DUMMY_API_KEY);
+        td = new TreasureData(client, null);
+        Map<String, Object> records = new HashMap<String, Object>();
+        records.put("key", "val");
+        td.addEvent("db_", "tbl", records);
+        td.uploadEvents();
+        assertEquals(1, client.addedEvent.size());
+        assertEquals("db_.tbl", client.addedEvent.get(0).tag);
+        assertEquals(1, client.addedEvent.get(0).event.size());
+        assertTrue(client.addedEvent.get(0).event.containsKey("key"));
+        assertTrue(client.addedEvent.get(0).event.containsValue("val"));
+    }
+
+    public void testAddEventWithMapAndUploadEventsWithDefaultDatabaseWithoutCallBack() throws IOException {
+        MockTDClient client = new MockTDClient(DUMMY_API_KEY);
+        td = new TreasureData(client, null);
+        td.setDefaultDatabase("db_");
+        Map<String, Object> records = new HashMap<String, Object>();
+        records.put("key", "val");
+        td.addEvent("tbl", records);
+        td.uploadEvents();
+        assertEquals(1, client.addedEvent.size());
+        assertEquals("db_.tbl", client.addedEvent.get(0).tag);
+        assertEquals(1, client.addedEvent.get(0).event.size());
+        assertTrue(client.addedEvent.get(0).event.containsKey("key"));
+        assertTrue(client.addedEvent.get(0).event.containsValue("val"));
     }
 
     public void testAddEventWithSuccess() throws IOException {
         MockTDClient client = new MockTDClient(DUMMY_API_KEY);
-        td.setClient(client);
+        td = new TreasureData(client, null);
 
         enableCallbackForAddEvent();
         enableCallbackForUploadEvents();
@@ -147,13 +203,137 @@ public class TreasureDataTest extends TestCase {
         assertFalse(onSuccessCalledForUploadEvents);
         assertNull(exceptionOnFailedCalledForUploadEvents);
         assertNull(errorCodeForUploadEvents);
+        assertEquals(1, client.addedEvent.size());
+        assertEquals("db_.tbl", client.addedEvent.get(0).tag);
+        assertEquals(1, client.addedEvent.get(0).event.size());
+        assertTrue(client.addedEvent.get(0).event.containsKey("key"));
+        assertTrue(client.addedEvent.get(0).event.containsValue("val"));
+    }
+
+    public void testStartSession() throws IOException {
+        MockTDClient client = new MockTDClient(DUMMY_API_KEY);
+        td = new TreasureData(client, null);
+        td.setDefaultDatabase("db_");
+
+        enableCallbackForAddEvent();
+        enableCallbackForUploadEvents();
+
+        td.startSession("tbl");
+        assertTrue(onSuccessCalledForAddEvent);
+        assertNull(exceptionOnFailedCalledForAddEvent);
+        assertNull(errorCodeForAddEvent);
+        assertFalse(onSuccessCalledForUploadEvents);
+        assertNull(exceptionOnFailedCalledForUploadEvents);
+        assertNull(errorCodeForUploadEvents);
+        assertEquals(1, client.addedEvent.size());
+        assertEquals("db_.tbl", client.addedEvent.get(0).tag);
+        assertEquals(2, client.addedEvent.get(0).event.size());
+        assertTrue(((String) client.addedEvent.get(0).event.get("td_session_id")).length() > 0);
+        assertEquals("start", client.addedEvent.get(0).event.get("td_session_event"));
+    }
+
+    public void testEndSessionWithoutStartSession() throws IOException {
+        MockTDClient client = new MockTDClient(DUMMY_API_KEY);
+        td = new TreasureData(client, null);
+
+        enableCallbackForAddEvent();
+        enableCallbackForUploadEvents();
+
+        td.endSession("db_", "tbl");
+        assertTrue(onSuccessCalledForAddEvent);
+        assertNull(exceptionOnFailedCalledForAddEvent);
+        assertNull(errorCodeForAddEvent);
+        assertFalse(onSuccessCalledForUploadEvents);
+        assertNull(exceptionOnFailedCalledForUploadEvents);
+        assertNull(errorCodeForUploadEvents);
+        assertEquals(1, client.addedEvent.size());
+        assertEquals("db_.tbl", client.addedEvent.get(0).tag);
+        assertEquals(1, client.addedEvent.get(0).event.size());
+        assertEquals("end", client.addedEvent.get(0).event.get("td_session_event"));
+    }
+
+    public void testStartSessionAndEndSession() throws IOException {
+        MockTDClient client = new MockTDClient(DUMMY_API_KEY);
+        td = new TreasureData(client, null);
+
+        enableCallbackForAddEvent();
+        enableCallbackForUploadEvents();
+
+        td.startSession("db_", "tbl");
+        assertTrue(onSuccessCalledForAddEvent);
+        assertNull(exceptionOnFailedCalledForAddEvent);
+        assertNull(errorCodeForAddEvent);
+        assertFalse(onSuccessCalledForUploadEvents);
+        assertNull(exceptionOnFailedCalledForUploadEvents);
+        assertNull(errorCodeForUploadEvents);
+        assertEquals(1, client.addedEvent.size());
+        assertEquals("db_.tbl", client.addedEvent.get(0).tag);
+        assertEquals(2, client.addedEvent.get(0).event.size());
+        String sessionId = (String) client.addedEvent.get(0).event.get("td_session_id");
+        assertTrue(sessionId.length() > 0);
+        assertEquals("start", client.addedEvent.get(0).event.get("td_session_event"));
+
+        td.setDefaultDatabase("db_");
+        td.endSession("tbl");
+        assertTrue(onSuccessCalledForAddEvent);
+        assertNull(exceptionOnFailedCalledForAddEvent);
+        assertNull(errorCodeForAddEvent);
+        assertFalse(onSuccessCalledForUploadEvents);
+        assertNull(exceptionOnFailedCalledForUploadEvents);
+        assertNull(errorCodeForUploadEvents);
+        assertEquals(2, client.addedEvent.size());
+
+        Event endEvent = client.addedEvent.get(1);
+        assertEquals("db_.tbl", endEvent.tag);
+        assertEquals(2, endEvent.event.size());
+        assertEquals(sessionId, endEvent.event.get("td_session_id"));
+        assertEquals("end", endEvent.event.get("td_session_event"));
+    }
+
+    public void testAddEventWithSuccessWithDefaultDatabase() throws IOException {
+        MockTDClient client = new MockTDClient(DUMMY_API_KEY);
+        td = new TreasureData(client, null);
+        td.setDefaultDatabase("db_");
+
+        enableCallbackForAddEvent();
+        enableCallbackForUploadEvents();
+
+        td.addEvent("tbl", "key", "val");
+        assertTrue(onSuccessCalledForAddEvent);
+        assertNull(exceptionOnFailedCalledForAddEvent);
+        assertNull(errorCodeForAddEvent);
+        assertFalse(onSuccessCalledForUploadEvents);
+        assertNull(exceptionOnFailedCalledForUploadEvents);
+        assertNull(errorCodeForUploadEvents);
+        assertEquals(1, client.addedEvent.size());
+        assertEquals("db_.tbl", client.addedEvent.get(0).tag);
+        assertEquals(1, client.addedEvent.get(0).event.size());
+        assertTrue(client.addedEvent.get(0).event.containsKey("key"));
+        assertTrue(client.addedEvent.get(0).event.containsValue("val"));
+    }
+
+    public void testAddEventWithErrorWithoutDefaultDatabase() throws IOException {
+        MockTDClient client = new MockTDClient(DUMMY_API_KEY);
+        td = new TreasureData(client, null);
+
+        enableCallbackForAddEvent();
+        enableCallbackForUploadEvents();
+
+        td.addEvent("tbl", "key", "val");
+        assertFalse(onSuccessCalledForAddEvent);
+        assertTrue(exceptionOnFailedCalledForAddEvent instanceof IllegalArgumentException);
+        assertEquals(KeenClient.ERROR_CODE_INVALID_PARAM, errorCodeForAddEvent);
+        assertFalse(onSuccessCalledForUploadEvents);
+        assertNull(exceptionOnFailedCalledForUploadEvents);
+        assertNull(errorCodeForUploadEvents);
+        assertEquals(0, client.addedEvent.size());
     }
 
     public void testAddEventWithError() throws IOException {
         MockTDClient client = new MockTDClient(DUMMY_API_KEY);
         client.exceptionOnQueueEventCalled = new IOException("hello world");
         client.errorCodeOnQueueEventCalled = KeenClient.ERROR_CODE_STORAGE_ERROR;
-        td.setClient(client);
+        td = new TreasureData(client, null);
 
         enableCallbackForAddEvent();
         enableCallbackForUploadEvents();
@@ -166,11 +346,12 @@ public class TreasureDataTest extends TestCase {
         assertFalse(onSuccessCalledForUploadEvents);
         assertNull(exceptionOnFailedCalledForUploadEvents);
         assertNull(errorCodeForUploadEvents);
+        assertEquals(0, client.addedEvent.size());
     }
 
     public void testAddEventWithDatabaseNameError() throws IOException {
         MockTDClient client = new MockTDClient(DUMMY_API_KEY);
-        td.setClient(client);
+        td = new TreasureData(client, null);
 
         enableCallbackForAddEvent();
         enableCallbackForUploadEvents();
@@ -184,11 +365,12 @@ public class TreasureDataTest extends TestCase {
             assertNull(exceptionOnFailedCalledForUploadEvents);
             assertNull(errorCodeForUploadEvents);
         }
+        assertEquals(0, client.addedEvent.size());
     }
 
     public void testAddEventWithTableNameError() throws IOException {
         MockTDClient client = new MockTDClient(DUMMY_API_KEY);
-        td.setClient(client);
+        td = new TreasureData(client, null);
 
         enableCallbackForAddEvent();
         enableCallbackForUploadEvents();
@@ -202,11 +384,12 @@ public class TreasureDataTest extends TestCase {
             assertNull(exceptionOnFailedCalledForUploadEvents);
             assertNull(errorCodeForUploadEvents);
         }
+        assertEquals(0, client.addedEvent.size());
     }
 
     public void testAddEventWithNullDatabaseName() throws IOException {
         MockTDClient client = new MockTDClient(DUMMY_API_KEY);
-        td.setClient(client);
+        td = new TreasureData(client, null);
 
         enableCallbackForAddEvent();
         enableCallbackForUploadEvents();
@@ -218,11 +401,12 @@ public class TreasureDataTest extends TestCase {
         assertFalse(onSuccessCalledForUploadEvents);
         assertNull(exceptionOnFailedCalledForUploadEvents);
         assertNull(errorCodeForUploadEvents);
+        assertEquals(0, client.addedEvent.size());
     }
 
     public void testAddEventWithNullTableName() throws IOException {
         MockTDClient client = new MockTDClient(DUMMY_API_KEY);
-        td.setClient(client);
+        td = new TreasureData(client, null);
 
         enableCallbackForAddEvent();
         enableCallbackForUploadEvents();
@@ -234,11 +418,12 @@ public class TreasureDataTest extends TestCase {
         assertFalse(onSuccessCalledForUploadEvents);
         assertNull(exceptionOnFailedCalledForUploadEvents);
         assertNull(errorCodeForUploadEvents);
+        assertEquals(0, client.addedEvent.size());
     }
 
     public void testUploadEventsWithSuccess() throws IOException {
         MockTDClient client = new MockTDClient(DUMMY_API_KEY);
-        td.setClient(client);
+        td = new TreasureData(client, null);
 
         enableCallbackForAddEvent();
         enableCallbackForUploadEvents();
@@ -250,13 +435,14 @@ public class TreasureDataTest extends TestCase {
         assertTrue(onSuccessCalledForUploadEvents);
         assertNull(exceptionOnFailedCalledForUploadEvents);
         assertNull(errorCodeForUploadEvents);
+        assertEquals(0, client.addedEvent.size());
     }
 
     public void testUploadEventsWithError() throws IOException {
         MockTDClient client = new MockTDClient(DUMMY_API_KEY);
         client.exceptionOnSendQueuedEventsCalled = new IllegalArgumentException("foo bar");
         client.errorCodeOnSendQueuedEventsCalled = KeenClient.ERROR_CODE_NETWORK_ERROR;
-        td.setClient(client);
+        td = new TreasureData(client, null);
 
         enableCallbackForAddEvent();
         enableCallbackForUploadEvents();
@@ -269,5 +455,6 @@ public class TreasureDataTest extends TestCase {
         assertTrue(exceptionOnFailedCalledForUploadEvents instanceof IllegalArgumentException);
         assertEquals("foo bar", exceptionOnFailedCalledForUploadEvents.getMessage());
         assertEquals(KeenClient.ERROR_CODE_NETWORK_ERROR, errorCodeForUploadEvents);
+        assertEquals(0, client.addedEvent.size());
     }
 }
