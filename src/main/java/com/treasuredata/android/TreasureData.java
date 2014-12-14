@@ -49,8 +49,8 @@ public class TreasureData {
     private volatile KeenCallback uploadEventsKeenCallBack = createKeenCallback(LABEL_UPLOAD_EVENTS, null);
     private volatile boolean autoAppendUniqId;
     private volatile boolean autoAppendModelInformation;
-    private String uuid;    // This should be `final' but isn't because of testability...
-    private volatile String sessionId;
+    protected String uuid;    // This should be `final' but isn't because of testability...
+    protected volatile String sessionId;
 
     public static TreasureData initializeSharedInstance(Context context, String apiKey) {
         sharedInstance = new TreasureData(context, apiKey);
@@ -183,6 +183,15 @@ public class TreasureData {
         addEventWithCallback(database, table, record, callback);
     }
 
+    private void handleParamError(TDCallback callback, String errMsg) {
+        if (TDLogging.isEnabled())
+            Log.e(TAG, errMsg);
+
+        if (callback != null) {
+            callback.onError(KeenClient.ERROR_CODE_INVALID_PARAM, new IllegalArgumentException(errMsg));
+        }
+    }
+
     public void addEventWithCallback(String database, String table, Map<String, Object> record, TDCallback callback) {
         if (client == null) {
             Log.w(TAG, "TDClient is null");
@@ -191,6 +200,20 @@ public class TreasureData {
 
         if (callback == null) {
             callback = addEventCallBack;
+        }
+
+        if (database == null) {
+            handleParamError(callback, "database is null");
+            return;
+        }
+
+        if (table == null) {
+            handleParamError(callback, "table is null");
+            return;
+        }
+
+        if (record == null) {
+            record = new HashMap<String, Object>();
         }
 
         if (sessionId != null) {
@@ -207,9 +230,7 @@ public class TreasureData {
 
         if (!(DATABASE_NAME_PATTERN.matcher(database).find() && TABLE_NAME_PATTERN.matcher(table).find())) {
             String errMsg = String.format("database and table need to be consist of lower letters, numbers or '_': database=%s, table=%s", database, table);
-            if (TDLogging.isEnabled())
-                Log.e(TAG, errMsg);
-            callback.onError(KeenClient.ERROR_CODE_INVALID_PARAM, new IllegalArgumentException(errMsg));
+            handleParamError(callback, errMsg);
             return;
         }
         StringBuilder sb = new StringBuilder();

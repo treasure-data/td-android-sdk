@@ -204,6 +204,38 @@ public class TreasureDataTest extends TestCase {
         }
     }
 
+    public void testAddEventWithNullDatabaseName() throws IOException {
+        MockTDClient client = new MockTDClient(DUMMY_API_KEY);
+        td.setClient(client);
+
+        enableCallbackForAddEvent();
+        enableCallbackForUploadEvents();
+
+        td.addEvent(null, "tbl", "key", "val");
+        assertFalse(onSuccessCalledForAddEvent);
+        assertTrue(exceptionOnFailedCalledForAddEvent instanceof IllegalArgumentException);
+        assertEquals(KeenClient.ERROR_CODE_INVALID_PARAM, errorCodeForAddEvent);
+        assertFalse(onSuccessCalledForUploadEvents);
+        assertNull(exceptionOnFailedCalledForUploadEvents);
+        assertNull(errorCodeForUploadEvents);
+    }
+
+    public void testAddEventWithNullTableName() throws IOException {
+        MockTDClient client = new MockTDClient(DUMMY_API_KEY);
+        td.setClient(client);
+
+        enableCallbackForAddEvent();
+        enableCallbackForUploadEvents();
+
+        td.addEvent("db_", null, "key", "val");
+        assertFalse(onSuccessCalledForAddEvent);
+        assertTrue(exceptionOnFailedCalledForAddEvent instanceof IllegalArgumentException);
+        assertEquals(KeenClient.ERROR_CODE_INVALID_PARAM, errorCodeForAddEvent);
+        assertFalse(onSuccessCalledForUploadEvents);
+        assertNull(exceptionOnFailedCalledForUploadEvents);
+        assertNull(errorCodeForUploadEvents);
+    }
+
     public void testUploadEventsWithSuccess() throws IOException {
         MockTDClient client = new MockTDClient(DUMMY_API_KEY);
         td.setClient(client);
