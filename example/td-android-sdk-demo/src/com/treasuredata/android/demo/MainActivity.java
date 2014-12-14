@@ -35,10 +35,12 @@ public class MainActivity extends Activity {
         TreasureData.sharedInstance().setDebugMode(false);
         TreasureData.sharedInstance().enableAutoAppendUniqId();
         TreasureData.sharedInstance().enableAutoAppendModelInformation();
+        TreasureData.sharedInstance().setDefaultDatabase("testdb");
+        TreasureData.sharedInstance().startSession("demotbl");
         // TreasureData.sharedInstance().disableAutoRetryUploading();
 
         if (TreasureData.sharedInstance().isFirstRun(this)) {
-            TreasureData.sharedInstance().addEventWithCallback("testdb", "demotbl", "first_run", true, new TDCallback() {
+            TreasureData.sharedInstance().addEventWithCallback("demotbl", "first_run", true, new TDCallback() {
                 @Override
                 public void onSuccess() {
                     TreasureData.sharedInstance().uploadEventsWithCallback(new TDCallback() {
@@ -87,7 +89,7 @@ public class MainActivity extends Activity {
                     event.put("bottom", v.getBottom());
 
                     addEventCallback.eventName = label;
-                    TreasureData.sharedInstance().addEventWithCallback("testdb", "demotbl", event, addEventCallback);
+                    TreasureData.sharedInstance().addEventWithCallback("demotbl", event, addEventCallback);
                 }
             });
         }
@@ -97,7 +99,7 @@ public class MainActivity extends Activity {
             public boolean onTouch(View v, MotionEvent ev) {
                 addEventCallback.eventName = "image";
                 // Use default callback
-                TreasureData.sharedInstance().addEvent("testdb", "demotbl", "image", ev.toString());
+                TreasureData.sharedInstance().addEvent("demotbl", "image", ev.toString());
                 return false;
             }
         });
@@ -149,4 +151,11 @@ public class MainActivity extends Activity {
     private AddEventCallback addEventCallback = new AddEventCallback();
 
     private UploadEventsCallback uploadEventsCallback = new UploadEventsCallback();
+
+    @Override
+    protected void onDestroy() {
+        TreasureData.sharedInstance().endSession("demotbl");
+        TreasureData.sharedInstance().uploadEvents();
+        super.onDestroy();
+    }
 }

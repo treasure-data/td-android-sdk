@@ -23,14 +23,16 @@ public class TreasureData {
     private static final String SHARED_PREF_NAME = "td_sdk_info";
     private static final String SHARED_PREF_KEY_UUID = "uuid";
     private static final String SHARED_PREF_KEY_FIRST_RUN = "first_run";
-    private static final String AUTO_KEY_UUID = "td_uuid";
-    private static final String AUTO_KEY_BOARD = "td_board";
-    private static final String AUTO_KEY_BRAND = "td_brand";
-    private static final String AUTO_KEY_DEVICE = "td_device";
-    private static final String AUTO_KEY_DISPLAY = "td_display";
-    private static final String AUTO_KEY_MODEL = "td_model";
-    private static final String AUTO_KEY_OS_VER = "td_os_ver";
-    private static final String AUTO_KEY_OS_TYPE = "td_os_type";
+    private static final String EVENT_KEY_UUID = "td_uuid";
+    private static final String EVENT_KEY_SESSION_ID = "td_session_id";
+    private static final String EVENT_KEY_SESSION_EVENT = "td_session_event";
+    private static final String EVENT_KEY_BOARD = "td_board";
+    private static final String EVENT_KEY_BRAND = "td_brand";
+    private static final String EVENT_KEY_DEVICE = "td_device";
+    private static final String EVENT_KEY_DISPLAY = "td_display";
+    private static final String EVENT_KEY_MODEL = "td_model";
+    private static final String EVENT_KEY_OS_VER = "td_os_ver";
+    private static final String EVENT_KEY_OS_TYPE = "td_os_type";
     private static final String OS_TYPE = "Android";
 
     static {
@@ -39,14 +41,16 @@ public class TreasureData {
 
     private static TreasureData sharedInstance;
 
-    private TDClient client;
+    private TDClient client;    // This should be `final' but isn't because of testability...
+    private volatile String defaultDatabase;
     private volatile TDCallback addEventCallBack;
     private volatile TDCallback uploadEventsCallBack;
     private volatile KeenCallback addEventKeenCallBack = createKeenCallback(LABEL_ADD_EVENT, null);
     private volatile KeenCallback uploadEventsKeenCallBack = createKeenCallback(LABEL_UPLOAD_EVENTS, null);
     private volatile boolean autoAppendUniqId;
     private volatile boolean autoAppendModelInformation;
-    private String uuid;
+    private String uuid;    // This should be `final' but isn't because of testability...
+    private volatile String sessionId;
 
     public static TreasureData initializeSharedInstance(Context context, String apiKey) {
         sharedInstance = new TreasureData(context, apiKey);
@@ -143,6 +147,10 @@ public class TreasureData {
         TDHttpHandler.disableEventCompression();
     }
 
+    public void setDefaultDatabase(String defaultDatabase) {
+        this.defaultDatabase = defaultDatabase;
+    }
+
     public synchronized void setAddEventCallBack(TDCallback callBack) {
         this.addEventCallBack = callBack;
         this.addEventKeenCallBack = createKeenCallback(LABEL_ADD_EVENT, callBack);
@@ -175,21 +183,6 @@ public class TreasureData {
         addEventWithCallback(database, table, record, callback);
     }
 
-    public void appendUniqId(Map<String, Object> record) {
-        record.put(AUTO_KEY_UUID, uuid);
-    }
-
-    public void appendModelInformation(Map<String, Object> record) {
-        record.put(AUTO_KEY_BOARD, Build.BOARD);
-        record.put(AUTO_KEY_BRAND, Build.BRAND);
-        record.put(AUTO_KEY_DEVICE, Build.DEVICE);
-        record.put(AUTO_KEY_DISPLAY, Build.DISPLAY);
-        record.put(AUTO_KEY_DEVICE, Build.DEVICE);
-        record.put(AUTO_KEY_MODEL, Build.MODEL);
-        record.put(AUTO_KEY_OS_VER, Build.VERSION.SDK_INT);
-        record.put(AUTO_KEY_OS_TYPE, OS_TYPE);
-    }
-
     public void addEventWithCallback(String database, String table, Map<String, Object> record, TDCallback callback) {
         if (client == null) {
             Log.w(TAG, "TDClient is null");
@@ -198,6 +191,10 @@ public class TreasureData {
 
         if (callback == null) {
             callback = addEventCallBack;
+        }
+
+        if (sessionId != null) {
+            appendSessionId(record);
         }
 
         if (autoAppendUniqId) {
@@ -218,6 +215,22 @@ public class TreasureData {
         StringBuilder sb = new StringBuilder();
         sb.append(database).append(".").append(table);
         client.queueEvent(null, sb.toString(), record, null, createKeenCallback(LABEL_ADD_EVENT, callback));
+    }
+
+    public void addEvent(String table, String key, Object value) {
+        addEvent(defaultDatabase, table, key, value);
+    }
+
+    public void addEvent(String table, Map<String, Object> record) {
+        addEvent(defaultDatabase, table, record);
+    }
+
+    public void addEventWithCallback(String table, String key, Object value, TDCallback callback) {
+        addEventWithCallback(defaultDatabase, table, key, value, callback);
+    }
+
+    public void addEventWithCallback(String table, Map<String, Object> record, TDCallback callback) {
+        addEventWithCallback(defaultDatabase, table,  record, callback);
     }
 
     public void uploadEvents() {
@@ -279,6 +292,25 @@ public class TreasureData {
         client.setDebugMode(debug);
     }
 
+    public void appendSessionId(Map<String, Object> record) {
+        record.put(EVENT_KEY_SESSION_ID, sessionId);
+    }
+
+    public void appendUniqId(Map<String, Object> record) {
+        record.put(EVENT_KEY_UUID, uuid);
+    }
+
+    public void appendModelInformation(Map<String, Object> record) {
+        record.put(EVENT_KEY_BOARD, Build.BOARD);
+        record.put(EVENT_KEY_BRAND, Build.BRAND);
+        record.put(EVENT_KEY_DEVICE, Build.DEVICE);
+        record.put(EVENT_KEY_DISPLAY, Build.DISPLAY);
+        record.put(EVENT_KEY_DEVICE, Build.DEVICE);
+        record.put(EVENT_KEY_MODEL, Build.MODEL);
+        record.put(EVENT_KEY_OS_VER, Build.VERSION.SDK_INT);
+        record.put(EVENT_KEY_OS_TYPE, OS_TYPE);
+    }
+
     public void disableAutoAppendUniqId() {
         this.autoAppendUniqId = false;
     }
@@ -301,6 +333,24 @@ public class TreasureData {
 
     public void enableAutoRetryUploading() {
         client.enableAutoRetryUploading();
+    }
+
+    public void startSession(String table) {
+        startSession(defaultDatabase, table);
+    }
+
+    public void startSession(String database, String table) {
+        sessionId = UUID.randomUUID().toString();
+        addEvent(database, table, EVENT_KEY_SESSION_EVENT, "start");
+    }
+
+    public void endSession(String table) {
+        endSession(defaultDatabase, table);
+    }
+
+    public void endSession(String database, String table) {
+        addEvent(database, table, EVENT_KEY_SESSION_EVENT, "end");
+        sessionId = null;
     }
 
     // Only for testing
@@ -404,6 +454,46 @@ public class TreasureData {
         @Override
         public String getUUID(Context context) {
             return null;
+        }
+
+        @Override
+        public void setDefaultDatabase(String defaultDatabase) {
+        }
+
+        @Override
+        public void addEvent(String table, String key, Object value) {
+        }
+
+        @Override
+        public void addEvent(String table, Map<String, Object> record) {
+        }
+
+        @Override
+        public void addEventWithCallback(String table, String key, Object value, TDCallback callback) {
+        }
+
+        @Override
+        public void addEventWithCallback(String table, Map<String, Object> record, TDCallback callback) {
+        }
+
+        @Override
+        public void appendSessionId(Map<String, Object> record) {
+        }
+
+        @Override
+        public void startSession(String table) {
+        }
+
+        @Override
+        public void startSession(String database, String table) {
+        }
+
+        @Override
+        public void endSession(String table) {
+        }
+
+        @Override
+        public void endSession(String database, String table) {
         }
     }
 }
