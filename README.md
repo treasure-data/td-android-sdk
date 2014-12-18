@@ -31,33 +31,53 @@ Or put td-android-sdk-x.x.x-shaded.jar (get the latest [here](http://search.mave
 
 ```
 public class ExampleActivity extends Activity {
-  private TreasureData td;
-
-  @Override
-  protected void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
-    setContentView(R.layout.activity_main);
-      :
-    td = new TreasureData(this, "your_api_key");
+	private TreasureData td;
+	
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
+			:
+		td = new TreasureData(this, "your_api_key");
 ```
 
 or
 
 ```
     TreasureData.initializeDefaultApiKey("your_default_api_key");
-      :
+    	:
     TreasureData td = new TreasureData(this);
 ```
 
 We recommend to use a write-only API key for the SDK. To obtain one, please:
 
-1. Login into the Treasure Data Console at http://console.treasuredata.com;
+1. Login to the Treasure Data Console at http://console.treasuredata.com;
 2. Visit your Profile page at http://console.treasuredata.com/users/current;
 3. Insert your password under the 'API Keys' panel;
 4. In the bottom part of the panel, under 'Write-Only API keys', either copy the API key or click on 'Generate New' and copy the new API key.
 
+### Use a shared instance
 
-### Add Events
+Also, you can use a shared instance from anywhere with `TreasureData.sharedInstance()` after calling `TreasureData.initializeSharedInstance()`.
+
+```
+public class MainActivity extends Activity {
+		:
+	TreasureData.initializeDefaultApiKey("your_write_apikey");
+	TreasureData.initializeEncryptionKey("hello world");
+		:
+	TreasureData.initializeSharedInstance(this);
+	TreasureData.sharedInstance().setDefaultDatabase("testdb");
+		:
+}
+
+public class OtherActivity extends Activity {
+		:
+	TreasureData.sharedInstance().addEvent("demotbl", "elapsed_time", elapsed_time);
+		:
+```
+
+### Add events to local buffer
 
 ```
   View v = findViewById(R.id.button);
@@ -72,7 +92,7 @@ We recommend to use a write-only API key for the SDK. To obtain one, please:
       event.put("top", v.getTop());
       event.put("bottom", v.getBottom());
 
-      td.addEventWithCallback("testdb", "testtbl", event, new TDCallback() {
+      td.addEventWithCallback("testdb", "demotbl", event, new TDCallback() {
         @Override
         public void onSuccess() {
           Log.i("ExampleApp", "success!");
@@ -86,7 +106,8 @@ We recommend to use a write-only API key for the SDK. To obtain one, please:
     }
   });
 ```
-Or, simply
+
+Or, simply call `TreasureData#addEvent()` instead of `TreasureData#addEventWithCallback()`.
 
 ```
   final Map event = new HashMap<String, Object>();
@@ -96,12 +117,12 @@ Or, simply
   event.put("top", v.getTop());
   event.put("bottom", v.getBottom());
 
-  td.addEvent("testdb", "testtbl", event);
+  td.addEvent("testdb", "demotbl", event);
 ```
 
 Specify the database and table to which you want to import the events.
 
-### Upload Events to TreasureData
+### Upload buffered events to TreasureData
 
 
 ```
@@ -124,7 +145,9 @@ Specify the database and table to which you want to import the events.
     }
   });
 ```
-Or, simply
+
+Or, simply call `TreasureData#uploadEvents()` instead of `TreasureData#uploadEventsWithCallback()`.
+
 
 ```
     td.uploadEvents();
@@ -132,9 +155,67 @@ Or, simply
 
 The sent events is going to be buffered for a few minutes before they get imported into TreasureData storage.
 
-## About Error Code
 
-`TreasureData#addEventWithCallback()` and `uploadEventsWithCallback()` call back `TDCallback#onError()` method with `errorCode` argument. This argument is useful to know the cause type of the error. There are the following error codes.
+### Start/End session
+
+When you call `TreasureData#startSession()`, the SDK generates a session ID that's kept until `TreasureData#endSession()` is called. The session id is outputs as a column name "td_session_id". Also, `TreasureData#startSession()` and `TreasureData#endSession()` add an event that includes `{"td_session_event":"start" or "end"}`.
+
+```
+    protected void onCreate(Bundle savedInstanceState) {
+    		:
+	    TreasureData.sharedInstance().startSession("event_tbl");
+	    	:
+   	}
+   	
+	protected void onDestroy() {
+			:
+		TreasureData.sharedInstance().endSession("demotbl");
+		TreasureData.sharedInstance().uploadEvents();
+		// Outputs =>>
+		//   [{"td_session_id":"cad88260-67b4-0242-1329-2650772a66b1",
+		//		"td_session_event":"start", "time":1418880000},
+		//
+		//    {"td_session_id":"cad88260-67b4-0242-1329-2650772a66b1",
+		//		"td_session_event":"end", "time":1418880123}
+		//    ]
+			:
+	}
+```
+
+### Detect if it's the first running
+
+You can detect if it's the first running or not easily using `TreasureData#isFirstRun()` and then clear the flag with `TreasureData#clearFirstRun()`.
+
+```
+	if (TreasureData.sharedInstance().isFirstRun(this)) {
+	    TreasureData.sharedInstance().addEventWithCallback("demotbl", "first_run", true, new TDCallback() {
+	        @Override
+	        public void onSuccess() {
+	            TreasureData.sharedInstance().uploadEventsWithCallback(new TDCallback() {
+	                @Override
+	                public void onSuccess() {
+	                    TreasureData.sharedInstance().clearFirstRun(MainActivity.this);
+	                }
+	
+	                @Override
+	                public void onError(String errorCode, Exception e) {
+	                    Log.w(TAG, "TreasureData.uploadEvent:onError errorCode=" + errorCode + ", ex=" + e);
+	                }
+	            });
+	        }
+	
+	        @Override
+	        public void onError(String errorCode, Exception e) {
+	            Log.w(TAG, "TreasureData.addEvent:onError errorCode=" + errorCode + ", ex=" + e);
+	        }
+	    });
+	}
+```
+
+
+## About error codes
+
+`TreasureData#addEventWithCallback()` and `TreasureData#uploadEventsWithCallback()` call back `TDCallback#onError()` method with `errorCode` argument. This argument is useful to know the cause type of the error. There are the following error codes.
 
 - "init_error"
   - The initialization failed.
@@ -152,11 +233,11 @@ The sent events is going to be buffered for a few minutes before they get import
   - The server returned an error response
 
 
-## Additioanl Configuration
+## Additioanl configuration
 
 ### Endpoint
 
-The API endpoint (default: https://in.treasuredata.com) can be modified using the `initializeApiEndpoint` API after the TreasureData client constructor has been called and the underlying client initialized. For example:
+The API endpoint (default: https://in.treasuredata.com) can be modified using the `TreasureData#initializeApiEndpoint` API after the TreasureData client constructor has been called and the underlying client initialized. For example:
 
 ```
     TreasureData.initializeApiEndpoint("https://in.treasuredata.com");
@@ -165,7 +246,7 @@ The API endpoint (default: https://in.treasuredata.com) can be modified using th
 
 ### Encryption key
 
-If you've set an encryption key via `TreasureData.initializeEncryptionKey()`, our SDK saves the event data as encrypted when called `addEvent` or `addEventWithCallback`.
+If you've set an encryption key via `TreasureData.initializeEncryptionKey()`, our SDK saves the event data as encrypted when called `TreasureData#addEvent` or `TreasureData#addEventWithCallback`.
 
 ```
     TreasureData.initializeEncryptionKey("hello world");
@@ -173,82 +254,38 @@ If you've set an encryption key via `TreasureData.initializeEncryptionKey()`, ou
     td.addEventWithCallback(...)
 ```
 
-## Use Cases
+### Adding UUID of the device to each event automatically
 
-### Collect The First Run Event (Installation Event)
-
-You can collect the first run event of your application like this. Probably, this event can be used as an installation event.
+UUID of the device will be added to each event automatically if you call `TreasureData#enableAutoAppendUniqId()`. This value won't change until the application is uninstalled.
 
 ```
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-          :
-        final SharedPreferences prefs = getSharedPreferences("my_application", MODE_PRIVATE);
-        if (!prefs.getBoolean("hasLaunchedOnce", false)) {
-            TreasureData td = new TreasureData(this);
-            td.addEventWithCallback("testdb", "demotbl", "installed", true, new TDCallback() {
-                @Override
-                public void onSuccess() {
-                    prefs.edit().putBoolean("hasLaunchedOnce", true).commit();
-                    td.uploadEvents();
-                }
-
-                @Override
-                public void onError(String errorCode, Exception e) {
-                    Log.w(TAG, "TreasureData.addEvent:onError errorCode=" + errorCode + ", ex=" + e);
-                }
-            });
-        }
-          :
+	td.enableAutoAppendUniqId();
+		:
+	td.addEvent(...);
 ```
 
-### Collect Installation Referrer Information From Google Play
+It outputs the value as a column name `td_uuid`.
 
-You can collect the installation event of your application installed via Google Play as follows.
 
-- AndroidManifest.xml
+### Adding the device model information to each event automatically
 
-```
-<manifest>
-    <application>
-        <receiver android:name=".InstallationReceiver" android:exported="true">
-            <intent-filter>
-                <action android:name="com.android.vending.INSTALL_REFERRER" />
-            </intent-filter>
-        </receiver>
-    </application>
-</manifest>
-```
-
-- InstallationReceiver
+Device model infromation will be added to each event automatically if you call `TreasureData#enableAutoAppendModelInformation()`.
 
 ```
-/*
- * For installation event test.
- * $ adb shell
- * # am broadcast -a com.android.vending.INSTALL_REFERRER \
- *       -n com.treasuredata.android.demo/.InstallationReceiver \
- *       --es "referrer" "utm_source=test_source&utm_medium=test_medium&…"
- */
-public class InstallationReceiver extends BroadcastReceiver {
-    @Override
-    public void onReceive(Context context, Intent intent) {
-        try {
-            TreasureData.enableLogging();
-            final TreasureData td = new TreasureData(context, "your_default_api_key");
-            HashMap<String, Object> referrer = new HashMap<String, Object>();
-            referrer.put("type", "install_referrer");
-            for (String kv : intent.getStringExtra("referrer").split("&")) {
-                String[] kAndV = kv.split("=", 2);
-                if (kAndV.length >= 2) {
-                    referrer.put(kAndV[0], kAndV[1]);
-                }
-            }
-            td.addEvent("testdb", "demotbl", referrer);
-            td.uploadEvents();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-}
+	td.enableAutoAppendModelInformation();
+		:
+	td.addEvent(...);
 ```
+
+It outputs the following column names and values:
+
+- `td_board` : android.os.Build#BOARD
+- `td_brand` : android.os.Build#BRAND
+- `td_device` : android.os.Build#DEVICE
+- `td_display` : android.os.Build#DISPLAY
+- `td_device` : android.os.Build#DEVICE
+- `td_model` : android.os.Build#MODEL
+- `td_os_ver` : android.os.Build.VERSION#SDK_INT
+- `td_os_type` : "Android"
+
+
