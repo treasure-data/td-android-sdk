@@ -254,6 +254,14 @@ If you've set an encryption key via `TreasureData.initializeEncryptionKey()`, ou
     td.addEventWithCallback(...)
 ```
 
+### Default database
+
+```
+	TreasureData.sharedInstance().setDefaultDatabase("default_db");
+		:
+	TreasureData.sharedInstance().addEvent("demotbl", …);
+```	
+
 ### Adding UUID of the device to each event automatically
 
 UUID of the device will be added to each event automatically if you call `TreasureData#enableAutoAppendUniqId()`. This value won't change until the application is uninstalled.
@@ -283,7 +291,6 @@ It outputs the following column names and values:
 - `td_brand` : android.os.Build#BRAND
 - `td_device` : android.os.Build#DEVICE
 - `td_display` : android.os.Build#DISPLAY
-- `td_device` : android.os.Build#DEVICE
 - `td_model` : android.os.Build#MODEL
 - `td_os_ver` : android.os.Build.VERSION#SDK_INT
 - `td_os_type` : "Android"
