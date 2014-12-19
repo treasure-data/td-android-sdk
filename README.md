@@ -58,7 +58,7 @@ We recommend to use a write-only API key for the SDK. To obtain one, please:
 
 ### Use a shared instance
 
-Also, you can use a shared instance from anywhere with `TreasureData.sharedInstance()` after calling `TreasureData.initializeSharedInstance()`.
+Also, you can use a shared instance from anywhere with `TreasureData.sharedInstance` method after calling `TreasureData.initializeSharedInstance`.
 
 ```
 public class MainActivity extends Activity {
@@ -107,7 +107,7 @@ public class OtherActivity extends Activity {
   });
 ```
 
-Or, simply call `TreasureData#addEvent()` instead of `TreasureData#addEventWithCallback()`.
+Or, simply call `TreasureData#addEvent` method instead of `TreasureData#addEventWithCallback`.
 
 ```
   final Map event = new HashMap<String, Object>();
@@ -146,7 +146,7 @@ Specify the database and table to which you want to import the events.
   });
 ```
 
-Or, simply call `TreasureData#uploadEvents()` instead of `TreasureData#uploadEventsWithCallback()`.
+Or, simply call `TreasureData#uploadEvents` method instead of `TreasureData#uploadEventsWithCallback`.
 
 
 ```
@@ -158,7 +158,7 @@ The sent events is going to be buffered for a few minutes before they get import
 
 ### Start/End session
 
-When you call `TreasureData#startSession()`, the SDK generates a session ID that's kept until `TreasureData#endSession()` is called. The session id is outputs as a column name "td_session_id". Also, `TreasureData#startSession()` and `TreasureData#endSession()` add an event that includes `{"td_session_event":"start" or "end"}`.
+When you call `TreasureData#startSession` method, the SDK generates a session ID that's kept until `TreasureData#endSession` is called. The session id is outputs as a column name "td_session_id". Also, `TreasureData#startSession` and `TreasureData#endSession` method add an event that includes `{"td_session_event":"start" or "end"}`.
 
 ```
     protected void onCreate(Bundle savedInstanceState) {
@@ -184,7 +184,7 @@ When you call `TreasureData#startSession()`, the SDK generates a session ID that
 
 ### Detect if it's the first running
 
-You can detect if it's the first running or not easily using `TreasureData#isFirstRun()` and then clear the flag with `TreasureData#clearFirstRun()`.
+You can detect if it's the first running or not easily using `TreasureData#isFirstRun` method and then clear the flag with `TreasureData#clearFirstRun`.
 
 ```
 	if (TreasureData.sharedInstance().isFirstRun(this)) {
@@ -215,29 +215,22 @@ You can detect if it's the first running or not easily using `TreasureData#isFir
 
 ## About error codes
 
-`TreasureData#addEventWithCallback()` and `TreasureData#uploadEventsWithCallback()` call back `TDCallback#onError()` method with `errorCode` argument. This argument is useful to know the cause type of the error. There are the following error codes.
+`TreasureData#addEventWithCallback` and `TreasureData#uploadEventsWithCallback` call back `TDCallback#onError` method with `errorCode` argument. This argument is useful to know the cause type of the error. There are the following error codes.
 
-- "init_error"
-  - The initialization failed.
-- "invalid_param"
-  - The parameter passed to the API was invalid
-- "invalid_event"
-  - The event was invalid
-- "data_conversion"
-  - Failed to convert the data to/from JSON
-- "storage_error"
-  - Failed to read/write data in the storage
-- "network_error"
-  - Failed to communicate with the server due to network problem
-- "server_response"
-  - The server returned an error response
+- `init_error` :  The initialization failed.
+- `invalid_param` : The parameter passed to the API was invalid
+- `invalid_event` : The event was invalid
+- `data_conversion` : Failed to convert the data to/from JSON
+- `storage_error` : Failed to read/write data in the storage
+- `network_error` : Failed to communicate with the server due to network problem 
+- `server_response` : The server returned an error response
 
 
 ## Additioanl configuration
 
 ### Endpoint
 
-The API endpoint (default: https://in.treasuredata.com) can be modified using the `TreasureData#initializeApiEndpoint` API after the TreasureData client constructor has been called and the underlying client initialized. For example:
+The API endpoint (default: https://in.treasuredata.com) can be modified using  `TreasureData.initializeApiEndpoint`. For example:
 
 ```
     TreasureData.initializeApiEndpoint("https://in.treasuredata.com");
@@ -246,7 +239,7 @@ The API endpoint (default: https://in.treasuredata.com) can be modified using th
 
 ### Encryption key
 
-If you've set an encryption key via `TreasureData.initializeEncryptionKey()`, our SDK saves the event data as encrypted when called `TreasureData#addEvent` or `TreasureData#addEventWithCallback`.
+If you've set an encryption key via `TreasureData.initializeEncryptionKey`, our SDK saves the event data as encrypted when called `TreasureData#addEvent` or `TreasureData.addEventWithCallback`.
 
 ```
     TreasureData.initializeEncryptionKey("hello world");
@@ -277,7 +270,7 @@ It outputs the value as a column name `td_uuid`.
 
 ### Adding the device model information to each event automatically
 
-Device model infromation will be added to each event automatically if you call `TreasureData#enableAutoAppendModelInformation()`.
+Device model infromation will be added to each event automatically if you call `TreasureData#enableAutoAppendModelInformation`.
 
 ```
 	td.enableAutoAppendModelInformation();
