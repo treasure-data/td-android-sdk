@@ -163,7 +163,7 @@ When you call `TreasureData#startSession` method, the SDK generates a session ID
 ```
     protected void onCreate(Bundle savedInstanceState) {
     		:
-	    TreasureData.sharedInstance().startSession("event_tbl");
+	    TreasureData.sharedInstance().startSession("demotbl");
 	    	:
    	}
    	
@@ -189,26 +189,17 @@ You can detect if it's the first running or not easily using `TreasureData#isFir
 ```
 	if (TreasureData.sharedInstance().isFirstRun(this)) {
 	    TreasureData.sharedInstance().addEventWithCallback("demotbl", "first_run", true, new TDCallback() {
-	        @Override
-	        public void onSuccess() {
-	            TreasureData.sharedInstance().uploadEventsWithCallback(new TDCallback() {
-	                @Override
-	                public void onSuccess() {
-	                    TreasureData.sharedInstance().clearFirstRun(MainActivity.this);
-	                }
-	
-	                @Override
-	                public void onError(String errorCode, Exception e) {
-	                    Log.w(TAG, "TreasureData.uploadEvent:onError errorCode=" + errorCode + ", ex=" + e);
-	                }
-	            });
-	        }
-	
-	        @Override
-	        public void onError(String errorCode, Exception e) {
-	            Log.w(TAG, "TreasureData.addEvent:onError errorCode=" + errorCode + ", ex=" + e);
-	        }
-	    });
+			@Override
+			public void onSuccess() {
+				TreasureData.sharedInstance().clearFirstRun(MainActivity.this);
+				TreasureData.sharedInstance().uploadEvents();
+			}
+			
+			@Override
+			public void onError(String errorCode, Exception e) {
+				Log.w(TAG, "TreasureData.addEvent:onError errorCode=" + errorCode + ", ex=" + e);
+			}
+		});
 	}
 ```
 
