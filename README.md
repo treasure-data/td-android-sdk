@@ -217,7 +217,7 @@ You can detect if it's the first running or not easily using `TreasureData#isFir
 - `server_response` : The server returned an error response
 
 
-## Additioanl configuration
+## Additional configuration
 
 ### Endpoint
 
