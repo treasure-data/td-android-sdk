@@ -282,9 +282,9 @@ It outputs the following column names and values:
 ### Enable/Disable debug log
 
 ```
-        TreasureData.enableLogging();
+	TreasureData.enableLogging();
 ```
 
 ```
-        TreasureData.disableLogging();
+	TreasureData.disableLogging();
 ```
