@@ -279,4 +279,12 @@ It outputs the following column names and values:
 - `td_os_ver` : android.os.Build.VERSION#SDK_INT
 - `td_os_type` : "Android"
 
+### Enable/Disable debug log
 
+```
+        TreasureData.enableLogging();
+```
+
+```
+        TreasureData.disableLogging();
+```
