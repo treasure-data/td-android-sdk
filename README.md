@@ -7,6 +7,16 @@ Android SDK for [TreasureData](http://www.treasuredata.com/). With this SDK, you
 
 You can install td-android-sdk into your Android project in the following ways.
 
+### Gradle
+
+If you use gradle, add the following dependency to `dependencies` directive in the build.gradle
+
+```
+dependencies {
+    compile 'com.treasuredata:td-android-sdk:0.1.6'
+}
+```
+
 ### Maven
 
 If you use maven, add the following directives to your pom.xml
