@@ -171,18 +171,8 @@ public class TreasureData {
         return this.uploadEventsCallBack;
     }
 
-    public void addEvent(String database, String table, String key, Object value) {
-        addEventWithCallback(database, table, key, value, null);
-    }
-
     public void addEvent(String database, String table, Map<String, Object> record) {
         addEventWithCallback(database, table, record, null);
-    }
-
-    public void addEventWithCallback(String database, String table, String key, Object value, TDCallback callback) {
-        HashMap<String, Object> record = new HashMap<String, Object>(1);
-        record.put(key, value);
-        addEventWithCallback(database, table, record, callback);
     }
 
     private void handleParamError(TDCallback callback, String errMsg) {
@@ -240,16 +230,8 @@ public class TreasureData {
         client.queueEvent(null, sb.toString(), record, null, createKeenCallback(LABEL_ADD_EVENT, callback));
     }
 
-    public void addEvent(String table, String key, Object value) {
-        addEvent(defaultDatabase, table, key, value);
-    }
-
     public void addEvent(String table, Map<String, Object> record) {
         addEvent(defaultDatabase, table, record);
-    }
-
-    public void addEventWithCallback(String table, String key, Object value, TDCallback callback) {
-        addEventWithCallback(defaultDatabase, table, key, value, callback);
     }
 
     public void addEventWithCallback(String table, Map<String, Object> record, TDCallback callback) {
@@ -364,7 +346,9 @@ public class TreasureData {
 
     public void startSession(String database, String table) {
         sessionId = UUID.randomUUID().toString();
-        addEvent(database, table, EVENT_KEY_SESSION_EVENT, "start");
+        HashMap<String, Object> record = new HashMap<String, Object>(1);
+        record.put(EVENT_KEY_SESSION_EVENT, "start");
+        addEvent(database, table, record);
     }
 
     public void endSession(String table) {
@@ -372,7 +356,9 @@ public class TreasureData {
     }
 
     public void endSession(String database, String table) {
-        addEvent(database, table, EVENT_KEY_SESSION_EVENT, "end");
+        HashMap<String, Object> record = new HashMap<String, Object>(1);
+        record.put(EVENT_KEY_SESSION_EVENT, "end");
+        addEvent(database, table, record);
         sessionId = null;
     }
 
@@ -407,15 +393,7 @@ public class TreasureData {
         }
 
         @Override
-        public void addEvent(String database, String table, String key, Object value) {
-        }
-
-        @Override
         public void addEvent(String database, String table, Map<String, Object> record) {
-        }
-
-        @Override
-        public void addEventWithCallback(String database, String table, String key, Object value, TDCallback callback) {
         }
 
         @Override
@@ -485,15 +463,7 @@ public class TreasureData {
         }
 
         @Override
-        public void addEvent(String table, String key, Object value) {
-        }
-
-        @Override
         public void addEvent(String table, Map<String, Object> record) {
-        }
-
-        @Override
-        public void addEventWithCallback(String table, String key, Object value, TDCallback callback) {
         }
 
         @Override

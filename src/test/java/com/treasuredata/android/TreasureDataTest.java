@@ -138,31 +138,6 @@ public class TreasureDataTest extends TestCase {
     public void testAddEventAndUploadEventsWithoutCallBack() throws IOException {
         MockTDClient client = new MockTDClient(DUMMY_API_KEY);
         td = new TreasureData(client, null);
-        td.addEvent("db_", "tbl", "key", "val");
-        td.uploadEvents();
-        assertEquals(1, client.addedEvent.size());
-        assertEquals("db_.tbl", client.addedEvent.get(0).tag);
-        assertEquals(1, client.addedEvent.get(0).event.size());
-        assertTrue(client.addedEvent.get(0).event.containsKey("key"));
-        assertTrue(client.addedEvent.get(0).event.containsValue("val"));
-    }
-
-    public void testAddEventAndUploadEventsWithDefaultDatabaseWithoutCallBack() throws IOException {
-        MockTDClient client = new MockTDClient(DUMMY_API_KEY);
-        td = new TreasureData(client, null);
-        td.setDefaultDatabase("db_");
-        td.addEvent("tbl", "key", "val");
-        td.uploadEvents();
-        assertEquals(1, client.addedEvent.size());
-        assertEquals("db_.tbl", client.addedEvent.get(0).tag);
-        assertEquals(1, client.addedEvent.get(0).event.size());
-        assertTrue(client.addedEvent.get(0).event.containsKey("key"));
-        assertTrue(client.addedEvent.get(0).event.containsValue("val"));
-    }
-
-    public void testAddEventWithMapAndUploadEventsWithoutCallBack() throws IOException {
-        MockTDClient client = new MockTDClient(DUMMY_API_KEY);
-        td = new TreasureData(client, null);
         Map<String, Object> records = new HashMap<String, Object>();
         records.put("key", "val");
         td.addEvent("db_", "tbl", records);
@@ -174,7 +149,7 @@ public class TreasureDataTest extends TestCase {
         assertTrue(client.addedEvent.get(0).event.containsValue("val"));
     }
 
-    public void testAddEventWithMapAndUploadEventsWithDefaultDatabaseWithoutCallBack() throws IOException {
+    public void testAddEventAndUploadEventsWithDefaultDatabaseWithoutCallBack() throws IOException {
         MockTDClient client = new MockTDClient(DUMMY_API_KEY);
         td = new TreasureData(client, null);
         td.setDefaultDatabase("db_");
@@ -196,7 +171,9 @@ public class TreasureDataTest extends TestCase {
         enableCallbackForAddEvent();
         enableCallbackForUploadEvents();
 
-        td.addEvent("db_", "tbl", "key", "val");
+        Map<String, Object> records = new HashMap<String, Object>();
+        records.put("key", "val");
+        td.addEvent("db_", "tbl", records);
         assertTrue(onSuccessCalledForAddEvent);
         assertNull(exceptionOnFailedCalledForAddEvent);
         assertNull(errorCodeForAddEvent);
@@ -298,7 +275,9 @@ public class TreasureDataTest extends TestCase {
         enableCallbackForAddEvent();
         enableCallbackForUploadEvents();
 
-        td.addEvent("tbl", "key", "val");
+        Map<String, Object> records = new HashMap<String, Object>();
+        records.put("key", "val");
+        td.addEvent("tbl", records);
         assertTrue(onSuccessCalledForAddEvent);
         assertNull(exceptionOnFailedCalledForAddEvent);
         assertNull(errorCodeForAddEvent);
@@ -319,7 +298,9 @@ public class TreasureDataTest extends TestCase {
         enableCallbackForAddEvent();
         enableCallbackForUploadEvents();
 
-        td.addEvent("tbl", "key", "val");
+        Map<String, Object> records = new HashMap<String, Object>();
+        records.put("key", "val");
+        td.addEvent("tbl", records);
         assertFalse(onSuccessCalledForAddEvent);
         assertTrue(exceptionOnFailedCalledForAddEvent instanceof IllegalArgumentException);
         assertEquals(KeenClient.ERROR_CODE_INVALID_PARAM, errorCodeForAddEvent);
@@ -338,7 +319,9 @@ public class TreasureDataTest extends TestCase {
         enableCallbackForAddEvent();
         enableCallbackForUploadEvents();
 
-        td.addEvent("db_", "tbl", "key", "val");
+        Map<String, Object> records = new HashMap<String, Object>();
+        records.put("key", "val");
+        td.addEvent("db_", "tbl", records);
         assertFalse(onSuccessCalledForAddEvent);
         assertTrue(exceptionOnFailedCalledForAddEvent instanceof IOException);
         assertEquals("hello world", exceptionOnFailedCalledForAddEvent.getMessage());
@@ -357,7 +340,9 @@ public class TreasureDataTest extends TestCase {
         enableCallbackForUploadEvents();
 
         for (String db : Arrays.asList("db", "Db_", "db$")) {
-            td.addEvent(db, "tbl", "key", "val");
+            Map<String, Object> records = new HashMap<String, Object>();
+            records.put("key", "val");
+            td.addEvent(db, "tbl", records);
             assertFalse(onSuccessCalledForAddEvent);
             assertTrue(exceptionOnFailedCalledForAddEvent instanceof IllegalArgumentException);
             assertEquals(KeenClient.ERROR_CODE_INVALID_PARAM, errorCodeForAddEvent);
@@ -376,7 +361,9 @@ public class TreasureDataTest extends TestCase {
         enableCallbackForUploadEvents();
 
         for (String tbl : Arrays.asList("tb", "tBl", "tbl$")) {
-            td.addEvent(tbl, "tbl", "key", "val");
+            Map<String, Object> records = new HashMap<String, Object>();
+            records.put("key", "val");
+            td.addEvent("db", tbl, records);
             assertFalse(onSuccessCalledForAddEvent);
             assertTrue(exceptionOnFailedCalledForAddEvent instanceof IllegalArgumentException);
             assertEquals(KeenClient.ERROR_CODE_INVALID_PARAM, errorCodeForAddEvent);
@@ -394,7 +381,9 @@ public class TreasureDataTest extends TestCase {
         enableCallbackForAddEvent();
         enableCallbackForUploadEvents();
 
-        td.addEvent(null, "tbl", "key", "val");
+        Map<String, Object> records = new HashMap<String, Object>();
+        records.put("key", "val");
+        td.addEvent(null, "tbl", records);
         assertFalse(onSuccessCalledForAddEvent);
         assertTrue(exceptionOnFailedCalledForAddEvent instanceof IllegalArgumentException);
         assertEquals(KeenClient.ERROR_CODE_INVALID_PARAM, errorCodeForAddEvent);
@@ -411,7 +400,9 @@ public class TreasureDataTest extends TestCase {
         enableCallbackForAddEvent();
         enableCallbackForUploadEvents();
 
-        td.addEvent("db_", null, "key", "val");
+        Map<String, Object> records = new HashMap<String, Object>();
+        records.put("key", "val");
+        td.addEvent("db_", null, records);
         assertFalse(onSuccessCalledForAddEvent);
         assertTrue(exceptionOnFailedCalledForAddEvent instanceof IllegalArgumentException);
         assertEquals(KeenClient.ERROR_CODE_INVALID_PARAM, errorCodeForAddEvent);
