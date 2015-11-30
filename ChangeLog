@@ -1,3 +1,23 @@
+Release 0.1.8
+
+* Remove confusable and useless APIs
+* Improve the retry interval of HTTP request
+* Reduce the number of methods in sharded jar file and the library file size
+
+Release 0.1.7 (skipped)
+
+Release 0.1.6
+
+* Append device model infromation and persistent UUID which is generated at the first launch to each event if it's turned on
+* Add session id
+* Add first run flag so that the application detects the first launch
+* Retry uploading
+* Remove gd_bundle.crt from Java source file
+
+Release 0.1.5
+
+* Fix some minor bugs
+
 Release 0.1.4
 
 * Fix some bugs related to encryption
