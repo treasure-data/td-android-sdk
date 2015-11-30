@@ -40,24 +40,33 @@ public class MainActivity extends Activity {
         // TreasureData.sharedInstance().disableAutoRetryUploading();
 
         if (TreasureData.sharedInstance().isFirstRun(this)) {
-            TreasureData.sharedInstance().addEventWithCallback("demotbl", "first_run", true, new TDCallback() {
+            Map<String, Object> event = new HashMap<String, Object>();
+            event.put("first_run", true);
+            event.put("app_name", "td-android-sdk-demo");
+            TreasureData.sharedInstance().addEventWithCallback("demotbl", event, new TDCallback()
+            {
                 @Override
-                public void onSuccess() {
-                    TreasureData.sharedInstance().uploadEventsWithCallback(new TDCallback() {
+                public void onSuccess()
+                {
+                    TreasureData.sharedInstance().uploadEventsWithCallback(new TDCallback()
+                    {
                         @Override
-                        public void onSuccess() {
+                        public void onSuccess()
+                        {
                             TreasureData.sharedInstance().clearFirstRun(MainActivity.this);
                         }
 
                         @Override
-                        public void onError(String errorCode, Exception e) {
+                        public void onError(String errorCode, Exception e)
+                        {
                             Log.w(TAG, "TreasureData.uploadEvent:onError errorCode=" + errorCode + ", ex=" + e);
                         }
                     });
                 }
 
                 @Override
-                public void onError(String errorCode, Exception e) {
+                public void onError(String errorCode, Exception e)
+                {
                     Log.w(TAG, "TreasureData.addEvent:onError errorCode=" + errorCode + ", ex=" + e);
                 }
             });
@@ -98,8 +107,17 @@ public class MainActivity extends Activity {
             @Override
             public boolean onTouch(View v, MotionEvent ev) {
                 addEventCallback.eventName = "image";
+                Map<String, Object> event = new HashMap<String, Object>();
+                event.put("label", "image");
+                event.put("action", ev.getAction());
+                event.put("down_time", ev.getDownTime());
+                event.put("event_time", ev.getEventTime());
+                event.put("pos_x", ev.getX());
+                event.put("pos_y", ev.getY());
+                event.put("pressure", ev.getPressure());
+                event.put("size", ev.getSize());
                 // Use default callback
-                TreasureData.sharedInstance().addEvent("demotbl", "image", ev.toString());
+                TreasureData.sharedInstance().addEvent("demotbl", event);
                 return false;
             }
         });
