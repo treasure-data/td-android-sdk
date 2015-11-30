@@ -4,8 +4,10 @@ import com.fasterxml.jackson.jr.ob.JSON;
 import junit.framework.TestCase;
 import org.apache.commons.codec.binary.Base64;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -15,11 +17,13 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 public class TDJsonHandlerTest extends TestCase {
@@ -31,17 +35,22 @@ public class TDJsonHandlerTest extends TestCase {
                 "    },\n" +
                 "    \"#UUID\":\"2F1FCD4D-74A6-45EF-B9B0-CD82DE49BE69\"\n" +
                 "}";
-    private TDJsonHandler jsonHandler;
-    private JSON json;
+    private TDJsonHandler jsonHandler = new TDJsonHandler();
+    private JSON json = new CustomizedJSON();
+    private TDJsonHandler encJsonHandler = new TDJsonHandler("hello, world", new TDJsonHandler.Base64Encoder() {
+        private final Charset UTF8 = Charset.forName("UTF-8");
+        @Override
+        public String encode(byte[] data)
+        {
+            return new String(Base64.encodeBase64(data), UTF8);
+        }
 
-    public void setUp() throws Exception {
-        super.setUp();
-        jsonHandler = new TDJsonHandler();
-        json = new CustomizedJSON();
-    }
-
-    public void tearDown() throws Exception {
-    }
+        @Override
+        public byte[] decode(String encoded)
+        {
+            return Base64.decodeBase64(encoded.getBytes(UTF8));
+        }
+    });
 
     public void testReadJson() throws Exception {
         Map<String, Object> result = jsonHandler.readJson(new StringReader(JSON_STR));
@@ -115,31 +124,49 @@ public class TDJsonHandlerTest extends TestCase {
         assertExampleMap(now, result);
     }
 
-    public void testReadWriteWithEncryption()
-            throws IOException
-    {
+    public void testReadWriteWithEncryption() throws IOException {
         Date now = new Date();
         Map<String, ?> value = createExampleMap(now);
-
-        TDJsonHandler encJsonHandler = new TDJsonHandler("hello, world", new TDJsonHandler.Base64Encoder() {
-            private final Charset UTF8 = Charset.forName("UTF-8");
-            @Override
-            public String encode(byte[] data)
-            {
-                return new String(Base64.encodeBase64(data), UTF8);
-            }
-
-            @Override
-            public byte[] decode(String encoded)
-            {
-                return Base64.decodeBase64(encoded.getBytes(UTF8));
-            }
-        });
 
         StringWriter writer = new StringWriter();
         encJsonHandler.writeJson(writer, value);
 
         Map<String, Object> result = encJsonHandler.readJson(new StringReader(writer.toString()));
         assertExampleMap(now, result);
+    }
+
+    public void testLargeData() throws IOException {
+        int tag_num = 8;
+        Map<String, Object> records = new HashMap<String, Object>();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 512; i++) {
+            sb.append('x');
+        }
+        String value = sb.toString();
+        for (int tag_idx = 0; tag_idx < tag_num; tag_idx++) {
+            List<Map<String, Object>> events = new ArrayList<Map<String, Object>>();
+            for (int i = 0; i < 200; i++) {
+                Map<String, Object> map = new HashMap<String, Object>();
+                for (int item_idx = 0; item_idx < 10; item_idx++) {
+                    map.put("key" + item_idx, value);
+                }
+                events.add(map);
+            }
+            records.put("tag" + tag_idx, events);
+        }
+
+        {
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            jsonHandler.writeJson(new OutputStreamWriter(outputStream), records);
+            Map<String, Object> result = jsonHandler.readJson(new InputStreamReader(new ByteArrayInputStream(outputStream.toByteArray())));
+            assertEquals(tag_num, result.size());
+        }
+
+        {
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            encJsonHandler.writeJson(new OutputStreamWriter(outputStream), records);
+            Map<String, Object> result = encJsonHandler.readJson(new InputStreamReader(new ByteArrayInputStream(outputStream.toByteArray())));
+            assertEquals(tag_num, result.size());
+        }
     }
 }
