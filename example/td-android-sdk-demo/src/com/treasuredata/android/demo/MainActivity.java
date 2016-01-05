@@ -26,18 +26,19 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         // TreasureData.initializeApiEndpoint("https://mobile-ybi.jp-east.idcfcloud.com");
-        // TreasureData.initializeDefaultApiKey("your_default_api_key");
+        // TreasureData.initializeDefaultApiKey("your_write_api_key");
         TreasureData.enableLogging();
         TreasureData.initializeEncryptionKey("hello world");
         // TreasureData.disableEventCompression();
 
-        TreasureData.initializeSharedInstance(this, "your_default_api_key");
+        TreasureData.initializeSharedInstance(this, "your_write_api_key");
         TreasureData.sharedInstance().setDebugMode(false);
         TreasureData.sharedInstance().enableAutoAppendUniqId();
         TreasureData.sharedInstance().enableAutoAppendModelInformation();
         TreasureData.sharedInstance().setDefaultDatabase("testdb");
         TreasureData.sharedInstance().startSession("demotbl");
         // TreasureData.sharedInstance().disableAutoRetryUploading();
+        // TreasureData.sharedInstance().enableServerSideUploadTimestamp();
 
         if (TreasureData.sharedInstance().isFirstRun(this)) {
             Map<String, Object> event = new HashMap<String, Object>();
