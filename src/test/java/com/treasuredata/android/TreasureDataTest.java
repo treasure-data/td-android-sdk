@@ -149,6 +149,23 @@ public class TreasureDataTest extends TestCase {
         assertTrue(client.addedEvent.get(0).event.containsValue("val"));
     }
 
+    public void testAddEventAndUploadEventsWithoutCallBackWithServerSideUploadTimestamp() throws IOException {
+        MockTDClient client = new MockTDClient(DUMMY_API_KEY);
+        td = new TreasureData(client, null);
+        td.enableServerSideUploadTimestamp();
+        Map<String, Object> records = new HashMap<String, Object>();
+        records.put("key", "val");
+        td.addEvent("db_", "tbl", records);
+        td.uploadEvents();
+        assertEquals(1, client.addedEvent.size());
+        assertEquals("db_.tbl", client.addedEvent.get(0).tag);
+        assertEquals(2, client.addedEvent.get(0).event.size());
+        assertTrue(client.addedEvent.get(0).event.containsKey("key"));
+        assertTrue(client.addedEvent.get(0).event.containsValue("val"));
+        assertTrue(client.addedEvent.get(0).event.containsKey("#SSUT"));
+        assertTrue(client.addedEvent.get(0).event.containsValue(true));
+    }
+
     public void testAddEventAndUploadEventsWithDefaultDatabaseWithoutCallBack() throws IOException {
         MockTDClient client = new MockTDClient(DUMMY_API_KEY);
         td = new TreasureData(client, null);
