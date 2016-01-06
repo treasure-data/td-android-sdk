@@ -8,6 +8,7 @@ import io.keen.client.java.KeenClient;
 import org.komamitsu.android.util.Log;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -33,6 +34,7 @@ public class TreasureData {
     private static final String EVENT_KEY_MODEL = "td_model";
     private static final String EVENT_KEY_OS_VER = "td_os_ver";
     private static final String EVENT_KEY_OS_TYPE = "td_os_type";
+    private static final String EVENT_KEY_SERVERSIDE_UPLOAD_TIMESTAMP = "#SSUT";
     private static final String OS_TYPE = "Android";
 
     static {
@@ -51,6 +53,7 @@ public class TreasureData {
     private volatile boolean autoAppendUniqId;
     private volatile boolean autoAppendModelInformation;
     private volatile String sessionId;
+    private volatile boolean serverSideUploadTimestamp;
 
     public static TreasureData initializeSharedInstance(Context context, String apiKey) {
         sharedInstance = new TreasureData(context, apiKey);
@@ -225,6 +228,11 @@ public class TreasureData {
             handleParamError(callback, errMsg);
             return;
         }
+
+        if (serverSideUploadTimestamp) {
+            record.put(EVENT_KEY_SERVERSIDE_UPLOAD_TIMESTAMP, true);
+        }
+
         StringBuilder sb = new StringBuilder();
         sb.append(database).append(".").append(table);
         client.queueEvent(null, sb.toString(), record, null, createKeenCallback(LABEL_ADD_EVENT, callback));
@@ -362,6 +370,14 @@ public class TreasureData {
         sessionId = null;
     }
 
+    public void enableServerSideUploadTimestamp() {
+        serverSideUploadTimestamp = true;
+    }
+
+    public void disableServerSideUploadTimestamp() {
+        serverSideUploadTimestamp = false;
+    }
+
     // Only for testing
     @Deprecated
     TreasureData(TDClient mockClient, String uuid) {
@@ -488,6 +504,14 @@ public class TreasureData {
 
         @Override
         public void endSession(String database, String table) {
+        }
+
+        @Override
+        public void enableServerSideUploadTimestamp() {
+        }
+
+        @Override
+        public void disableServerSideUploadTimestamp() {
         }
     }
 }
