@@ -13,7 +13,7 @@ If you use gradle, add the following dependency to `dependencies` directive in t
 
 ```
 dependencies {
-    compile 'com.treasuredata:td-android-sdk:0.1.8'
+    compile 'com.treasuredata:td-android-sdk:0.1.9'
 }
 ```
 
@@ -25,7 +25,7 @@ If you use maven, add the following directives to your pom.xml
   <dependency>
     <groupId>com.treasuredata</groupId>
     <artifactId>td-android-sdk</artifactId>
-    <version>0.1.8</version>
+    <version>0.1.9</version>
   </dependency>
 ```
 
