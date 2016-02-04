@@ -1,3 +1,7 @@
+Release 0.1.10
+
+* Fix bug that can cause a failure of sending HTTP request
+
 Release 0.1.9
 
 * Enable server side upload timestamp
