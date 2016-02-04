@@ -18,6 +18,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
+import java.util.Arrays;
 import java.util.zip.DeflaterInputStream;
 
 class TDHttpHandler extends UrlConnectionHttpHandler {
@@ -74,9 +75,9 @@ class TDHttpHandler extends UrlConnectionHttpHandler {
                 byte[] srcBytes = srcOutputStream.toByteArray();
 
                 BufferedInputStream compressedInputStream = new BufferedInputStream(new DeflaterInputStream(new ByteArrayInputStream(srcBytes)));
+                int readLen;
                 byte[] buf = new byte[256];
-                while (compressedInputStream.available() > 0) {
-                    int readLen = compressedInputStream.read(buf);
+                while ((readLen = compressedInputStream.read(buf)) > 0) {
                     connection.getOutputStream().write(buf, 0, readLen);
                 }
             }
