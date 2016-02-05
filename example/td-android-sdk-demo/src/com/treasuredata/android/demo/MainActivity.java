@@ -134,13 +134,15 @@ public class MainActivity extends Activity {
     @Override
     protected void onStart() {
         super.onStart();
-        TreasureData.sharedInstance().startSession("demotbl");
+        // TreasureData.sharedInstance().startSession("demotbl");
+        TreasureData.sharedInstance().startSessionWithoutEvent();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        TreasureData.sharedInstance().endSession("demotbl");
+        // TreasureData.sharedInstance().endSession("demotbl");
+        TreasureData.sharedInstance().endSessionWithoutEvent();
         TreasureData.sharedInstance().uploadEvents();
     }
 
