@@ -36,7 +36,6 @@ public class MainActivity extends Activity {
         TreasureData.sharedInstance().enableAutoAppendUniqId();
         TreasureData.sharedInstance().enableAutoAppendModelInformation();
         TreasureData.sharedInstance().setDefaultDatabase("testdb");
-        TreasureData.sharedInstance().startSession("demotbl");
         // TreasureData.sharedInstance().disableAutoRetryUploading();
         // TreasureData.sharedInstance().enableServerSideUploadTimestamp();
 
@@ -132,7 +131,20 @@ public class MainActivity extends Activity {
         });
     }
 
-    /*
+    @Override
+    protected void onStart() {
+        super.onStart();
+        TreasureData.sharedInstance().startSession("demotbl");
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        TreasureData.sharedInstance().endSession("demotbl");
+        TreasureData.sharedInstance().uploadEvents();
+    }
+
+    /**
      * These are only for callback, Optional.
      */
     class AddEventCallback implements TDCallback {
@@ -173,7 +185,6 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onDestroy() {
-        TreasureData.sharedInstance().endSession("demotbl");
         TreasureData.sharedInstance().uploadEvents();
         super.onDestroy();
     }
