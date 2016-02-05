@@ -8,7 +8,7 @@ import static org.junit.Assert.*;
 
 public class SessionTest {
     @Test
-    public void test() throws InterruptedException {
+    public void startAndFinish() throws InterruptedException {
         Session session = new Session(1000);
 
         assertNull(session.getId());
@@ -43,5 +43,29 @@ public class SessionTest {
 
         session.start();
         assertEquals(secondSessionId, session.getId());
+    }
+
+    @Test
+    public void shouldNotUpdateFinishedAtSecondCallingFinish() throws InterruptedException {
+        Session session = new Session(500);
+        session.start();
+
+        String firstSessionId = session.getId();
+        session.finish();
+        TimeUnit.MILLISECONDS.sleep(1000);
+
+        session.finish();
+        session.start();
+
+        assertNotEquals(firstSessionId, session.getId());
+    }
+
+    @Test
+    public void shouldNotReturnIdBeforeCallingStart() throws InterruptedException {
+        Session session = new Session(500);
+
+        session.finish();
+
+        assertNull(session.getId());
     }
 }

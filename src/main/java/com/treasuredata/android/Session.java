@@ -17,15 +17,17 @@ public class Session {
     }
 
     public synchronized void start() {
-        // Checking `id` just in case
-        if (id == null || finishedAt == null || (System.currentTimeMillis() - finishedAt) > sessionPendingMillis) {
+        if (id == null || (finishedAt == null || (System.currentTimeMillis() - finishedAt) > sessionPendingMillis)) {
             id = UUID.randomUUID().toString();
         }
         finishedAt = null;
     }
 
     public synchronized void finish() {
-        finishedAt = System.currentTimeMillis();
+        // Checking `id` just for case of calling finish() first before start()
+        if (id != null && finishedAt == null) {
+            finishedAt = System.currentTimeMillis();
+        }
     }
 
     public synchronized String getId() {
