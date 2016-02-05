@@ -210,10 +210,7 @@ public class TreasureData {
             record = new HashMap<String, Object>();
         }
 
-        String sessionId = session.getId();
-        if (sessionId != null) {
-            appendSessionId(record, sessionId);
-        }
+        appendSessionId(record);
 
         if (autoAppendUniqId) {
             appendUniqId(record);
@@ -305,8 +302,11 @@ public class TreasureData {
         client.setDebugMode(debug);
     }
 
-    public void appendSessionId(Map<String, Object> record, String sessionId) {
-        record.put(EVENT_KEY_SESSION_ID, sessionId);
+    public void appendSessionId(Map<String, Object> record) {
+        String sessionId = session.getId();
+        if (sessionId != null) {
+            record.put(EVENT_KEY_SESSION_ID, sessionId);
+        }
     }
 
     public void appendUniqId(Map<String, Object> record) {
@@ -495,7 +495,7 @@ public class TreasureData {
         }
 
         @Override
-        public void appendSessionId(Map<String, Object> record, String sessionId) {
+        public void appendSessionId(Map<String, Object> record) {
         }
 
         @Override
