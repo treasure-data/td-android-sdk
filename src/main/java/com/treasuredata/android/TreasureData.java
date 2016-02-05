@@ -8,7 +8,6 @@ import io.keen.client.java.KeenClient;
 import org.komamitsu.android.util.Log;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -52,8 +51,8 @@ public class TreasureData {
     private volatile KeenCallback uploadEventsKeenCallBack = createKeenCallback(LABEL_UPLOAD_EVENTS, null);
     private volatile boolean autoAppendUniqId;
     private volatile boolean autoAppendModelInformation;
-    private volatile String sessionId;
     private volatile boolean serverSideUploadTimestamp;
+    private Session session = new Session();
 
     public static TreasureData initializeSharedInstance(Context context, String apiKey) {
         sharedInstance = new TreasureData(context, apiKey);
@@ -211,8 +210,9 @@ public class TreasureData {
             record = new HashMap<String, Object>();
         }
 
+        String sessionId = session.getId();
         if (sessionId != null) {
-            appendSessionId(record);
+            appendSessionId(record, sessionId);
         }
 
         if (autoAppendUniqId) {
@@ -305,7 +305,7 @@ public class TreasureData {
         client.setDebugMode(debug);
     }
 
-    public void appendSessionId(Map<String, Object> record) {
+    public void appendSessionId(Map<String, Object> record, String sessionId) {
         record.put(EVENT_KEY_SESSION_ID, sessionId);
     }
 
@@ -353,7 +353,7 @@ public class TreasureData {
     }
 
     public void startSession(String database, String table) {
-        sessionId = UUID.randomUUID().toString();
+        session.start();
         HashMap<String, Object> record = new HashMap<String, Object>(1);
         record.put(EVENT_KEY_SESSION_EVENT, "start");
         addEvent(database, table, record);
@@ -367,7 +367,7 @@ public class TreasureData {
         HashMap<String, Object> record = new HashMap<String, Object>(1);
         record.put(EVENT_KEY_SESSION_EVENT, "end");
         addEvent(database, table, record);
-        sessionId = null;
+        session.finish();
     }
 
     public void enableServerSideUploadTimestamp() {
@@ -487,7 +487,7 @@ public class TreasureData {
         }
 
         @Override
-        public void appendSessionId(Map<String, Object> record) {
+        public void appendSessionId(Map<String, Object> record, String sessionId) {
         }
 
         @Override
