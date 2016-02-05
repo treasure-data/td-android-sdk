@@ -352,6 +352,10 @@ public class TreasureData {
         startSession(defaultDatabase, table);
     }
 
+    public void startSessionWithoutEvent() {
+        session.start();
+    }
+
     public void startSession(String database, String table) {
         session.start();
         HashMap<String, Object> record = new HashMap<String, Object>(1);
@@ -367,6 +371,10 @@ public class TreasureData {
         HashMap<String, Object> record = new HashMap<String, Object>(1);
         record.put(EVENT_KEY_SESSION_EVENT, "end");
         addEvent(database, table, record);
+        session.finish();
+    }
+
+    public void endSessionWithoutEvent() {
         session.finish();
     }
 

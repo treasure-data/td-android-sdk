@@ -38,6 +38,10 @@ public class TreasureDataTest extends TestCase {
             super(apiKey);
         }
 
+        public void clearAddedEvent() {
+            addedEvent = new ArrayList<Event>();
+        }
+
         @Override
         public void queueEvent(KeenProject project, String eventCollection, Map<String, Object> event, Map<String, Object> keenProperties, KeenCallback callback) {
             if (exceptionOnQueueEventCalled == null) {
@@ -282,6 +286,52 @@ public class TreasureDataTest extends TestCase {
         assertEquals(2, endEvent.event.size());
         assertEquals(sessionId, endEvent.event.get("td_session_id"));
         assertEquals("end", endEvent.event.get("td_session_event"));
+    }
+
+    public void testStartSessionAndEndSessionWithoutEvent() throws IOException {
+        MockTDClient client = new MockTDClient(DUMMY_API_KEY);
+        td = new TreasureData(client, null);
+
+        enableCallbackForAddEvent();
+        enableCallbackForUploadEvents();
+
+        td.setDefaultDatabase("db_");
+
+        td.startSessionWithoutEvent();
+        assertFalse(onSuccessCalledForAddEvent);
+        assertNull(exceptionOnFailedCalledForAddEvent);
+        assertNull(errorCodeForAddEvent);
+        assertFalse(onSuccessCalledForUploadEvents);
+        assertNull(exceptionOnFailedCalledForUploadEvents);
+        assertNull(errorCodeForUploadEvents);
+        assertEquals(0, client.addedEvent.size());
+
+        Map<String, Object> records = new HashMap<String, Object>();
+        records.put("key", "val");
+        td.addEvent("tbl", records);
+        assertTrue(onSuccessCalledForAddEvent);
+        assertNull(exceptionOnFailedCalledForAddEvent);
+        assertNull(errorCodeForAddEvent);
+        assertFalse(onSuccessCalledForUploadEvents);
+        assertNull(exceptionOnFailedCalledForUploadEvents);
+        assertNull(errorCodeForUploadEvents);
+        assertEquals(1, client.addedEvent.size());
+        Event event = client.addedEvent.get(0);
+        assertEquals("db_.tbl", event.tag);
+        assertEquals(2, event.event.size());
+        assertEquals("val", event.event.get("key"));
+        assertTrue(((String) client.addedEvent.get(0).event.get("td_session_id")).length() > 0);
+        init();
+        client.clearAddedEvent();
+
+        td.endSessionWithoutEvent();
+        assertFalse(onSuccessCalledForAddEvent);
+        assertNull(exceptionOnFailedCalledForAddEvent);
+        assertNull(errorCodeForAddEvent);
+        assertFalse(onSuccessCalledForUploadEvents);
+        assertNull(exceptionOnFailedCalledForUploadEvents);
+        assertNull(errorCodeForUploadEvents);
+        assertEquals(0, client.addedEvent.size());
     }
 
     public void testAddEventWithSuccessWithDefaultDatabase() throws IOException {
