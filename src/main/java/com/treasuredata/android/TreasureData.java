@@ -3,6 +3,7 @@ package com.treasuredata.android;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
 import android.os.Build;
 import io.keen.client.java.KeenCallback;
 import io.keen.client.java.KeenClient;
@@ -35,6 +36,8 @@ public class TreasureData {
     private static final String EVENT_KEY_MODEL = "td_model";
     private static final String EVENT_KEY_OS_VER = "td_os_ver";
     private static final String EVENT_KEY_OS_TYPE = "td_os_type";
+    private static final String EVENT_KEY_APP_VER = "td_app_ver";
+    private static final String EVENT_KEY_APP_VER_NUM = "td_app_ver_num";
     private static final String EVENT_KEY_SERVERSIDE_UPLOAD_TIMESTAMP = "#SSUT";
     private static final String OS_TYPE = "Android";
 
@@ -55,6 +58,10 @@ public class TreasureData {
     private volatile KeenCallback uploadEventsKeenCallBack = createKeenCallback(LABEL_UPLOAD_EVENTS, null);
     private volatile boolean autoAppendUniqId;
     private volatile boolean autoAppendModelInformation;
+    private volatile boolean autoAppendAppInformation;
+    private final String appVersion;
+    private final int appVersionNumber;
+    private volatile String sessionId;
     private volatile boolean serverSideUploadTimestamp;
     private Session session = new Session();
 
@@ -121,6 +128,20 @@ public class TreasureData {
                 Log.e(TAG, "Failed to construct TreasureData object", e);
             }
         }
+
+        String appVersion = "";
+        int appVersionNumber = 0;
+        try {
+            PackageInfo pkgInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
+            appVersion = pkgInfo.versionName;
+            appVersionNumber = pkgInfo.versionCode;
+        }
+        catch (Exception e) {
+            Log.e(TAG, "Failed to get package information", e);
+        }
+        this.appVersion = appVersion;
+        this.appVersionNumber = appVersionNumber;
+
         this.client = client;
     }
 
@@ -223,6 +244,10 @@ public class TreasureData {
 
         if (autoAppendModelInformation) {
             appendModelInformation(record);
+        }
+
+        if (autoAppendAppInformation) {
+            appendAppInformation(record);
         }
 
         if (!(DATABASE_NAME_PATTERN.matcher(database).find() && TABLE_NAME_PATTERN.matcher(table).find())) {
@@ -343,6 +368,11 @@ public class TreasureData {
         record.put(EVENT_KEY_OS_TYPE, OS_TYPE);
     }
 
+    public void appendAppInformation(Map<String, Object> record) {
+        record.put(EVENT_KEY_APP_VER, appVersion);
+        record.put(EVENT_KEY_APP_VER_NUM, appVersionNumber);
+    }
+
     public void disableAutoAppendUniqId() {
         this.autoAppendUniqId = false;
     }
@@ -357,6 +387,14 @@ public class TreasureData {
 
     public void enableAutoAppendModelInformation() {
         this.autoAppendModelInformation = true;
+    }
+
+    public void disableAutoAppendAppInformation() {
+        this.autoAppendAppInformation = false;
+    }
+
+    public void enableAutoAppendAppInformation() {
+        this.autoAppendAppInformation = true;
     }
 
     public void disableAutoRetryUploading() {
@@ -428,6 +466,8 @@ public class TreasureData {
         this.context = context;
         this.client = mockClient;
         this.uuid = uuid;
+        this.appVersion = "3.1.4";
+        this.appVersionNumber = 42;
     }
 
     static class NullTreasureData extends TreasureData {
