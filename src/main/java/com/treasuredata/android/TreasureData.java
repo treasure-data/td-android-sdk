@@ -1,5 +1,6 @@
 package com.treasuredata.android;
 
+import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
@@ -11,6 +12,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.WeakHashMap;
 import java.util.regex.Pattern;
 
 public class TreasureData {
@@ -41,7 +43,9 @@ public class TreasureData {
     }
 
     private static TreasureData sharedInstance;
+    private final static WeakHashMap<Context, Session> sessions = new WeakHashMap<Context, Session>();
 
+    private final Context context;
     private final TDClient client;
     private final String uuid;
     private volatile String defaultDatabase;
@@ -52,6 +56,7 @@ public class TreasureData {
     private volatile boolean autoAppendUniqId;
     private volatile boolean autoAppendModelInformation;
     private volatile boolean serverSideUploadTimestamp;
+    @Deprecated
     private Session session = new Session();
 
     public static TreasureData initializeSharedInstance(Context context, String apiKey) {
@@ -103,6 +108,7 @@ public class TreasureData {
 
     public TreasureData(Context context, String apiKey) {
         Context applicationContext = context.getApplicationContext();
+        this.context = applicationContext;
         uuid = getUUID(applicationContext);
 
         TDClient client = null;
@@ -111,7 +117,7 @@ public class TreasureData {
         }
         else {
             try {
-                client = new TDClient(applicationContext.getApplicationContext(), apiKey);
+                client = new TDClient(applicationContext, apiKey);
             } catch (IOException e) {
                 Log.e(TAG, "Failed to construct TreasureData object", e);
             }
@@ -303,9 +309,22 @@ public class TreasureData {
     }
 
     public void appendSessionId(Map<String, Object> record) {
-        String sessionId = session.getId();
-        if (sessionId != null) {
-            record.put(EVENT_KEY_SESSION_ID, sessionId);
+        String deprecatedSessionId = session.getId();
+        Session session = getSession(context);
+
+        if (session != null && deprecatedSessionId != null) {
+            Log.w(TAG, "Deprecated instance method TreasureData#startSession(String) and new static method TreasureData.startSession(android.content.Context) are both enabled, but the deprecated API will be ignored.");
+        }
+
+        if (deprecatedSessionId != null) {
+            record.put(EVENT_KEY_SESSION_ID, deprecatedSessionId);
+        }
+
+        if (session != null) {
+            String sessionId = session.getId();
+            if (sessionId != null) {
+                record.put(EVENT_KEY_SESSION_ID, sessionId);
+            }
         }
     }
 
@@ -348,14 +367,21 @@ public class TreasureData {
         client.enableAutoRetryUploading();
     }
 
+    private static Session getSession(Context context) {
+        if (context == null) {
+            Log.w(TAG, "context is null. It's a unit test, right?");
+            return null;
+        }
+        Context applicationContext = context.getApplicationContext();
+        return sessions.get(applicationContext);
+    }
+
+    @Deprecated
     public void startSession(String table) {
         startSession(defaultDatabase, table);
     }
 
-    public void startSessionWithoutEvent() {
-        session.start();
-    }
-
+    @Deprecated
     public void startSession(String database, String table) {
         session.start();
         HashMap<String, Object> record = new HashMap<String, Object>(1);
@@ -363,10 +389,26 @@ public class TreasureData {
         addEvent(database, table, record);
     }
 
+    @Deprecated
+    public void startSessionWithoutEvent() {
+        session.start();
+    }
+
+    public static void startSession(Context context) {
+        Session session = getSession(context);
+        if (session == null) {
+            session = new Session();
+            sessions.put(context.getApplicationContext(), session);
+        }
+        session.start();
+    }
+
+    @Deprecated
     public void endSession(String table) {
         endSession(defaultDatabase, table);
     }
 
+    @Deprecated
     public void endSession(String database, String table) {
         HashMap<String, Object> record = new HashMap<String, Object>(1);
         record.put(EVENT_KEY_SESSION_EVENT, "end");
@@ -374,8 +416,16 @@ public class TreasureData {
         session.finish();
     }
 
+    @Deprecated
     public void endSessionWithoutEvent() {
         session.finish();
+    }
+
+    public static void endSession(Context context) {
+        Session session = getSession(context);
+        if (session != null) {
+            session.finish();
+        }
     }
 
     public void enableServerSideUploadTimestamp() {
@@ -388,14 +438,15 @@ public class TreasureData {
 
     // Only for testing
     @Deprecated
-    TreasureData(TDClient mockClient, String uuid) {
+    TreasureData(Context context, TDClient mockClient, String uuid) {
+        this.context = context;
         this.client = mockClient;
         this.uuid = uuid;
     }
 
     static class NullTreasureData extends TreasureData {
         public NullTreasureData() {
-            super((TDClient)null, null);
+            super(null, (TDClient)null, null);
         }
 
         @Override
@@ -507,11 +558,21 @@ public class TreasureData {
         }
 
         @Override
+        public void startSessionWithoutEvent() {
+            super.startSessionWithoutEvent();
+        }
+
+        @Override
         public void endSession(String table) {
         }
 
         @Override
         public void endSession(String database, String table) {
+        }
+
+        @Override
+        public void endSessionWithoutEvent() {
+            super.endSessionWithoutEvent();
         }
 
         @Override
