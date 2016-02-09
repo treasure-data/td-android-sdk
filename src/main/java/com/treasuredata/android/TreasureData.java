@@ -389,11 +389,6 @@ public class TreasureData {
         addEvent(database, table, record);
     }
 
-    @Deprecated
-    public void startSessionWithoutEvent() {
-        session.start();
-    }
-
     public static void startSession(Context context) {
         Session session = getSession(context);
         if (session == null) {
@@ -413,11 +408,6 @@ public class TreasureData {
         HashMap<String, Object> record = new HashMap<String, Object>(1);
         record.put(EVENT_KEY_SESSION_EVENT, "end");
         addEvent(database, table, record);
-        session.finish();
-    }
-
-    @Deprecated
-    public void endSessionWithoutEvent() {
         session.finish();
     }
 
@@ -558,21 +548,11 @@ public class TreasureData {
         }
 
         @Override
-        public void startSessionWithoutEvent() {
-            super.startSessionWithoutEvent();
-        }
-
-        @Override
         public void endSession(String table) {
         }
 
         @Override
         public void endSession(String database, String table) {
-        }
-
-        @Override
-        public void endSessionWithoutEvent() {
-            super.endSessionWithoutEvent();
         }
 
         @Override

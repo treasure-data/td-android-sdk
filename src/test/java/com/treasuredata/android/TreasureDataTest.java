@@ -290,53 +290,7 @@ public class TreasureDataTest extends TestCase {
         assertEquals("end", endEvent.event.get("td_session_event"));
     }
 
-    public void testDeprecatedStartSessionAndEndSessionWithoutEvent() throws IOException {
-        enableCallbackForAddEvent();
-        enableCallbackForUploadEvents();
-
-        td.setDefaultDatabase("db_");
-
-        td.startSessionWithoutEvent();
-        assertFalse(onSuccessCalledForAddEvent);
-        assertNull(exceptionOnFailedCalledForAddEvent);
-        assertNull(errorCodeForAddEvent);
-        assertFalse(onSuccessCalledForUploadEvents);
-        assertNull(exceptionOnFailedCalledForUploadEvents);
-        assertNull(errorCodeForUploadEvents);
-        assertEquals(0, client.addedEvent.size());
-
-        Map<String, Object> records = new HashMap<String, Object>();
-        records.put("key", "val");
-        td.addEvent("tbl", records);
-        assertTrue(onSuccessCalledForAddEvent);
-        assertNull(exceptionOnFailedCalledForAddEvent);
-        assertNull(errorCodeForAddEvent);
-        assertFalse(onSuccessCalledForUploadEvents);
-        assertNull(exceptionOnFailedCalledForUploadEvents);
-        assertNull(errorCodeForUploadEvents);
-        assertEquals(1, client.addedEvent.size());
-        Event event = client.addedEvent.get(0);
-        assertEquals("db_.tbl", event.tag);
-        assertEquals(2, event.event.size());
-        assertEquals("val", event.event.get("key"));
-        assertTrue(((String) client.addedEvent.get(0).event.get("td_session_id")).length() > 0);
-
-        init();
-        client.clearAddedEvent();
-
-        td.endSessionWithoutEvent();
-        assertFalse(onSuccessCalledForAddEvent);
-        assertNull(exceptionOnFailedCalledForAddEvent);
-        assertNull(errorCodeForAddEvent);
-        assertFalse(onSuccessCalledForUploadEvents);
-        assertNull(exceptionOnFailedCalledForUploadEvents);
-        assertNull(errorCodeForUploadEvents);
-        assertEquals(0, client.addedEvent.size());
-    }
-
-    public void testStartSessionAndEndSession()
-            throws IOException, InterruptedException
-    {
+    public void testStartSessionAndEndSession() throws IOException, InterruptedException {
         enableCallbackForAddEvent();
         enableCallbackForUploadEvents();
 
@@ -405,7 +359,6 @@ public class TreasureDataTest extends TestCase {
         String secondSessionId = (String) client.addedEvent.get(0).event.get("td_session_id");
         assertEquals(firstSessionId, secondSessionId);
     }
-
 
     public void testAddEventWithSuccessWithDefaultDatabase() throws IOException {
         td.setDefaultDatabase("db_");
