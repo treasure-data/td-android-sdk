@@ -1,5 +1,6 @@
 package com.treasuredata.android;
 
+import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
@@ -8,10 +9,10 @@ import io.keen.client.java.KeenClient;
 import org.komamitsu.android.util.Log;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.WeakHashMap;
 import java.util.regex.Pattern;
 
 public class TreasureData {
@@ -42,7 +43,9 @@ public class TreasureData {
     }
 
     private static TreasureData sharedInstance;
+    private final static WeakHashMap<Context, Session> sessions = new WeakHashMap<Context, Session>();
 
+    private final Context context;
     private final TDClient client;
     private final String uuid;
     private volatile String defaultDatabase;
@@ -52,8 +55,8 @@ public class TreasureData {
     private volatile KeenCallback uploadEventsKeenCallBack = createKeenCallback(LABEL_UPLOAD_EVENTS, null);
     private volatile boolean autoAppendUniqId;
     private volatile boolean autoAppendModelInformation;
-    private volatile String sessionId;
     private volatile boolean serverSideUploadTimestamp;
+    private Session session = new Session();
 
     public static TreasureData initializeSharedInstance(Context context, String apiKey) {
         sharedInstance = new TreasureData(context, apiKey);
@@ -104,6 +107,7 @@ public class TreasureData {
 
     public TreasureData(Context context, String apiKey) {
         Context applicationContext = context.getApplicationContext();
+        this.context = applicationContext;
         uuid = getUUID(applicationContext);
 
         TDClient client = null;
@@ -112,7 +116,7 @@ public class TreasureData {
         }
         else {
             try {
-                client = new TDClient(applicationContext.getApplicationContext(), apiKey);
+                client = new TDClient(applicationContext, apiKey);
             } catch (IOException e) {
                 Log.e(TAG, "Failed to construct TreasureData object", e);
             }
@@ -211,9 +215,7 @@ public class TreasureData {
             record = new HashMap<String, Object>();
         }
 
-        if (sessionId != null) {
-            appendSessionId(record);
-        }
+        appendSessionId(record);
 
         if (autoAppendUniqId) {
             appendUniqId(record);
@@ -306,7 +308,24 @@ public class TreasureData {
     }
 
     public void appendSessionId(Map<String, Object> record) {
-        record.put(EVENT_KEY_SESSION_ID, sessionId);
+        String instanceSessionId = session.getId();
+        String globalSessionId = null;
+        Session globalSession = getSession(context);
+        if (globalSession != null) {
+            globalSessionId = globalSession.getId();
+        }
+
+        if (globalSession != null && instanceSessionId != null) {
+            Log.w(TAG, "instance method TreasureData#startSession(String) and static method TreasureData.startSession(android.content.Context) are both enabled, but the instance method will be ignored.");
+        }
+
+        if (instanceSessionId != null) {
+            record.put(EVENT_KEY_SESSION_ID, instanceSessionId);
+        }
+
+        if (globalSessionId != null) {
+            record.put(EVENT_KEY_SESSION_ID, globalSessionId);
+        }
     }
 
     public void appendUniqId(Map<String, Object> record) {
@@ -348,15 +367,33 @@ public class TreasureData {
         client.enableAutoRetryUploading();
     }
 
+    private static Session getSession(Context context) {
+        if (context == null) {
+            Log.w(TAG, "context is null. It's a unit test, right?");
+            return null;
+        }
+        Context applicationContext = context.getApplicationContext();
+        return sessions.get(applicationContext);
+    }
+
     public void startSession(String table) {
         startSession(defaultDatabase, table);
     }
 
     public void startSession(String database, String table) {
-        sessionId = UUID.randomUUID().toString();
+        session.start();
         HashMap<String, Object> record = new HashMap<String, Object>(1);
         record.put(EVENT_KEY_SESSION_EVENT, "start");
         addEvent(database, table, record);
+    }
+
+    public static void startSession(Context context) {
+        Session session = getSession(context);
+        if (session == null) {
+            session = new Session();
+            sessions.put(context.getApplicationContext(), session);
+        }
+        session.start();
     }
 
     public void endSession(String table) {
@@ -367,7 +404,14 @@ public class TreasureData {
         HashMap<String, Object> record = new HashMap<String, Object>(1);
         record.put(EVENT_KEY_SESSION_EVENT, "end");
         addEvent(database, table, record);
-        sessionId = null;
+        session.finish();
+    }
+
+    public static void endSession(Context context) {
+        Session session = getSession(context);
+        if (session != null) {
+            session.finish();
+        }
     }
 
     public void enableServerSideUploadTimestamp() {
@@ -380,14 +424,15 @@ public class TreasureData {
 
     // Only for testing
     @Deprecated
-    TreasureData(TDClient mockClient, String uuid) {
+    TreasureData(Context context, TDClient mockClient, String uuid) {
+        this.context = context;
         this.client = mockClient;
         this.uuid = uuid;
     }
 
     static class NullTreasureData extends TreasureData {
         public NullTreasureData() {
-            super((TDClient)null, null);
+            super(null, (TDClient)null, null);
         }
 
         @Override
