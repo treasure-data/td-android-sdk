@@ -38,6 +38,8 @@ public class TreasureData {
     private static final String EVENT_KEY_OS_TYPE = "td_os_type";
     private static final String EVENT_KEY_APP_VER = "td_app_ver";
     private static final String EVENT_KEY_APP_VER_NUM = "td_app_ver_num";
+    private static final String EVENT_KEY_LOCALE_COUNTRY = "td_locale_country";
+    private static final String EVENT_KEY_LOCALE_LANG = "td_locale_lang";
     private static final String EVENT_KEY_SERVERSIDE_UPLOAD_TIMESTAMP = "#SSUT";
     private static final String OS_TYPE = "Android";
 
@@ -59,6 +61,7 @@ public class TreasureData {
     private volatile boolean autoAppendUniqId;
     private volatile boolean autoAppendModelInformation;
     private volatile boolean autoAppendAppInformation;
+    private volatile boolean autoAppendLocaleInformation;
     private final String appVersion;
     private final int appVersionNumber;
     private volatile String sessionId;
@@ -395,6 +398,14 @@ public class TreasureData {
 
     public void enableAutoAppendAppInformation() {
         this.autoAppendAppInformation = true;
+    }
+
+    public void disableAutoAppendLocaleInformation() {
+        this.autoAppendLocaleInformation = false;
+    }
+
+    public void enableAutoAppendLocaleInformation() {
+        this.autoAppendLocaleInformation = true;
     }
 
     public void disableAutoRetryUploading() {
