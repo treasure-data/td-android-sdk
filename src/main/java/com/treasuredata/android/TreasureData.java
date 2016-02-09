@@ -56,7 +56,6 @@ public class TreasureData {
     private volatile boolean autoAppendUniqId;
     private volatile boolean autoAppendModelInformation;
     private volatile boolean serverSideUploadTimestamp;
-    @Deprecated
     private Session session = new Session();
 
     public static TreasureData initializeSharedInstance(Context context, String apiKey) {
@@ -309,22 +308,23 @@ public class TreasureData {
     }
 
     public void appendSessionId(Map<String, Object> record) {
-        String deprecatedSessionId = session.getId();
-        Session session = getSession(context);
-
-        if (session != null && deprecatedSessionId != null) {
-            Log.w(TAG, "Deprecated instance method TreasureData#startSession(String) and new static method TreasureData.startSession(android.content.Context) are both enabled, but the deprecated API will be ignored.");
+        String instanceSessionId = session.getId();
+        String globalSessionId = null;
+        Session globalSession = getSession(context);
+        if (globalSession != null) {
+            globalSessionId = globalSession.getId();
         }
 
-        if (deprecatedSessionId != null) {
-            record.put(EVENT_KEY_SESSION_ID, deprecatedSessionId);
+        if (globalSession != null && instanceSessionId != null) {
+            Log.w(TAG, "instance method TreasureData#startSession(String) and static method TreasureData.startSession(android.content.Context) are both enabled, but the instance method will be ignored.");
         }
 
-        if (session != null) {
-            String sessionId = session.getId();
-            if (sessionId != null) {
-                record.put(EVENT_KEY_SESSION_ID, sessionId);
-            }
+        if (instanceSessionId != null) {
+            record.put(EVENT_KEY_SESSION_ID, instanceSessionId);
+        }
+
+        if (globalSessionId != null) {
+            record.put(EVENT_KEY_SESSION_ID, globalSessionId);
         }
     }
 
@@ -376,12 +376,10 @@ public class TreasureData {
         return sessions.get(applicationContext);
     }
 
-    @Deprecated
     public void startSession(String table) {
         startSession(defaultDatabase, table);
     }
 
-    @Deprecated
     public void startSession(String database, String table) {
         session.start();
         HashMap<String, Object> record = new HashMap<String, Object>(1);
@@ -398,12 +396,10 @@ public class TreasureData {
         session.start();
     }
 
-    @Deprecated
     public void endSession(String table) {
         endSession(defaultDatabase, table);
     }
 
-    @Deprecated
     public void endSession(String database, String table) {
         HashMap<String, Object> record = new HashMap<String, Object>(1);
         record.put(EVENT_KEY_SESSION_EVENT, "end");
