@@ -13,7 +13,7 @@ If you use gradle, add the following dependency to `dependencies` directive in t
 
 ```
 dependencies {
-    compile 'com.treasuredata:td-android-sdk:0.1.10'
+    compile 'com.treasuredata:td-android-sdk:0.1.11'
 }
 ```
 
@@ -25,7 +25,7 @@ If you use maven, add the following directives to your pom.xml
   <dependency>
     <groupId>com.treasuredata</groupId>
     <artifactId>td-android-sdk</artifactId>
-    <version>0.1.10</version>
+    <version>0.1.11</version>
   </dependency>
 ```
 
@@ -171,13 +171,13 @@ The sent events is going to be buffered for a few minutes before they get import
 When you call `TreasureData#startSession` method, the SDK generates a session ID that's kept until `TreasureData#endSession` is called. The session id is outputs as a column name "td_session_id". Also, `TreasureData#startSession` and `TreasureData#endSession` method add an event that includes `{"td_session_event":"start" or "end"}`.
 
 ```
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onStart(Bundle savedInstanceState) {
     		:
 	    TreasureData.sharedInstance().startSession("demotbl");
 	    	:
    	}
    	
-	protected void onDestroy() {
+	protected void onStop() {
 			:
 		TreasureData.sharedInstance().endSession("demotbl");
 		TreasureData.sharedInstance().uploadEvents();
@@ -190,7 +190,33 @@ When you call `TreasureData#startSession` method, the SDK generates a session ID
 		//    ]
 			:
 	}
+	
 ```
+
+If you want to handle the following case, use a pair of class methods `TreasureData.startSession` and `TreasureData.endSession` for global session traking
+
+* User opens the application and starts session traking. Let's call this session `session#0`
+* User moves to home screen and destroys the Activity
+* User reopens the application and restarts session traking within 10 seconds. But you want to deal with this new session as the same session as `session#0`
+
+```
+	@Override
+	protected void onStart() {
+			:
+		TreasureData.startSession(this);
+			:
+	}
+
+	@Override
+	protected void onStop() {
+			:
+		TreasureData.endSession(this);
+		TreasureData.sharedInstance().uploadEvents();
+			:
+	}
+```
+
+
 
 ### Detect if it's the first running
 
@@ -269,7 +295,7 @@ UUID of the device will be added to each event automatically if you call `Treasu
 It outputs the value as a column name `td_uuid`.
 
 
-### Adding the device model information to each event automatically
+### Adding device model information to each event automatically
 
 Device model infromation will be added to each event automatically if you call `TreasureData#enableAutoAppendModelInformation`.
 
@@ -288,6 +314,36 @@ It outputs the following column names and values:
 - `td_model` : android.os.Build#MODEL
 - `td_os_ver` : android.os.Build.VERSION#SDK_INT
 - `td_os_type` : "Android"
+
+### Adding application package version information to each event automatically
+
+Application package version infromation will be added to each event automatically if you call `TreasureData#enableAutoAppendAppInformation`.
+
+```
+	td.enableAutoAppendAppInformation();
+		:
+	td.addEvent(...);
+```
+
+It outputs the following column names and values:
+
+- `td_app_ver` : android.content.pm.PackageInfo.versionName (from Context.getPackageManager().getPackageInfo())
+- `td_app_ver_num` : android.content.pm.PackageInfo.versionCode (from Context.getPackageManager().getPackageInfo())
+
+### Adding locale configuration information to each event automatically
+
+Locale configuration infromation will be added to each event automatically if you call `TreasureData#enableAutoAppendLocaleInformation`.
+
+```
+	td.enableAutoAppendLocaleInformation();
+		:
+	td.addEvent(...);
+```
+
+It outputs the following column names and values:
+
+- `td_locale_country` : java.util.Locale.getCountry() (from Context.getResources().getConfiguration().locale)
+- `td_locale_lang` : java.util.Locale.getLanguage() (from Context.getResources().getConfiguration().locale)
 
 ### Enable/Disable debug log
 
