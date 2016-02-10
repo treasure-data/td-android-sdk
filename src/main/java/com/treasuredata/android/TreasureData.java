@@ -11,6 +11,7 @@ import org.komamitsu.android.util.Log;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.WeakHashMap;
@@ -253,6 +254,10 @@ public class TreasureData {
             appendAppInformation(record);
         }
 
+        if (autoAppendLocaleInformation) {
+            appendLocaleInformation(record);
+        }
+
         if (!(DATABASE_NAME_PATTERN.matcher(database).find() && TABLE_NAME_PATTERN.matcher(table).find())) {
             String errMsg = String.format("database and table need to be consist of lower letters, numbers or '_': database=%s, table=%s", database, table);
             handleParamError(callback, errMsg);
@@ -374,6 +379,12 @@ public class TreasureData {
     public void appendAppInformation(Map<String, Object> record) {
         record.put(EVENT_KEY_APP_VER, appVersion);
         record.put(EVENT_KEY_APP_VER_NUM, appVersionNumber);
+    }
+
+    public void appendLocaleInformation(Map<String, Object> record) {
+        Locale locale = context.getResources().getConfiguration().locale;
+        record.put(EVENT_KEY_LOCALE_COUNTRY, locale.getCountry());
+        record.put(EVENT_KEY_LOCALE_LANG, locale.getLanguage());
     }
 
     public void disableAutoAppendUniqId() {

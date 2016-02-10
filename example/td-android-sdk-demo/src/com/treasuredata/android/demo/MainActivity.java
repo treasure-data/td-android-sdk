@@ -35,6 +35,8 @@ public class MainActivity extends Activity {
         TreasureData.sharedInstance().setDebugMode(false);
         TreasureData.sharedInstance().enableAutoAppendUniqId();
         TreasureData.sharedInstance().enableAutoAppendModelInformation();
+        TreasureData.sharedInstance().enableAutoAppendAppInformation();
+        TreasureData.sharedInstance().enableAutoAppendLocaleInformation();
         TreasureData.sharedInstance().setDefaultDatabase("testdb");
         // TreasureData.sharedInstance().disableAutoRetryUploading();
         // TreasureData.sharedInstance().enableServerSideUploadTimestamp();
