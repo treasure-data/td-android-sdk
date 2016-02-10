@@ -193,11 +193,11 @@ When you call `TreasureData#startSession` method, the SDK generates a session ID
 	
 ```
 
-If you want to handle the following case, use a pair of class methods `TreasureData.startSession` and `TreasureData.endSession` for global session traking
+If you want to handle the following case, use a pair of class methods `TreasureData.startSession` and `TreasureData.endSession` for global session tracking
 
-* User opens the application and starts session traking. Let's call this session `session#0`
+* User opens the application and starts session tracking. Let's call this session `session#0`
 * User moves to home screen and destroys the Activity
-* User reopens the application and restarts session traking within 10 seconds. But you want to deal with this new session as the same session as `session#0`
+* User reopens the application and restarts session tracking within 10 seconds. But you want to deal with this new session as the same session as `session#0`
 
 ```
 	@Override
