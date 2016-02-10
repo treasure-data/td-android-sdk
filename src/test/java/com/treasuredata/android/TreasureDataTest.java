@@ -2,21 +2,36 @@ package com.treasuredata.android;
 
 import android.app.Application;
 import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import io.keen.client.java.KeenCallback;
 import io.keen.client.java.KeenClient;
 import io.keen.client.java.KeenProject;
 import junit.framework.TestCase;
+import org.junit.runner.RunWith;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.powermock.api.mockito.PowerMockito.mock;
+import static org.powermock.api.mockito.PowerMockito.when;
 
+@RunWith(PowerMockRunner.class)
+@PrepareForTest(ClassWithFinal.class)
 public class TreasureDataTest extends TestCase {
     private static final String DUMMY_API_KEY = "dummy_api_key";
+    private static final int DUMMY_APP_VERSION_NUM = 42;
+    private static final String DUMMY_APP_VERSION_NAME = "3.14";
+    private static final String DUMMY_APP_LOCALE_COUNTRY = "US";
+    private static final String DUMMY_APP_LOCALE_LANG = "en";
     boolean onSuccessCalledForAddEvent;
     boolean onSuccessCalledForUploadEvents;
     Exception exceptionOnFailedCalledForAddEvent;
@@ -88,12 +103,26 @@ public class TreasureDataTest extends TestCase {
         return new TreasureData(context, client, null);
     }
 
-    public void setUp() throws IOException {
+    public void setUp() throws IOException, PackageManager.NameNotFoundException {
         init();
 
         Application application = mock(Application.class);
         context = mock(Context.class);
         when(context.getApplicationContext()).thenReturn(application);
+
+        PackageInfo packageInfo = mock(PackageInfo.class);
+        packageInfo.versionCode = DUMMY_APP_VERSION_NUM;
+        packageInfo.versionName = DUMMY_APP_VERSION_NAME;
+        PackageManager packageManager = mock(PackageManager.class);
+        when(packageManager.getPackageInfo(anyString(), eq(0))).thenReturn(packageInfo);
+        when(context.getPackageManager()).thenReturn(packageManager);
+
+        Locale locale = new Locale("en", "US");
+        Resources resources = mock(Resources.class);
+        Configuration configuration = mock(Configuration.class);
+        configuration.locale = locale;
+        when(resources.getConfiguration()).thenReturn(configuration);
+        when(context.getResources()).thenReturn(resources);
 
         client = new MockTDClient(DUMMY_API_KEY);
         td = createTreasureData(context, client);
@@ -516,5 +545,25 @@ public class TreasureDataTest extends TestCase {
         assertEquals("foo bar", exceptionOnFailedCalledForUploadEvents.getMessage());
         assertEquals(KeenClient.ERROR_CODE_NETWORK_ERROR, errorCodeForUploadEvents);
         assertEquals(0, client.addedEvent.size());
+    }
+
+    public void testAddEventWithAppendingAppInfo() throws IOException {
+        enableCallbackForAddEvent();
+        enableCallbackForUploadEvents();
+
+        td.enableAutoAppendLocaleInformation();
+        Map<String, Object> records = new HashMap<String, Object>();
+        records.put("key", "val");
+        td.addEvent("db_", "tbl", records);
+        assertTrue(onSuccessCalledForAddEvent);
+        assertNull(exceptionOnFailedCalledForAddEvent);
+        assertNull(errorCodeForAddEvent);
+        assertFalse(onSuccessCalledForUploadEvents);
+        assertNull(exceptionOnFailedCalledForUploadEvents);
+        assertNull(errorCodeForUploadEvents);
+        assertEquals(1, client.addedEvent.size());
+        assertEquals("db_.tbl", client.addedEvent.get(0).tag);
+        assertEquals(3, client.addedEvent.get(0).event.size());
+        assertEquals("val", client.addedEvent.get(0).event.get("key"));
     }
 }
