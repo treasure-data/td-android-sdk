@@ -32,7 +32,6 @@ public class MainActivity extends Activity {
         // TreasureData.disableEventCompression();
 
         TreasureData.initializeSharedInstance(this, "your_write_api_key");
-        TreasureData.sharedInstance().setDebugMode(false);
         TreasureData.sharedInstance().enableAutoAppendUniqId();
         TreasureData.sharedInstance().enableAutoAppendModelInformation();
         TreasureData.sharedInstance().enableAutoAppendAppInformation();

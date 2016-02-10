@@ -331,15 +331,6 @@ public class TreasureData {
         return keenCallback;
     }
 
-    public void setDebugMode(boolean debug) {
-        if (client == null) {
-            Log.w(TAG, "TDClient is null");
-            return;
-        }
-
-        client.setDebugMode(debug);
-    }
-
     public void appendSessionId(Map<String, Object> record) {
         String instanceSessionId = session.getId();
         String globalSessionId = null;
@@ -529,10 +520,6 @@ public class TreasureData {
 
         @Override
         public void uploadEventsWithCallback(TDCallback callback) {
-        }
-
-        @Override
-        public void setDebugMode(boolean debug) {
         }
 
         @Override
