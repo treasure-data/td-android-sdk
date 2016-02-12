@@ -83,7 +83,10 @@ public class MainActivity extends Activity {
 
 public class OtherActivity extends Activity {
 		:
-	TreasureData.sharedInstance().addEvent("demotbl", "elapsed_time", elapsed_time);
+	Map<String, Object> event = new HashMap<String, Object>();
+	event.put("event_name", "data_load");
+	event.put("elapsed_time", elapsed_time);
+	TreasureData.sharedInstance().addEvent("demotbl", event);
 		:
 ```
 
