@@ -224,7 +224,10 @@ You can detect if it's the first running or not easily using `TreasureData#isFir
 
 ```
 	if (TreasureData.sharedInstance().isFirstRun(this)) {
-	    TreasureData.sharedInstance().addEventWithCallback("demotbl", "first_run", true, new TDCallback() {
+	    Map<String, Object> event = new HashMap<String, Object>();
+	    event.put("first_run", true);
+	    event.put("app_name", "td-android-sdk-demo");
+	    TreasureData.sharedInstance().addEventWithCallback("demotbl", event, new TDCallback() {
 			@Override
 			public void onSuccess() {
 				TreasureData.sharedInstance().clearFirstRun(MainActivity.this);
