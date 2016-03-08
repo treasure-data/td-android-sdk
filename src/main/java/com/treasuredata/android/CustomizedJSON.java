@@ -1,7 +1,6 @@
 package com.treasuredata.android;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.TreeCodec;
 import com.fasterxml.jackson.jr.ob.JSON;
 import com.fasterxml.jackson.jr.ob.impl.JSONWriter;
@@ -35,8 +34,7 @@ public class CustomizedJSON extends JSON {
         // Workaround of https://github.com/FasterXML/jackson-jr/pull/31
         // Let's remove this override after it's merged.
         @Override
-        public void writeField(String fieldName, Object value) throws IOException, JsonProcessingException
-        {
+        public void writeField(String fieldName, Object value) throws IOException {
             if (value == null) {
                 super.writeField(fieldName, null);
                 return;

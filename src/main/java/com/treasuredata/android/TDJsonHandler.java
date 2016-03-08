@@ -111,9 +111,7 @@ class TDJsonHandler implements KeenJsonHandler {
             bufferedWriter.close();
             try {
                 byte[] encryptedBytes = encrypt(byteArrayOutputStream.toByteArray());
-                byteArrayOutputStream = null;
                 String base64 = base64Encoder.encode(encryptedBytes);
-                encryptedBytes = null;
                 writer.write(base64);
             } catch (Exception e) {
                 Log.w(TAG, "Encryption failed. Storing this event as a plain", e);
