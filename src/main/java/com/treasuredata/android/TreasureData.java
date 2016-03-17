@@ -1,11 +1,9 @@
 package com.treasuredata.android;
 
-import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.os.Build;
-import io.keen.client.java.KeenCallback;
 import io.keen.client.java.KeenClient;
 import org.komamitsu.android.util.Log;
 
@@ -57,15 +55,12 @@ public class TreasureData {
     private volatile String defaultDatabase;
     private volatile TDCallback addEventCallBack;
     private volatile TDCallback uploadEventsCallBack;
-    private volatile KeenCallback addEventKeenCallBack = createKeenCallback(LABEL_ADD_EVENT, null);
-    private volatile KeenCallback uploadEventsKeenCallBack = createKeenCallback(LABEL_UPLOAD_EVENTS, null);
     private volatile boolean autoAppendUniqId;
     private volatile boolean autoAppendModelInformation;
     private volatile boolean autoAppendAppInformation;
     private volatile boolean autoAppendLocaleInformation;
     private final String appVersion;
     private final int appVersionNumber;
-    private volatile String sessionId;
     private volatile boolean serverSideUploadTimestamp;
     private Session session = new Session();
 
@@ -187,7 +182,6 @@ public class TreasureData {
 
     public synchronized void setAddEventCallBack(TDCallback callBack) {
         this.addEventCallBack = callBack;
-        this.addEventKeenCallBack = createKeenCallback(LABEL_ADD_EVENT, callBack);
     }
 
     public TDCallback getAddEventCallBack() {
@@ -196,7 +190,6 @@ public class TreasureData {
 
     public synchronized void setUploadEventsCallBack(TDCallback callBack) {
         this.uploadEventsCallBack = callBack;
-        this.uploadEventsKeenCallBack = createKeenCallback(LABEL_UPLOAD_EVENTS, callBack);
     }
 
     public TDCallback getUploadEventsCallBack() {
@@ -298,7 +291,7 @@ public class TreasureData {
     }
 
     private static KeenClient.KeenCallbackWithErrorCode createKeenCallback(final String methodName, final TDCallback callback) {
-        KeenClient.KeenCallbackWithErrorCode keenCallback = new KeenClient.KeenCallbackWithErrorCode() {
+        return new KeenClient.KeenCallbackWithErrorCode() {
             private String currentErrorCode;
 
             @Override
@@ -328,7 +321,6 @@ public class TreasureData {
                return this.currentErrorCode;
            }
         };
-        return keenCallback;
     }
 
     public void appendSessionId(Map<String, Object> record) {
@@ -485,7 +477,7 @@ public class TreasureData {
 
     static class NullTreasureData extends TreasureData {
         public NullTreasureData() {
-            super(null, (TDClient)null, null);
+            super(null, null, null);
         }
 
         @Override

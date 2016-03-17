@@ -73,7 +73,7 @@ class TDClient extends KeenClient {
     }
 
     private void setApiKey(String apiKey) {
-        String projectId = null;
+        String projectId;
         try {
             projectId = createProjectIdFromApiKey(apiKey);
         } catch (Exception e) {
@@ -85,16 +85,15 @@ class TDClient extends KeenClient {
     }
 
     private String createProjectIdFromApiKey(String apiKey) throws NoSuchAlgorithmException {
-        StringBuffer hexString = new StringBuffer();
+        StringBuilder hexString = new StringBuilder();
         MessageDigest md5 = MessageDigest.getInstance("MD5");
         byte[] hash = md5.digest(apiKey.getBytes());
 
-        for (int i = 0; i < hash.length; i++) {
-            if ((0xff & hash[i]) < 0x10) {
-                hexString.append("0"
-                        + Integer.toHexString((0xFF & hash[i])));
+        for (byte aHash : hash) {
+            if ((0xff & aHash) < 0x10) {
+                hexString.append("0").append(Integer.toHexString((0xFF & aHash)));
             } else {
-                hexString.append(Integer.toHexString(0xFF & hash[i]));
+                hexString.append(Integer.toHexString(0xFF & aHash));
             }
         }
         return "_td " + hexString.toString();

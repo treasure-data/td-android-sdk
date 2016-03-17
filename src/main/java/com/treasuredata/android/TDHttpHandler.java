@@ -4,28 +4,16 @@ import android.os.Build;
 import io.keen.client.java.http.Request;
 import io.keen.client.java.http.Response;
 import io.keen.client.java.http.UrlConnectionHttpHandler;
-import org.komamitsu.android.util.Log;
 
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManagerFactory;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.util.Arrays;
 import java.util.zip.DeflaterInputStream;
 
 class TDHttpHandler extends UrlConnectionHttpHandler {
     static volatile String VERSION = "0.0.0";
     private static final int DEFAULT_CONNECT_TIMEOUT = 30000;
     private static final int DEFAULT_READ_TIMEOUT = 30000;
-    private static final String TAG = TDHttpHandler.class.getSimpleName();
     private static final String DEFAULT_API_ENDPOINT = "https://in.treasuredata.com";
     private static volatile boolean isEventCompression = true;
 
@@ -92,7 +80,6 @@ class TDHttpHandler extends UrlConnectionHttpHandler {
 
     @Override
     protected Response readResponse(HttpURLConnection connection) throws IOException {
-        Response response = super.readResponse(connection);
-        return response;
+        return super.readResponse(connection);
     }
 }

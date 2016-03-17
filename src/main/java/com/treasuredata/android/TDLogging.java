@@ -39,15 +39,6 @@ public class TDLogging {
     }
 
     public synchronized static void enableLogging() {
-        /*
-        private static final Logger LOGGER;
-
-        static {
-            LOGGER = Logger.getLogger(KeenLogging.class.getName());
-            LOGGER.addHandler(new StreamHandler(System.out, new SimpleFormatter()));
-            disableLogging();
-        }
-        */
         initializeIfNot();
 
         enabled = true;
