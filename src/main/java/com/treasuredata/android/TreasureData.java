@@ -412,7 +412,7 @@ public class TreasureData {
 
     private static Session getSession(Context context) {
         if (context == null) {
-            Log.w(TAG, "context is null. It's a unit test, right?");
+            Log.w(TAG, "context is null. It's an unit test, right?");
             return null;
         }
         Context applicationContext = context.getApplicationContext();
