@@ -1,3 +1,7 @@
+Release 0.1.12
+
+* Add TreasureData.setSessionTimeoutMilli()
+
 Release 0.1.11
 
 * Add a pair of class methods TreasureData.startSession() and TreasureData.endSession() that manages a global session tracking over Contexts. Even after TreasureData.endSession() is called and the activity is destroyed, it'll continue the same session when TreasureData.startSession() is called again within 10 seconds
