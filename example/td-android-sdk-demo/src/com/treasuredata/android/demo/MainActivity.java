@@ -29,6 +29,7 @@ public class MainActivity extends Activity {
         // TreasureData.initializeDefaultApiKey("your_write_api_key");
         TreasureData.enableLogging();
         TreasureData.initializeEncryptionKey("hello world");
+        TreasureData.setSessionTimeoutMilli(30 * 1000);
         // TreasureData.disableEventCompression();
 
         TreasureData.initializeSharedInstance(this, "your_write_api_key");

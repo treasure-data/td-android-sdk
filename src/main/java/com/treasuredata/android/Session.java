@@ -3,7 +3,7 @@ package com.treasuredata.android;
 import java.util.UUID;
 
 public class Session {
-    private static final long DEFAULT_SESSION_PENDING_MILLIS = 10 * 1000;
+    public static final long DEFAULT_SESSION_PENDING_MILLIS = 10 * 1000;
     private final long sessionPendingMillis;
     private String id;
     private Long finishedAt;
