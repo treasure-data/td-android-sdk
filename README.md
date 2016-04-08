@@ -13,7 +13,7 @@ If you use gradle, add the following dependency to `dependencies` directive in t
 
 ```
 dependencies {
-    compile 'com.treasuredata:td-android-sdk:0.1.11'
+    compile 'com.treasuredata:td-android-sdk:0.1.12'
 }
 ```
 
@@ -25,7 +25,7 @@ If you use maven, add the following directives to your pom.xml
   <dependency>
     <groupId>com.treasuredata</groupId>
     <artifactId>td-android-sdk</artifactId>
-    <version>0.1.11</version>
+    <version>0.1.12</version>
   </dependency>
 ```
 
@@ -174,12 +174,14 @@ The sent events is going to be buffered for a few minutes before they get import
 When you call `TreasureData#startSession` method, the SDK generates a session ID that's kept until `TreasureData#endSession` is called. The session id is outputs as a column name "td_session_id". Also, `TreasureData#startSession` and `TreasureData#endSession` method add an event that includes `{"td_session_event":"start" or "end"}`.
 
 ```
-    protected void onStart(Bundle savedInstanceState) {
-    		:
-	    TreasureData.sharedInstance().startSession("demotbl");
-	    	:
-   	}
-   	
+	@Override
+	protected void onStart(Bundle savedInstanceState) {
+			:
+		TreasureData.sharedInstance().startSession("demotbl");
+			:
+	}
+
+	@Override
 	protected void onStop() {
 			:
 		TreasureData.sharedInstance().endSession("demotbl");
@@ -200,9 +202,16 @@ If you want to handle the following case, use a pair of class methods `TreasureD
 
 * User opens the application and starts session tracking. Let's call this session `session#0`
 * User moves to home screen and destroys the Activity
-* User reopens the application and restarts session tracking within 10 seconds. But you want to deal with this new session as the same session as `session#0`
+* User reopens the application and restarts session tracking within default 10 seconds. But you want to deal with this new session as the same session as `session#0`
 
 ```
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+			:
+		TreasureData.setSessionTimeoutMilli(30 * 1000);  // Default is 10 seconds
+	}
+
 	@Override
 	protected void onStart() {
 			:
