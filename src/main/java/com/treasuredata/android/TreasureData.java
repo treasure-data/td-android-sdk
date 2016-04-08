@@ -59,6 +59,7 @@ public class TreasureData {
     private volatile boolean autoAppendModelInformation;
     private volatile boolean autoAppendAppInformation;
     private volatile boolean autoAppendLocaleInformation;
+    private static volatile long sessionTimeoutMilli = Session.DEFAULT_SESSION_PENDING_MILLIS;
     private final String appVersion;
     private final int appVersionNumber;
     private volatile boolean serverSideUploadTimestamp;
@@ -410,6 +411,11 @@ public class TreasureData {
         client.enableAutoRetryUploading();
     }
 
+    public static void setSessionTimeoutMilli(long timeoutMilli)
+    {
+        sessionTimeoutMilli = timeoutMilli;
+    }
+
     private static Session getSession(Context context) {
         if (context == null) {
             Log.w(TAG, "context is null. It's an unit test, right?");
@@ -433,7 +439,7 @@ public class TreasureData {
     public static void startSession(Context context) {
         Session session = getSession(context);
         if (session == null) {
-            session = new Session();
+            session = new Session(sessionTimeoutMilli);
             sessions.put(context.getApplicationContext(), session);
         }
         session.start();

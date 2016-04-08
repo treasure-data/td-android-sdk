@@ -99,6 +99,10 @@ public class TreasureDataTest extends TestCase {
         td = createTreasureData(context, client);
     }
 
+    public void tearDown() {
+        TreasureData.setSessionTimeoutMilli(Session.DEFAULT_SESSION_PENDING_MILLIS);
+    }
+
     private void init() {
         onSuccessCalledForAddEvent = false;
         onSuccessCalledForUploadEvents = false;
@@ -337,9 +341,6 @@ public class TreasureDataTest extends TestCase {
         init();
         TimeUnit.MILLISECONDS.sleep(500);
 
-        TDClient newClient = new MockTDClient(DUMMY_API_KEY);
-        TreasureData newTd = createTreasureData(context, newClient);
-
         TreasureData.startSession(context);
 
         records = new HashMap<String, Object>();
@@ -358,6 +359,75 @@ public class TreasureDataTest extends TestCase {
         assertEquals("val", event.event.get("key"));
         String secondSessionId = (String) client.addedEvent.get(0).event.get("td_session_id");
         assertEquals(firstSessionId, secondSessionId);
+    }
+
+    public void testStartSessionAndEndSessionUsingSetSessionTimeout() throws IOException, InterruptedException {
+        enableCallbackForAddEvent();
+        enableCallbackForUploadEvents();
+
+        TreasureData.setSessionTimeoutMilli(200);
+
+        td.setDefaultDatabase("db_");
+
+        TreasureData.startSession(context);
+        assertFalse(onSuccessCalledForAddEvent);
+        assertNull(exceptionOnFailedCalledForAddEvent);
+        assertNull(errorCodeForAddEvent);
+        assertFalse(onSuccessCalledForUploadEvents);
+        assertNull(exceptionOnFailedCalledForUploadEvents);
+        assertNull(errorCodeForUploadEvents);
+        assertEquals(0, client.addedEvent.size());
+
+        Map<String, Object> records = new HashMap<String, Object>();
+        records.put("key", "val");
+        td.addEvent("tbl", records);
+        assertTrue(onSuccessCalledForAddEvent);
+        assertNull(exceptionOnFailedCalledForAddEvent);
+        assertNull(errorCodeForAddEvent);
+        assertFalse(onSuccessCalledForUploadEvents);
+        assertNull(exceptionOnFailedCalledForUploadEvents);
+        assertNull(errorCodeForUploadEvents);
+        assertEquals(1, client.addedEvent.size());
+        Event event = client.addedEvent.get(0);
+        assertEquals("db_.tbl", event.tag);
+        assertEquals(2, event.event.size());
+        assertEquals("val", event.event.get("key"));
+        String firstSessionId = (String) client.addedEvent.get(0).event.get("td_session_id");
+        assertTrue(firstSessionId.length() > 0);
+
+        init();
+        client.clearAddedEvent();
+
+        TreasureData.endSession(context);
+        assertFalse(onSuccessCalledForAddEvent);
+        assertNull(exceptionOnFailedCalledForAddEvent);
+        assertNull(errorCodeForAddEvent);
+        assertFalse(onSuccessCalledForUploadEvents);
+        assertNull(exceptionOnFailedCalledForUploadEvents);
+        assertNull(errorCodeForUploadEvents);
+        assertEquals(0, client.addedEvent.size());
+
+        init();
+        TimeUnit.MILLISECONDS.sleep(500);
+
+        TreasureData.startSession(context);
+
+        records = new HashMap<String, Object>();
+        records.put("key", "val");
+        td.addEvent("tbl", records);
+        assertTrue(onSuccessCalledForAddEvent);
+        assertNull(exceptionOnFailedCalledForAddEvent);
+        assertNull(errorCodeForAddEvent);
+        assertFalse(onSuccessCalledForUploadEvents);
+        assertNull(exceptionOnFailedCalledForUploadEvents);
+        assertNull(errorCodeForUploadEvents);
+        assertEquals(1, client.addedEvent.size());
+        event = client.addedEvent.get(0);
+        assertEquals("db_.tbl", event.tag);
+        assertEquals(2, event.event.size());
+        assertEquals("val", event.event.get("key"));
+        String secondSessionId = (String) client.addedEvent.get(0).event.get("td_session_id");
+        assertNotSame(firstSessionId, secondSessionId);
     }
 
     public void testAddEventWithSuccessWithDefaultDatabase() throws IOException {
