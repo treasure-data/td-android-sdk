@@ -463,6 +463,14 @@ public class TreasureData {
         }
     }
 
+    public static String getSessionId(Context context) {
+        Session session = getSession(context);
+        if (session == null) {
+            return null;
+        }
+        return session.getId();
+    }
+
     public void enableServerSideUploadTimestamp() {
         serverSideUploadTimestamp = true;
     }
