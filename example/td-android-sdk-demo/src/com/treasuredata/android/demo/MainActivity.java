@@ -136,15 +136,15 @@ public class MainActivity extends Activity {
     @Override
     protected void onStart() {
         super.onStart();
-        // TreasureData.sharedInstance().startSession("demotbl");
         TreasureData.startSession(this);
+        Log.i(TAG, "onStart(): Session ID=" + TreasureData.getSessionId(this));
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        // TreasureData.sharedInstance().endSession("demotbl");
         TreasureData.endSession(this);
+        Log.i(TAG, "onStop(): Session ID=" + TreasureData.getSessionId(this));
         TreasureData.sharedInstance().uploadEvents();
     }
 

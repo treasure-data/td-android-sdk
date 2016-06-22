@@ -430,6 +430,28 @@ public class TreasureDataTest extends TestCase {
         assertNotSame(firstSessionId, secondSessionId);
     }
 
+    public void testGetSessionId() throws IOException, InterruptedException {
+        enableCallbackForAddEvent();
+        enableCallbackForUploadEvents();
+
+        assertNull(TreasureData.getSessionId(context));
+
+        TreasureData.setSessionTimeoutMilli(200);
+
+        TreasureData.startSession(context);
+        assertTrue(TreasureData.getSessionId(context).length() > 0);
+
+        TreasureData.endSession(context);
+        assertNull(TreasureData.getSessionId(context));
+
+        TimeUnit.MILLISECONDS.sleep(500);
+
+        assertNull(TreasureData.getSessionId(context));
+
+        TreasureData.startSession(context);
+        assertTrue(TreasureData.getSessionId(context).length() > 0);
+    }
+
     public void testAddEventWithSuccessWithDefaultDatabase() throws IOException {
         td.setDefaultDatabase("db_");
 
