@@ -22,6 +22,7 @@ public class SessionTest {
         assertNotNull(firstSessionId);
 
         String sessionId = session.getId();
+        assertNotNull(sessionId);
         assertEquals(firstSessionId, sessionId);
     }
 
@@ -39,10 +40,12 @@ public class SessionTest {
 
         session.start();
         String firstSessionId = session.getId();
+        assertNotNull(firstSessionId);
         session.finish();
 
         session.start();
         String secondSessionId = session.getId();
+        assertNotNull(secondSessionId);
         assertEquals(firstSessionId, secondSessionId);
     }
 
@@ -52,12 +55,14 @@ public class SessionTest {
 
         session.start();
         String firstSessionId = session.getId();
+        assertNotNull(firstSessionId);
         session.finish();
 
         TimeUnit.MILLISECONDS.sleep(1000);
 
         session.start();
         String secondSessionId = session.getId();
+        assertNotNull(secondSessionId);
         assertNotEquals(firstSessionId, secondSessionId);
     }
 
@@ -67,9 +72,11 @@ public class SessionTest {
 
         session.start();
         String firstSessionId = session.getId();
+        assertNotNull(firstSessionId);
 
         session.start();
         String secondSessionId = session.getId();
+        assertNotNull(secondSessionId);
 
         assertEquals(firstSessionId, secondSessionId);
     }
