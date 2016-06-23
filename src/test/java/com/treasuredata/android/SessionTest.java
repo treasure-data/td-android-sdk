@@ -8,10 +8,14 @@ import static org.junit.Assert.*;
 
 public class SessionTest {
     @Test
-    public void startAndFinish() throws InterruptedException {
+    public void getIdReturnsNullWithoutStart() throws InterruptedException {
         Session session = new Session(1000);
-
         assertNull(session.getId());
+    }
+
+    @Test
+    public void startShouldActivateId() throws InterruptedException {
+        Session session = new Session(1000);
 
         session.start();
         String firstSessionId = session.getId();
@@ -19,53 +23,54 @@ public class SessionTest {
 
         String sessionId = session.getId();
         assertEquals(firstSessionId, sessionId);
+    }
 
+    @Test
+    public void finishShouldInactivateId() throws InterruptedException {
+        Session session = new Session(1000);
+        session.start();
         session.finish();
         assertNull(session.getId());
+    }
 
-        // Wait to expire the session
-        TimeUnit.MILLISECONDS.sleep(1500);
-        assertNull(session.getId());
+    @Test
+    public void reStartWithinIntervalShouldReuseId() throws InterruptedException {
+        Session session = new Session(1000);
+
+        session.start();
+        String firstSessionId = session.getId();
+        session.finish();
 
         session.start();
         String secondSessionId = session.getId();
-        assertNotNull(secondSessionId);
-
-        sessionId = session.getId();
-        assertEquals(secondSessionId, sessionId);
-
-        session.finish();
-        assertNull(session.getId());
-
-        // This wait is too short and the session won't be expired
-        TimeUnit.MILLISECONDS.sleep(300);
-        assertNull(session.getId());
-
-        session.start();
-        assertEquals(secondSessionId, session.getId());
+        assertEquals(firstSessionId, secondSessionId);
     }
 
     @Test
-    public void shouldNotUpdateFinishedAtSecondCallingFinish() throws InterruptedException {
+    public void reStartAfterExpirationShouldNotReuseId() throws InterruptedException {
         Session session = new Session(500);
-        session.start();
 
+        session.start();
         String firstSessionId = session.getId();
         session.finish();
+
         TimeUnit.MILLISECONDS.sleep(1000);
 
-        session.finish();
         session.start();
-
-        assertNotEquals(firstSessionId, session.getId());
+        String secondSessionId = session.getId();
+        assertNotEquals(firstSessionId, secondSessionId);
     }
 
     @Test
-    public void shouldNotReturnIdBeforeCallingStart() throws InterruptedException {
-        Session session = new Session(500);
+    public void reStartWithoutFinishShouldNotUpdateId() throws InterruptedException {
+        Session session = new Session(1000);
 
-        session.finish();
+        session.start();
+        String firstSessionId = session.getId();
 
-        assertNull(session.getId());
+        session.start();
+        String secondSessionId = session.getId();
+
+        assertEquals(firstSessionId, secondSessionId);
     }
 }

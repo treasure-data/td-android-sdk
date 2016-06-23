@@ -17,7 +17,7 @@ public class Session {
     }
 
     public synchronized void start() {
-        if (id == null || (finishedAt == null || (System.currentTimeMillis() - finishedAt) > sessionPendingMillis)) {
+        if (id == null || (finishedAt != null && (System.currentTimeMillis() - finishedAt) > sessionPendingMillis)) {
             id = UUID.randomUUID().toString();
         }
         finishedAt = null;
