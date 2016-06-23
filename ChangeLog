@@ -1,3 +1,8 @@
+Release 0.1.13
+
+* Add TreasureData.getSessionId(Context)
+* Fix the bug that the second call of TreasureData.startSession(Context) unexpectedly updates the session ID without calling TreasureData.endSession(Context)
+
 Release 0.1.12
 
 * Add TreasureData.setSessionTimeoutMilli()
@@ -10,7 +15,7 @@ Release 0.1.11
 
 Release 0.1.10
 
-* Fix bug that can cause a failure of sending HTTP request
+* Fix the bug that can cause a failure of sending HTTP request
 
 Release 0.1.9
 
