@@ -228,7 +228,17 @@ If you want to handle the following case, use a pair of class methods `TreasureD
 	}
 ```
 
+In this case, you can get the current session ID using `TreasureData.getSessionId`
 
+```
+	@Override
+	protected void onStart() {
+			:
+		TreasureData.startSession(this);
+		Log.i(TAG, "onStart(): Session ID=" + TreasureData.getSessionId(this));
+			:
+	}
+```
 
 ### Detect if it's the first running
 
