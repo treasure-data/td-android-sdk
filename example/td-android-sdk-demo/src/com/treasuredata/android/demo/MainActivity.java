@@ -25,7 +25,7 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        // TreasureData.initializeApiEndpoint("https://mobile-ybi.jp-east.idcfcloud.com");
+        // TreasureData.initializeApiEndpoint("https://in.ybi.idcfcloud.net");
         // TreasureData.initializeDefaultApiKey("your_write_api_key");
         TreasureData.enableLogging();
         TreasureData.initializeEncryptionKey("hello world");
