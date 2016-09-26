@@ -38,8 +38,9 @@ public class MainActivity extends Activity {
         TreasureData.sharedInstance().enableAutoAppendAppInformation();
         TreasureData.sharedInstance().enableAutoAppendLocaleInformation();
         TreasureData.sharedInstance().setDefaultDatabase("testdb");
+        TreasureData.sharedInstance().enableServerSideUploadTimestamp("server_upload_time");
+        TreasureData.sharedInstance().enableAutoAppendRecordUUID();
         // TreasureData.sharedInstance().disableAutoRetryUploading();
-        // TreasureData.sharedInstance().enableServerSideUploadTimestamp();
 
         if (TreasureData.sharedInstance().isFirstRun(this)) {
             Map<String, Object> event = new HashMap<String, Object>();
