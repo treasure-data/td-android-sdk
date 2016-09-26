@@ -40,6 +40,7 @@ public class TreasureData {
     private static final String EVENT_KEY_LOCALE_COUNTRY = "td_locale_country";
     private static final String EVENT_KEY_LOCALE_LANG = "td_locale_lang";
     private static final String EVENT_KEY_SERVERSIDE_UPLOAD_TIMESTAMP = "#SSUT";
+    private static final String EVENT_DEFAULT_KEY_RECORD_UUID = "record_uuid";
     private static final String OS_TYPE = "Android";
 
     static {
@@ -64,6 +65,7 @@ public class TreasureData {
     private final int appVersionNumber;
     private volatile boolean serverSideUploadTimestamp;
     private Session session = new Session();
+    private volatile String autoAppendRecordUUIDColumn;
 
     public static TreasureData initializeSharedInstance(Context context, String apiKey) {
         sharedInstance = new TreasureData(context, apiKey);
@@ -210,7 +212,7 @@ public class TreasureData {
         }
     }
 
-    public void addEventWithCallback(String database, String table, Map<String, Object> record, TDCallback callback) {
+    public void addEventWithCallback(String database, String table, Map<String, Object> origRecord, TDCallback callback) {
         if (client == null) {
             Log.w(TAG, "TDClient is null");
             return;
@@ -230,8 +232,9 @@ public class TreasureData {
             return;
         }
 
-        if (record == null) {
-            record = new HashMap<String, Object>();
+        Map<String, Object> record = new HashMap<String, Object>();
+        if (origRecord != null) {
+            record.putAll(origRecord);
         }
 
         appendSessionId(record);
@@ -250,6 +253,10 @@ public class TreasureData {
 
         if (autoAppendLocaleInformation) {
             appendLocaleInformation(record);
+        }
+
+        if (autoAppendRecordUUIDColumn != null) {
+            appendRecordUUID(record);
         }
 
         if (!(DATABASE_NAME_PATTERN.matcher(database).find() && TABLE_NAME_PATTERN.matcher(table).find())) {
@@ -371,6 +378,10 @@ public class TreasureData {
         record.put(EVENT_KEY_LOCALE_LANG, locale.getLanguage());
     }
 
+    public void appendRecordUUID(Map<String, Object> record) {
+        record.put(autoAppendRecordUUIDColumn, UUID.randomUUID().toString());
+    }
+
     public void disableAutoAppendUniqId() {
         this.autoAppendUniqId = false;
     }
@@ -477,6 +488,25 @@ public class TreasureData {
 
     public void disableServerSideUploadTimestamp() {
         serverSideUploadTimestamp = false;
+    }
+
+    public void enableAutoAppendRecordUUID()
+    {
+        autoAppendRecordUUIDColumn = EVENT_DEFAULT_KEY_RECORD_UUID;
+    }
+
+    public void enableAutoAppendRecordUUID(String columnName)
+    {
+        if (columnName == null) {
+            Log.w(TAG, "columnName shouldn't be null");
+            return;
+        }
+        autoAppendRecordUUIDColumn = columnName;
+    }
+
+    public void disableAutoAppendRecordUUID()
+    {
+        autoAppendRecordUUIDColumn = null;
     }
 
     // Only for testing
