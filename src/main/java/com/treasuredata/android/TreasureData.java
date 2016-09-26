@@ -64,6 +64,7 @@ public class TreasureData {
     private final String appVersion;
     private final int appVersionNumber;
     private volatile boolean serverSideUploadTimestamp;
+    private volatile String serverSideUploadTimestampColumn;
     private Session session = new Session();
     private volatile String autoAppendRecordUUIDColumn;
 
@@ -266,7 +267,13 @@ public class TreasureData {
         }
 
         if (serverSideUploadTimestamp) {
-            record.put(EVENT_KEY_SERVERSIDE_UPLOAD_TIMESTAMP, true);
+            String columnName = serverSideUploadTimestampColumn;
+            if (columnName != null) {
+                record.put(EVENT_KEY_SERVERSIDE_UPLOAD_TIMESTAMP, columnName);
+            }
+            else {
+                record.put(EVENT_KEY_SERVERSIDE_UPLOAD_TIMESTAMP, true);
+            }
         }
 
         StringBuilder sb = new StringBuilder();
@@ -484,19 +491,29 @@ public class TreasureData {
 
     public void enableServerSideUploadTimestamp() {
         serverSideUploadTimestamp = true;
+        serverSideUploadTimestampColumn = null;
+    }
+
+    public void enableServerSideUploadTimestamp(String columnName) {
+        if (columnName == null) {
+            Log.w(TAG, "columnName shouldn't be null");
+            return;
+        }
+
+        serverSideUploadTimestamp = true;
+        serverSideUploadTimestampColumn = columnName;
     }
 
     public void disableServerSideUploadTimestamp() {
         serverSideUploadTimestamp = false;
+        serverSideUploadTimestampColumn = null;
     }
 
-    public void enableAutoAppendRecordUUID()
-    {
+    public void enableAutoAppendRecordUUID() {
         autoAppendRecordUUIDColumn = EVENT_DEFAULT_KEY_RECORD_UUID;
     }
 
-    public void enableAutoAppendRecordUUID(String columnName)
-    {
+    public void enableAutoAppendRecordUUID(String columnName) {
         if (columnName == null) {
             Log.w(TAG, "columnName shouldn't be null");
             return;
@@ -504,8 +521,7 @@ public class TreasureData {
         autoAppendRecordUUIDColumn = columnName;
     }
 
-    public void disableAutoAppendRecordUUID()
-    {
+    public void disableAutoAppendRecordUUID() {
         autoAppendRecordUUIDColumn = null;
     }
 
