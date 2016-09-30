@@ -14,7 +14,7 @@ If you use gradle, add the following dependency to `dependencies` directive in t
 
 ```
 dependencies {
-    compile 'com.treasuredata:td-android-sdk:0.1.13'
+    compile 'com.treasuredata:td-android-sdk:0.1.14'
 }
 ```
 
@@ -26,7 +26,7 @@ If you use maven, add the following directives to your pom.xml
   <dependency>
     <groupId>com.treasuredata</groupId>
     <artifactId>td-android-sdk</artifactId>
-    <version>0.1.13</version>
+    <version>0.1.14</version>
   </dependency>
 ```
 
@@ -320,6 +320,19 @@ UUID of the device will be added to each event automatically if you call `Treasu
 
 It outputs the value as a column name `td_uuid`.
 
+### Adding an UUID to each event record automatically
+
+UUID will be added to each event record automatically if you call `enableAutoAppendRecordUUID`. Each event has different UUID.
+
+```
+	td.enableAutoAppendRecordUUID();
+	// If you want to customize the column name, pass it to the API
+	// td.enableAutoAppendRecordUUID("my_record_uuid");
+		:
+	td.addEvent(...);
+```
+
+It outputs the value as a column name `record_uuid` by default.
 
 ### Adding device model information to each event automatically
 
@@ -370,6 +383,18 @@ It outputs the following column names and values:
 
 - `td_locale_country` : java.util.Locale.getCountry() (from Context.getResources().getConfiguration().locale)
 - `td_locale_lang` : java.util.Locale.getLanguage() (from Context.getResources().getConfiguration().locale)
+
+### Use server side upload timestamp
+
+If you want to use server side upload timestamp not only client device time that is recorded when your application calls `addEvent`, use `enableServerSideUploadTimestamp`.
+
+```
+	// Use server side upload time as `time` column
+	td.enableServerSideUploadTimestamp(true);
+	
+	// Add server side upload time as a customized column name
+	td.enableServerSideUploadTimestamp("server_upload_time");
+```
 
 ### Enable/Disable debug log
 
