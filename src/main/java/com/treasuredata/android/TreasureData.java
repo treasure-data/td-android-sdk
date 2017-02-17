@@ -126,7 +126,7 @@ public class TreasureData {
         }
         else {
             try {
-                client = new TDClient(applicationContext, apiKey);
+                client = new TDClient(apiKey, applicationContext.getCacheDir());
             } catch (IOException e) {
                 Log.e(TAG, "Failed to construct TreasureData object", e);
             }
@@ -198,6 +198,14 @@ public class TreasureData {
 
     public TDCallback getUploadEventsCallBack() {
         return this.uploadEventsCallBack;
+    }
+
+    public void setMaxUploadEventsAtOnce(int maxUploadEventsAtOnce) {
+        client.setMaxUploadEventsAtOnce(maxUploadEventsAtOnce);
+    }
+
+    public int getMaxUploadEventsAtOnce() {
+        return client.getMaxUploadEventsAtOnce();
     }
 
     public void addEvent(String database, String table, Map<String, Object> record) {

@@ -6,6 +6,7 @@ import io.keen.client.java.KeenClient;
 import io.keen.client.java.KeenProject;
 import org.komamitsu.android.util.Log;
 
+import java.io.File;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -20,11 +21,11 @@ class TDClient extends KeenClient {
     private static String apiEndpoint;
     private static String encryptionKey;
 
-    TDClient(Context context, String apiKey) throws IOException {
+    TDClient(String apiKey, File eventStoreRoot) throws IOException {
         super(
                 new TDClientBuilder()
                         .withHttpHandler(new TDHttpHandler((apiKey == null ? TDClient.defaultApiKey : apiKey), apiEndpoint))
-                        .withEventStore(new TDEventStore(context.getCacheDir()))
+                        .withEventStore(new TDEventStore(eventStoreRoot))
                         .withJsonHandler(new TDJsonHandler(encryptionKey))
                         .withPublishExecutor(Executors.newSingleThreadExecutor())
         );
