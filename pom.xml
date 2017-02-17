@@ -129,6 +129,13 @@
     </dependency>
 
     <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>2.5</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
       <groupId>org.komamitsu</groupId>
       <artifactId>android-logger-bridge</artifactId>
       <version>0.0.2</version>

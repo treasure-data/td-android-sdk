@@ -5,6 +5,7 @@ import io.keen.client.java.KeenCallback;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
+import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,7 +37,6 @@ public class TDClientTest
         TemporaryFolder temporaryFolder = new TemporaryFolder();
         temporaryFolder.create();
         cacheDir = temporaryFolder.getRoot();
-        cacheDir.deleteOnExit();
 
         server = new MockWebServer();
 
@@ -50,6 +50,8 @@ public class TDClientTest
         TDHttpHandler.enableEventCompression();
 
         server.shutdown();
+
+        FileUtils.deleteDirectory(cacheDir);
     }
 
     private void sendQueuedEventsAndAssert(TDClient client, final List<Map<String, List<Map<String, Object>>>> expects)
