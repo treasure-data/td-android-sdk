@@ -1,5 +1,11 @@
 # Change Log
 
+## Version 0.1.15
+_2017-02-17_
+
+* Add TreasureData#setMaxUploadEventsAtOnce(int maxUploadEventsAtOnce)
+* Upload at most limited number (default: 400) of events at once to prevent OOM
+
 ## Version 0.1.14
 _2016-09-30_
 
