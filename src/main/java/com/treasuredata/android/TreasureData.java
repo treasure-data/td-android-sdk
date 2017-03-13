@@ -489,6 +489,10 @@ public class TreasureData {
         }
     }
 
+    public String getSessionId() {
+        return session.getId();
+    }
+
     public static String getSessionId(Context context) {
         Session session = getSession(context);
         if (session == null) {

@@ -374,7 +374,11 @@ public class TreasureDataTest extends TestCase {
         enableCallbackForAddEvent();
         enableCallbackForUploadEvents();
 
+        assertNull(td.getSessionId());
         td.startSession("db_", "tbl");
+        String sessionIdFromAPI = td.getSessionId();
+        assertNotNull(sessionIdFromAPI);
+
         assertTrue(onSuccessCalledForAddEvent);
         assertNull(exceptionOnFailedCalledForAddEvent);
         assertNull(errorCodeForAddEvent);
@@ -385,11 +389,16 @@ public class TreasureDataTest extends TestCase {
         assertEquals("db_.tbl", client.addedEvent.get(0).tag);
         assertEquals(2, client.addedEvent.get(0).event.size());
         String sessionId = (String) client.addedEvent.get(0).event.get("td_session_id");
+        assertEquals(sessionIdFromAPI, sessionId);
         assertTrue(sessionId.length() > 0);
         assertEquals("start", client.addedEvent.get(0).event.get("td_session_event"));
 
         td.setDefaultDatabase("db_");
+
+        assertEquals(sessionIdFromAPI, td.getSessionId());
         td.endSession("tbl");
+        assertNull(td.getSessionId());
+        
         assertTrue(onSuccessCalledForAddEvent);
         assertNull(exceptionOnFailedCalledForAddEvent);
         assertNull(errorCodeForAddEvent);
