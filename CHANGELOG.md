@@ -1,5 +1,10 @@
 # Change Log
 
+## Version 0.1.16
+_2017-03-13_
+
+* Add TreasureData#getSessionId
+
 ## Version 0.1.15
 _2017-02-17_
 
