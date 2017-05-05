@@ -1,6 +1,11 @@
 package com.treasuredata.android;
 
 import android.util.Base64;
+import com.fasterxml.jackson.core.JsonEncoding;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.jr.ob.JSON;
 import io.keen.client.java.KeenJsonHandler;
 import org.komamitsu.android.util.Log;
@@ -13,6 +18,7 @@ import java.io.*;
 import java.nio.charset.Charset;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
+import java.util.Iterator;
 import java.util.Map;
 
 class TDJsonHandler implements KeenJsonHandler {
@@ -102,9 +108,23 @@ class TDJsonHandler implements KeenJsonHandler {
 
     private void writeJson(Writer writer, Map<String, ?> value, boolean withoutEncryption) throws IOException {
         if (withoutEncryption || secretKeySpec == null) {
-            writer.append(json.asString(value));
-        }
-        else {
+            try {
+                JsonFactory factory = new JsonFactory();
+                JsonGenerator generator = factory.createGenerator(writer);
+                generator.writeStartObject();
+                Iterator<? extends Map.Entry<String, ?>> it = value.entrySet().iterator();
+                while (it.hasNext()) {
+                    Map.Entry<String, ?> entry = it.next();
+                    generator.writeObjectField(entry.getKey(), entry.getValue());
+                }
+                generator.writeEndObject();
+                generator.close();
+            } catch (JsonGenerationException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(byteArrayOutputStream));
             bufferedWriter.append(json.asString(value));
@@ -177,4 +197,3 @@ class TDJsonHandler implements KeenJsonHandler {
 
     private final JSON json;
 }
-
