@@ -3,3 +3,10 @@ example/td-android-sdk-demo/bin/
 example/td-android-sdk-demo/target/
 target/
 *.iml
+.gradle
+/local.properties
+/.idea/workspace.xml
+/.idea/libraries
+.DS_Store
+/build
+.sonar
