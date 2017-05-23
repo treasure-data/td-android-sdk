@@ -1,8 +1,8 @@
-TreasureData Android SDK
+Treasure Data Android SDK
 ===============
 [<img src="https://travis-ci.org/treasure-data/td-android-sdk.svg?branch=master"/>](https://travis-ci.org/treasure-data/td-android-sdk)
 
-Android SDK for [Treasure Data](http://www.treasuredata.com/). With this SDK, you can import the events on your applications into TreasureData easily.
+Android SDK for [Treasure Data](http://www.treasuredata.com/). With this SDK, you can import the events on your applications into Treasure Data easily.
 
 ## Installation
 
@@ -91,7 +91,9 @@ public class OtherActivity extends Activity {
 		:
 ```
 
-### Add events to local buffer
+### Add a event to local buffer
+
+To add a event to local buffer, you can call `TreasureData#addEvent` or `TreasureData#addEventWithCallback` API.
 
 ```
   View v = findViewById(R.id.button);
@@ -117,32 +119,26 @@ public class OtherActivity extends Activity {
           Log.w("ExampleApp", "errorCode: " + errorCode + ", detail: " + e.toString());
         }
       });
+      
+      // Or, simply...
+      //    td.addEvent("testdb", "demotbl", event);
+
     }
   });
 ```
 
-Or, simply call `TreasureData#addEvent` method instead of `TreasureData#addEventWithCallback`.
-
-```
-  final Map event = new HashMap<String, Object>();
-  event.put("id", v.getId());
-  event.put("left", v.getLeft());
-  event.put("right", v.getRight());
-  event.put("top", v.getTop());
-  event.put("bottom", v.getBottom());
-
-  td.addEvent("testdb", "demotbl", event);
-```
-
 Specify the database and table to which you want to import the events.
 
-### Upload buffered events to TreasureData
+### Upload buffered events to Treasure Data
 
+To upload events buffered events to Treasure Data, you can call `TreasureData#uploadEvents` or `TreasureData#uploadEventsWithCallback` API.
 
 ```
   findViewById(R.id.upload).setOnTouchListener(new OnTouchListener() {
     @Override
     public boolean onTouch(View view, MotionEvent motionEvent) {
+
+      // You can call this API to uplaod buffered events whenever you want.
       td.uploadEventsWithCallback(new TDCallback() {
         @Override
         public void onSuccess() {
@@ -154,21 +150,30 @@ Specify the database and table to which you want to import the events.
           Log.w("ExampleApp", "errorCode: " + errorCode + ", detail: " + e.toString());
         }
       });
+      
+      // Or, simply...
+      //   td.uploadEvents();
             
       return false;
     }
   });
 ```
 
-Or, simply call `TreasureData#uploadEvents` method instead of `TreasureData#uploadEventsWithCallback`.
+It depends on the characteristic of your application when to upload and how often to upload buffered events. But we recommend the followings at least as good timings to upload.
 
+- When the current screen is closing or moving to background
+- When closing the application
 
-```
-    td.uploadEvents();
-```
+The sent events is going to be buffered for a few minutes before they get imported into Treasure Data storage.
 
-The sent events is going to be buffered for a few minutes before they get imported into TreasureData storage.
+### Retry uploading and deduplication
 
+This SDK imports events in exactly once style with the combination of these features.
+
+- This SDK keeps buffered events with adding unique keys and retries to upload them until confirming the events are uploaded and stored on server side (at least once)
+- The server side remembers the unique keys of all events within the past 1 hours by default and prevents duplicated imports (at most once)
+
+As for the deduplication window is 1 hour by default, so it's important not to keep buffered events more than 1 hour to avoid duplicated events.
 
 ### Start/End session
 
