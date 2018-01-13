@@ -91,9 +91,9 @@ public class OtherActivity extends Activity {
 		:
 ```
 
-### Add a event to local buffer
+### Add an event to local buffer
 
-To add a event to local buffer, you can call `TreasureData#addEvent` or `TreasureData#addEventWithCallback` API.
+To add an event to local buffer, you can call `TreasureData#addEvent` or `TreasureData#addEventWithCallback` API.
 
 ```
   View v = findViewById(R.id.button);
