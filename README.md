@@ -72,17 +72,20 @@ We recommend to use a write-only API key for the SDK. To obtain one, please:
 Also, you can use a shared instance from anywhere with `TreasureData.sharedInstance` method after calling `TreasureData.initializeSharedInstance`.
 
 ```
-public class MainActivity extends Activity {
-		:
-	TreasureData.initializeDefaultApiKey("your_write_apikey");
-	TreasureData.initializeEncryptionKey("hello world");
-		:
-	TreasureData.initializeSharedInstance(this);
-	TreasureData.sharedInstance().setDefaultDatabase("testdb");
-		:
+public class MyApp extends Application {
+    @Override
+    public void onCreate() {
+		    :
+        TreasureData.initializeDefaultApiKey("your_write_apikey");
+        TreasureData.initializeEncryptionKey("hello world");
+            :
+        TreasureData.initializeSharedInstance(this);
+        TreasureData.sharedInstance().setDefaultDatabase("testdb");
+            :
+	}
 }
 
-public class OtherActivity extends Activity {
+public class MainActivity extends Activity {
 		:
 	Map<String, Object> event = new HashMap<String, Object>();
 	event.put("event_name", "data_load");
