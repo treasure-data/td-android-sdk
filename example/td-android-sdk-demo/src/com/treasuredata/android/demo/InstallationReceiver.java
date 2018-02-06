@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import com.treasuredata.android.TreasureData;
 
-import java.io.IOException;
 import java.util.HashMap;
 
 /*
@@ -18,7 +17,6 @@ public class InstallationReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         TreasureData.enableLogging();
-        final TreasureData td = new TreasureData(context, "your_default_api_key");
         HashMap<String, Object> referrer = new HashMap<String, Object>();
         referrer.put("type", "install_referrer");
         for (String kv : intent.getStringExtra("referrer").split("&")) {
@@ -27,7 +25,7 @@ public class InstallationReceiver extends BroadcastReceiver {
                 referrer.put(kAndV[0], kAndV[1]);
             }
         }
-        td.addEvent("testdb", "demotbl", referrer);
-        td.uploadEvents();
+        TreasureData.sharedInstance().addEvent("testdb", "demotbl", referrer);
+        TreasureData.sharedInstance().uploadEvents();
     }
 }
