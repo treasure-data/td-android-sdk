@@ -69,7 +69,11 @@ public class TreasureData {
     private volatile String autoAppendRecordUUIDColumn;
 
     public static TreasureData initializeSharedInstance(Context context, String apiKey) {
-        sharedInstance = new TreasureData(context, apiKey);
+        synchronized (TreasureData.class) {
+            if (sharedInstance == null) {
+                sharedInstance = new TreasureData(context, apiKey);
+            }
+        }
         return sharedInstance;
     }
 
@@ -78,9 +82,11 @@ public class TreasureData {
     }
 
     public static TreasureData sharedInstance() {
-        if (sharedInstance == null) {
-            Log.w(TAG, "sharedInstance is initialized properly");
-            return new NullTreasureData();
+        synchronized (TreasureData.class) {
+            if (sharedInstance == null) {
+                Log.w(TAG, "sharedInstance is initialized properly for testing only.");
+                return new NullTreasureData();
+            }
         }
         return sharedInstance;
     }

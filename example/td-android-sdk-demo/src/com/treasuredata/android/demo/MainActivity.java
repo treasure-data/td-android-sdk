@@ -25,22 +25,6 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        // TreasureData.initializeApiEndpoint("https://in.ybi.idcfcloud.net");
-        // TreasureData.initializeDefaultApiKey("your_write_api_key");
-        TreasureData.enableLogging();
-        TreasureData.initializeEncryptionKey("hello world");
-        TreasureData.setSessionTimeoutMilli(30 * 1000);
-        // TreasureData.disableEventCompression();
-
-        TreasureData.initializeSharedInstance(this, "your_write_api_key");
-        TreasureData.sharedInstance().enableAutoAppendUniqId();
-        TreasureData.sharedInstance().enableAutoAppendModelInformation();
-        TreasureData.sharedInstance().enableAutoAppendAppInformation();
-        TreasureData.sharedInstance().enableAutoAppendLocaleInformation();
-        TreasureData.sharedInstance().setDefaultDatabase("testdb");
-        TreasureData.sharedInstance().enableServerSideUploadTimestamp("server_upload_time");
-        TreasureData.sharedInstance().enableAutoAppendRecordUUID();
-        // TreasureData.sharedInstance().disableAutoRetryUploading();
 
         if (TreasureData.sharedInstance().isFirstRun(this)) {
             Map<String, Object> event = new HashMap<String, Object>();
@@ -77,7 +61,6 @@ public class MainActivity extends Activity {
 
         // For default callback, optional.
         TreasureData.sharedInstance().setAddEventCallBack(addEventCallback);
-        // td.setUploadEventsCallBack(uploadEventsCallback);
 
         List<Pair<Integer, String>> targets = Arrays.asList(
                 new Pair<Integer, String>(R.id.navi_help, "navi_help"),
