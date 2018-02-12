@@ -1,29 +1,41 @@
 package com.treasuredata.android;
 
+import android.app.Activity;
+import android.app.Application;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
+import android.os.AsyncTask;
 import android.os.Build;
+import android.os.Bundle;
+import android.provider.Settings;
 import io.keen.client.java.KeenClient;
 import org.komamitsu.android.util.Log;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.WeakHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
 public class TreasureData {
     private static final String TAG = TreasureData.class.getSimpleName();
-    private static final String VERSION = "0.1.16";
+    private static final String VERSION = "0.1.17-SNAPSHOT";
     private static final String LABEL_ADD_EVENT = "addEvent";
     private static final String LABEL_UPLOAD_EVENTS = "uploadEvents";
     private static final Pattern DATABASE_NAME_PATTERN = Pattern.compile("^[0-9a-z_]{3,255}$");
     private static final Pattern TABLE_NAME_PATTERN = Pattern.compile("^[0-9a-z_]{3,255}$");
     private static final String SHARED_PREF_NAME = "td_sdk_info";
     private static final String SHARED_PREF_KEY_UUID = "uuid";
+    private static final String SHARED_PREF_KEY_USER_ID = "user_id";
+    private static final String SHARED_PREF_VERSION_KEY = "version";
+    private static final String SHARED_PREF_BUILD_KEY = "build";
     private static final String SHARED_PREF_KEY_FIRST_RUN = "first_run";
     private static final String EVENT_KEY_UUID = "td_uuid";
     private static final String EVENT_KEY_SESSION_ID = "td_session_id";
@@ -37,11 +49,16 @@ public class TreasureData {
     private static final String EVENT_KEY_OS_TYPE = "td_os_type";
     private static final String EVENT_KEY_APP_VER = "td_app_ver";
     private static final String EVENT_KEY_APP_VER_NUM = "td_app_ver_num";
+    private static final String EVENT_KEY_PREV_APP_VER = "td_prev_app_ver";
+    private static final String EVENT_KEY_PREV_APP_VER_NUM = "td_prev_app_ver_num";
     private static final String EVENT_KEY_LOCALE_COUNTRY = "td_locale_country";
     private static final String EVENT_KEY_LOCALE_LANG = "td_locale_lang";
+    private static final String EVENT_KEY_USER_ID = "td_user_id";
+    private static final String EVENT_KEY_GAID = "td_gaid";
     private static final String EVENT_KEY_SERVERSIDE_UPLOAD_TIMESTAMP = "#SSUT";
     private static final String EVENT_DEFAULT_KEY_RECORD_UUID = "record_uuid";
     private static final String OS_TYPE = "Android";
+    private static final String SETTING_ADVERTISING_ID = "advertising_id";
 
     static {
         TDHttpHandler.VERSION = TreasureData.VERSION;
@@ -53,13 +70,20 @@ public class TreasureData {
     private final Context context;
     private final TDClient client;
     private final String uuid;
+    private volatile String userId;
+    private volatile String gaid;
     private volatile String defaultDatabase;
+    private volatile String defaultTable;
     private volatile TDCallback addEventCallBack;
     private volatile TDCallback uploadEventsCallBack;
     private volatile boolean autoAppendUniqId;
     private volatile boolean autoAppendModelInformation;
     private volatile boolean autoAppendAppInformation;
     private volatile boolean autoAppendLocaleInformation;
+    private volatile boolean autoTrackApplicationLifecycleEvents = true;
+    private volatile boolean autoTrackApplicationInstalledEvent = true;
+    private volatile boolean autoTrackApplicationOpenEvent = true;
+    private volatile boolean autoTrackApplicationUpdatedEvent = true;
     private static volatile long sessionTimeoutMilli = Session.DEFAULT_SESSION_PENDING_MILLIS;
     private final String appVersion;
     private final int appVersionNumber;
@@ -72,6 +96,7 @@ public class TreasureData {
         synchronized (TreasureData.class) {
             if (sharedInstance == null) {
                 sharedInstance = new TreasureData(context, apiKey);
+                sharedInstance.initialize();
             }
         }
         return sharedInstance;
@@ -91,11 +116,20 @@ public class TreasureData {
         return sharedInstance;
     }
 
+    private void initialize() {
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                fetchAdvertisingId();
+            }
+        });
+    }
+
     private SharedPreferences getSharedPreference(Context context) {
         return context.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
     }
 
-    public String getUUID(Context context) {
+    public String getUUID() {
         SharedPreferences sharedPreferences = getSharedPreference(context);
         synchronized (this) {
             String uuid = sharedPreferences.getString(SHARED_PREF_KEY_UUID, null);
@@ -104,6 +138,52 @@ public class TreasureData {
                 sharedPreferences.edit().putString(SHARED_PREF_KEY_UUID, uuid).commit();
             }
             return uuid;
+        }
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+        if (this.userId != null) {
+            SharedPreferences sharedPreferences = getSharedPreference(context);
+            synchronized (this) {
+                sharedPreferences.edit().putString(SHARED_PREF_KEY_USER_ID, this.userId).commit();
+            }
+        }
+    }
+
+    private String getPrefUserId() {
+        SharedPreferences sharedPreferences = getSharedPreference(context);
+        return sharedPreferences.getString(SHARED_PREF_KEY_USER_ID, null);
+    }
+
+    private void fetchAdvertisingId() {
+        if("Amazon".equals(Build.MANUFACTURER)) {
+            fetchAmazonAdvertisingId();
+        }else {
+            fetchGoogleAdvertisingId();
+        }
+    }
+
+    private void fetchAmazonAdvertisingId() {
+        ContentResolver cr = context.getContentResolver();
+        gaid = Settings.Secure.getString(cr, SETTING_ADVERTISING_ID);
+    }
+
+    private void fetchGoogleAdvertisingId() {
+        try {
+            Class AdvertisingIdClient = Class
+                    .forName("com.google.android.gms.ads.identifier.AdvertisingIdClient");
+            Method getAdvertisingInfo = AdvertisingIdClient.getMethod("getAdvertisingIdInfo",
+                    Context.class);
+            Object adInfo = getAdvertisingInfo.invoke(null, context);
+            Method getId = adInfo.getClass().getMethod("getId");
+            gaid = (String) getId.invoke(adInfo);
+        } catch (ClassNotFoundException e) {
+            Log.w(TAG, "Google Play Services SDK not found");
+        } catch (InvocationTargetException e) {
+            Log.w(TAG, "Google Play Services not available");
+        } catch (Exception e) {
+            Log.e(TAG, "Encountered an error connecting to Google Play Services", e);
         }
     }
 
@@ -124,7 +204,8 @@ public class TreasureData {
     public TreasureData(Context context, String apiKey) {
         Context applicationContext = context.getApplicationContext();
         this.context = applicationContext;
-        uuid = getUUID(applicationContext);
+        uuid = getUUID();
+        userId = getPrefUserId();
 
         TDClient client = null;
         if (apiKey == null && TDClient.getDefaultApiKey() == null) {
@@ -152,6 +233,92 @@ public class TreasureData {
         this.appVersionNumber = appVersionNumber;
 
         this.client = client;
+
+        final Application application = (Application)applicationContext;
+        application.registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks() {
+            final AtomicBoolean trackedApplicationLifecycleEvents = new AtomicBoolean(false);
+
+            @Override
+            public void onActivityCreated(Activity activity, Bundle bundle) {
+                if (!trackedApplicationLifecycleEvents.getAndSet(true)
+                        && autoTrackApplicationLifecycleEvents) {
+                    trackApplicationLifecycleEvents();
+                }
+            }
+
+            @Override
+            public void onActivityStarted(Activity activity) {
+
+            }
+
+            @Override
+            public void onActivityResumed(Activity activity) {
+
+            }
+
+            @Override
+            public void onActivityPaused(Activity activity) {
+
+            }
+
+            @Override
+            public void onActivityStopped(Activity activity) {
+
+            }
+
+            @Override
+            public void onActivitySaveInstanceState(Activity activity, Bundle bundle) {
+
+            }
+
+            @Override
+            public void onActivityDestroyed(Activity activity) {
+
+            }
+        });
+    }
+
+    private void trackApplicationLifecycleEvents() {
+        String currentVersion = appVersion;
+        int currentBuild = appVersionNumber;
+
+        SharedPreferences sharedPreferences = getSharedPreference(context);
+        String previousVersion = sharedPreferences.getString(SHARED_PREF_VERSION_KEY, null);
+        int previousBuild = sharedPreferences.getInt(SHARED_PREF_BUILD_KEY, 0);
+
+        Map<String, Object> record;
+        if (autoTrackApplicationInstalledEvent && previousBuild == 0) {
+            record = new HashMap<String, Object>();
+            record.put("event_type", "app_installed");
+            record.put(EVENT_KEY_APP_VER_NUM, currentBuild);
+            record.put(EVENT_KEY_APP_VER, currentVersion);
+            addEvent(record);
+        }else if (autoTrackApplicationUpdatedEvent && currentBuild != previousBuild) {
+            record = new HashMap<String, Object>();
+            record.put("event_type", "app_updated");
+            record.put(EVENT_KEY_APP_VER_NUM, currentBuild);
+            record.put(EVENT_KEY_APP_VER, currentVersion);
+            record.put(EVENT_KEY_PREV_APP_VER_NUM, previousBuild);
+            record.put(EVENT_KEY_PREV_APP_VER, previousVersion);
+            addEvent(record);
+        }
+
+        if (autoTrackApplicationOpenEvent) {
+            record = new HashMap<String, Object>();
+            record.put("event_type", "app_open");
+            record.put(EVENT_KEY_APP_VER_NUM, currentBuild);
+            record.put(EVENT_KEY_APP_VER, currentVersion);
+            addEvent(record);
+        }
+
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putInt(SHARED_PREF_BUILD_KEY, currentBuild);
+        editor.putString(SHARED_PREF_VERSION_KEY, currentVersion);
+        editor.apply();
+    }
+
+    private void addEvent(Map<String, Object> event) {
+        addEvent(defaultDatabase, defaultTable, event);
     }
 
     public TreasureData(Context context) {
@@ -188,6 +355,10 @@ public class TreasureData {
 
     public void setDefaultDatabase(String defaultDatabase) {
         this.defaultDatabase = defaultDatabase;
+    }
+
+    public void setDefaultTable(String defaultTable) {
+        this.defaultTable = defaultTable;
     }
 
     public synchronized void setAddEventCallBack(TDCallback callBack) {
@@ -250,6 +421,14 @@ public class TreasureData {
         Map<String, Object> record = new HashMap<String, Object>();
         if (origRecord != null) {
             record.putAll(origRecord);
+        }
+
+        if (gaid != null) {
+            record.put(EVENT_KEY_GAID, gaid);
+        }
+
+        if (userId != null) {
+            record.put(EVENT_KEY_USER_ID, userId);
         }
 
         appendSessionId(record);
@@ -401,6 +580,22 @@ public class TreasureData {
 
     public void appendRecordUUID(Map<String, Object> record) {
         record.put(autoAppendRecordUUIDColumn, UUID.randomUUID().toString());
+    }
+
+    public void disableTrackApplicationLifecycleEvents() {
+        this.autoTrackApplicationLifecycleEvents = false;
+    }
+
+    public void disableApplicationInstalledEvent() {
+        this.autoTrackApplicationInstalledEvent = false;
+    }
+
+    public void disableApplicationUpdatedEvent() {
+        this.autoTrackApplicationUpdatedEvent = false;
+    }
+
+    public void disableApplicationOpenEvent() {
+        this.autoTrackApplicationOpenEvent = false;
     }
 
     public void disableAutoAppendUniqId() {
@@ -634,7 +829,7 @@ public class TreasureData {
         }
 
         @Override
-        public String getUUID(Context context) {
+        public String getUUID() {
             return null;
         }
 
