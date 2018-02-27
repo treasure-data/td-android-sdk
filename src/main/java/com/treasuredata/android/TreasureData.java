@@ -54,12 +54,12 @@ public class TreasureData {
     private static final String EVENT_KEY_LOCALE_LANG = "td_locale_lang";
     private static final String EVENT_KEY_USER_ID = "td_user_id";
     private static final String EVENT_KEY_GAID = "td_gaid";
+    private static final String EVENT_KEY_EVENT = "td_android_event";
     private static final String EVENT_KEY_SERVERSIDE_UPLOAD_TIMESTAMP = "#SSUT";
     private static final String EVENT_DEFAULT_KEY_RECORD_UUID = "record_uuid";
     private static final String OS_TYPE = "Android";
     private static final String SETTING_ADVERTISING_ID = "advertising_id";
     private static final String DEFAULT_APP_LIFECYCLE_EVENT_TABLE = "td_app_lifecycle_event";
-    private static final String EVENT_COLUMN_NAME = "td_android_event";
     private static final String EVENT_APP_INSTALL = "TD_ANDROID_APP_INSTALL";
     private static final String EVENT_APP_OPEN = "TD_ANDROID_APP_OPEN";
     private static final String EVENT_APP_UPDATE = "TD_ANDROID_APP_UPDATE";
@@ -290,13 +290,13 @@ public class TreasureData {
         Map<String, Object> record;
         if (autoTrackApplicationInstalledEvent && previousBuild == 0) {
             record = new HashMap<String, Object>();
-            record.put(EVENT_COLUMN_NAME, EVENT_APP_INSTALL);
+            record.put(EVENT_KEY_EVENT, EVENT_APP_INSTALL);
             record.put(EVENT_KEY_APP_VER_NUM, currentBuild);
             record.put(EVENT_KEY_APP_VER, currentVersion);
             addEvent(table, record);
         }else if (autoTrackApplicationUpdatedEvent && currentBuild != previousBuild) {
             record = new HashMap<String, Object>();
-            record.put(EVENT_COLUMN_NAME, EVENT_APP_UPDATE);
+            record.put(EVENT_KEY_EVENT, EVENT_APP_UPDATE);
             record.put(EVENT_KEY_APP_VER_NUM, currentBuild);
             record.put(EVENT_KEY_APP_VER, currentVersion);
             record.put(EVENT_KEY_PREV_APP_VER_NUM, previousBuild);
@@ -306,7 +306,7 @@ public class TreasureData {
 
         if (autoTrackApplicationOpenEvent) {
             record = new HashMap<String, Object>();
-            record.put(EVENT_COLUMN_NAME, EVENT_APP_OPEN);
+            record.put(EVENT_KEY_EVENT, EVENT_APP_OPEN);
             record.put(EVENT_KEY_APP_VER_NUM, currentBuild);
             record.put(EVENT_KEY_APP_VER, currentVersion);
             addEvent(table, record);
