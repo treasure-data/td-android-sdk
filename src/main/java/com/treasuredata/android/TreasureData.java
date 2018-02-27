@@ -33,7 +33,6 @@ public class TreasureData {
     private static final Pattern TABLE_NAME_PATTERN = Pattern.compile("^[0-9a-z_]{3,255}$");
     private static final String SHARED_PREF_NAME = "td_sdk_info";
     private static final String SHARED_PREF_KEY_UUID = "uuid";
-    private static final String SHARED_PREF_KEY_USER_ID = "user_id";
     private static final String SHARED_PREF_VERSION_KEY = "version";
     private static final String SHARED_PREF_BUILD_KEY = "build";
     private static final String SHARED_PREF_KEY_FIRST_RUN = "first_run";
@@ -59,6 +58,11 @@ public class TreasureData {
     private static final String EVENT_DEFAULT_KEY_RECORD_UUID = "record_uuid";
     private static final String OS_TYPE = "Android";
     private static final String SETTING_ADVERTISING_ID = "advertising_id";
+    private static final String DEFAULT_APP_LIFECYCLE_EVENT_TABLE = "td_app_lifecycle_event";
+    private static final String EVENT_COLUMN_NAME = "td_android_event";
+    private static final String EVENT_APP_INSTALL = "TD_ANDROID_APP_INSTALL";
+    private static final String EVENT_APP_OPEN = "TD_ANDROID_APP_OPEN";
+    private static final String EVENT_APP_UPDATE = "TD_ANDROID_APP_UPDATE";
 
     static {
         TDHttpHandler.VERSION = TreasureData.VERSION;
@@ -143,17 +147,6 @@ public class TreasureData {
 
     public void setUserId(String userId) {
         this.userId = userId;
-        if (this.userId != null) {
-            SharedPreferences sharedPreferences = getSharedPreference(context);
-            synchronized (this) {
-                sharedPreferences.edit().putString(SHARED_PREF_KEY_USER_ID, this.userId).commit();
-            }
-        }
-    }
-
-    private String getPrefUserId() {
-        SharedPreferences sharedPreferences = getSharedPreference(context);
-        return sharedPreferences.getString(SHARED_PREF_KEY_USER_ID, null);
     }
 
     private void fetchAdvertisingId() {
@@ -205,7 +198,6 @@ public class TreasureData {
         Context applicationContext = context.getApplicationContext();
         this.context = applicationContext;
         uuid = getUUID();
-        userId = getPrefUserId();
 
         TDClient client = null;
         if (apiKey == null && TDClient.getDefaultApiKey() == null) {
@@ -280,6 +272,14 @@ public class TreasureData {
     }
 
     private void trackApplicationLifecycleEvents() {
+        String table = DEFAULT_APP_LIFECYCLE_EVENT_TABLE;
+
+        if (defaultTable == null) {
+
+        }else {
+            table = defaultTable;
+        }
+
         String currentVersion = appVersion;
         int currentBuild = appVersionNumber;
 
@@ -290,36 +290,32 @@ public class TreasureData {
         Map<String, Object> record;
         if (autoTrackApplicationInstalledEvent && previousBuild == 0) {
             record = new HashMap<String, Object>();
-            record.put("event_type", "app_installed");
+            record.put(EVENT_COLUMN_NAME, EVENT_APP_INSTALL);
             record.put(EVENT_KEY_APP_VER_NUM, currentBuild);
             record.put(EVENT_KEY_APP_VER, currentVersion);
-            addEvent(record);
+            addEvent(table, record);
         }else if (autoTrackApplicationUpdatedEvent && currentBuild != previousBuild) {
             record = new HashMap<String, Object>();
-            record.put("event_type", "app_updated");
+            record.put(EVENT_COLUMN_NAME, EVENT_APP_UPDATE);
             record.put(EVENT_KEY_APP_VER_NUM, currentBuild);
             record.put(EVENT_KEY_APP_VER, currentVersion);
             record.put(EVENT_KEY_PREV_APP_VER_NUM, previousBuild);
             record.put(EVENT_KEY_PREV_APP_VER, previousVersion);
-            addEvent(record);
+            addEvent(table, record);
         }
 
         if (autoTrackApplicationOpenEvent) {
             record = new HashMap<String, Object>();
-            record.put("event_type", "app_open");
+            record.put(EVENT_COLUMN_NAME, EVENT_APP_OPEN);
             record.put(EVENT_KEY_APP_VER_NUM, currentBuild);
             record.put(EVENT_KEY_APP_VER, currentVersion);
-            addEvent(record);
+            addEvent(table, record);
         }
 
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putInt(SHARED_PREF_BUILD_KEY, currentBuild);
         editor.putString(SHARED_PREF_VERSION_KEY, currentVersion);
         editor.apply();
-    }
-
-    private void addEvent(Map<String, Object> event) {
-        addEvent(defaultDatabase, defaultTable, event);
     }
 
     public TreasureData(Context context) {
