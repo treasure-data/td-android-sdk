@@ -275,7 +275,7 @@ public class TreasureData {
         String table = DEFAULT_APP_LIFECYCLE_EVENT_TABLE;
 
         if (defaultTable == null) {
-
+            Log.w(TAG, "Default table is not set, auto tracking events are uploaded to " + DEFAULT_APP_LIFECYCLE_EVENT_TABLE);
         }else {
             table = defaultTable;
         }
