@@ -22,6 +22,7 @@ public class DemoApp extends Application {
         TreasureData.sharedInstance().enableAutoAppendAppInformation();
         TreasureData.sharedInstance().enableAutoAppendLocaleInformation();
         TreasureData.sharedInstance().setDefaultDatabase("testdb");
+        TreasureData.sharedInstande().setDefaultTable("demotbl");
         TreasureData.sharedInstance().enableServerSideUploadTimestamp("server_upload_time");
         TreasureData.sharedInstance().enableAutoAppendRecordUUID();
     }
