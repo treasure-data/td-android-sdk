@@ -1,5 +1,11 @@
 # Change Log
 
+## Version 0.1.17
+_2018-03-01_
+
+* Add Auto tracking events
+* Update TreasureData#sharedInstance to be singleton
+
 ## Version 0.1.16
 _2017-03-13_
 

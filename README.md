@@ -14,7 +14,7 @@ If you use gradle, add the following dependency to `dependencies` directive in t
 
 ```
 dependencies {
-    compile 'com.treasuredata:td-android-sdk:0.1.16'
+    compile 'com.treasuredata:td-android-sdk:0.1.17'
 }
 ```
 
