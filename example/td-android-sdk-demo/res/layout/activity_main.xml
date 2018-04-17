@@ -71,11 +71,11 @@
         android:id="@+id/opt_out"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/image"me
+        android:layout_below="@id/image"
         android:layout_marginLeft="104dp"
         android:layout_marginStart="104dp"
         android:layout_weight="1"
         android:textColor="#999999"
-        android:text="Don't track "
+        android:text="Don't track me"
         android:layout_marginBottom="12dip"/>
 </RelativeLayout>
