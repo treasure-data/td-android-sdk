@@ -12,6 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="48dip"
         android:layout_alignParentTop="true">
+
         <TextView
             android:id="@+id/navi_news"
             android:text="News"
@@ -32,6 +33,7 @@
             android:text="Upload"
             style="@style/NaviLabel"
             android:background="#ffaacda0"/>
+
     </LinearLayout>
     <LinearLayout
         android:orientation="horizontal"
@@ -40,7 +42,6 @@
         android:layout_height="1dip"
         android:layout_below="@id/navi"
     />
-
     <TextView
         android:id="@+id/title"
         android:text="TD Android SDK Demo"
@@ -63,6 +64,18 @@
         android:layout_marginTop="12dip"
         android:layout_marginLeft="28dip"
         android:layout_marginRight="28dip"
-        android:layout_marginBottom="28dip"
+        android:layout_marginBottom="16dip"
         android:src="@drawable/wine"/>
+
+    <CheckBox
+        android:id="@+id/opt_out"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/image"me
+        android:layout_marginLeft="104dp"
+        android:layout_marginStart="104dp"
+        android:layout_weight="1"
+        android:textColor="#999999"
+        android:text="Don't track "
+        android:layout_marginBottom="12dip"/>
 </RelativeLayout>

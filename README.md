@@ -14,7 +14,7 @@ If you use gradle, add the following dependency to `dependencies` directive in t
 
 ```
 dependencies {
-    compile 'com.treasuredata:td-android-sdk:0.1.17'
+    compile 'com.treasuredata:td-android-sdk:0.1.18'
 }
 ```
 
@@ -26,7 +26,7 @@ If you use maven, add the following directives to your pom.xml
   <dependency>
     <groupId>com.treasuredata</groupId>
     <artifactId>td-android-sdk</artifactId>
-    <version>0.1.16</version>
+    <version>0.1.18</version>
   </dependency>
 ```
 
@@ -38,26 +38,25 @@ Or put td-android-sdk-x.x.x-shaded.jar (get the latest [here](http://search.mave
 
 ## Usage
 
-### Instantiate TreasureData object with your API key
-
+### Initialize the Library at onCreate() in your Application subclass
+For efficient API calls, we highly recommend initializing a `TreasureData` shared instance at the `onCreate()` method of your Application subclass.
 ```
-public class ExampleActivity extends Activity {
-	private TreasureData td;
-	
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
-			:
-		td = new TreasureData(this, "your_api_key");
-```
+public class ExampleApp extends Application {
 
-or
+  @Override
+  public void onCreate() {
 
-```
-    TreasureData.initializeDefaultApiKey("your_default_api_key");
-    	:
-    TreasureData td = new TreasureData(this);
+    // Initialize Treasure Data Android SDK
+    TreasureData.initializeEncryptionKey("RANDOM_STRING_TO_ENCRYPT_DATA");
+    TreasureData.disableLogging();
+    TreasureData.initializeSharedInstance(this, "YOUR_WRITE_ONLY_API_KEY");
+    TreasureData.sharedInstance.setDefaultDatabase("your_application_name");
+    TreasureData.sharedInstance.enableAutoAppendUniqId();
+    TreasureData.sharedInstance.enableAutoAppendModelInformation();
+    TreasureData.sharedInstance.enableAutoAppendAppInformation();
+    TreasureData.sharedInstance.enableAutoAppendLocaleInformation();
+  }
+}
 ```
 
 We recommend to use a write-only API key for the SDK. To obtain one, please:
@@ -67,31 +66,20 @@ We recommend to use a write-only API key for the SDK. To obtain one, please:
 3. Insert your password under the 'API Keys' panel;
 4. In the bottom part of the panel, under 'Write-Only API keys', either copy the API key or click on 'Generate New' and copy the new API key.
 
-### Use a shared instance
+Then, you can use a shared instance from anywhere with the `TreasureData.sharedInstance()` method.
 
-Also, you can use a shared instance from anywhere with `TreasureData.sharedInstance` method after calling `TreasureData.initializeSharedInstance`.
+### Use the shared instance
 
 ```
-public class MyApp extends Application {
-    @Override
-    public void onCreate() {
-		    :
-        TreasureData.initializeDefaultApiKey("your_write_apikey");
-        TreasureData.initializeEncryptionKey("hello world");
-            :
-        TreasureData.initializeSharedInstance(this);
-        TreasureData.sharedInstance().setDefaultDatabase("testdb");
-            :
-	}
-}
+public class ExampleActivity extends Activity {
 
-public class MainActivity extends Activity {
-		:
-	Map<String, Object> event = new HashMap<String, Object>();
-	event.put("event_name", "data_load");
-	event.put("elapsed_time", elapsed_time);
-	TreasureData.sharedInstance().addEvent("demotbl", event);
-		:
+  public void onDataLoadSomethingFinished(long elapsedTime) {
+    Map<String, Object> event = new HashMap<String, Object>();
+    event.put("data_type", "something");
+    event.put("elapsed_time", elapsedTime);
+    TreasureData.sharedInstance().addEvent("events", event);
+  }
+}
 ```
 
 ### Add an event to local buffer
@@ -168,6 +156,14 @@ It depends on the characteristic of your application when to upload and how ofte
 - When closing the application
 
 The sent events is going to be buffered for a few minutes before they get imported into Treasure Data storage.
+
+### Opt out 
+
+You can opt out event tracking by using `TreasureData#setOptOut(true)`
+
+Then you can opt in event tracking again by using `TreasureData#setOptOut(false)`
+
+Opt out status is able to be retrieved by using `TreasureData#isOptedOut()`
 
 ### Retry uploading and deduplication
 
@@ -249,30 +245,16 @@ In this case, you can get the current session ID using `TreasureData.getSessionI
 	}
 ```
 
-### Detect if it's the first running
+### Track app lifecycle events automatically
 
-You can detect if it's the first running or not easily using `TreasureData#isFirstRun` method and then clear the flag with `TreasureData#clearFirstRun`.
+App lifecycle event tracking is optional and not able by default. You can track app lifecycle events automatically using :
+`TreasureData#enableTrackAppLifecycleEvents(String table)` and then disable it `TreasureData#disableTrackAppLifecycleEvents()`
 
-```
-	if (TreasureData.sharedInstance().isFirstRun(this)) {
-	    Map<String, Object> event = new HashMap<String, Object>();
-	    event.put("first_run", true);
-	    event.put("app_name", "td-android-sdk-demo");
-	    TreasureData.sharedInstance().addEventWithCallback("demotbl", event, new TDCallback() {
-			@Override
-			public void onSuccess() {
-				TreasureData.sharedInstance().clearFirstRun(MainActivity.this);
-				TreasureData.sharedInstance().uploadEvents();
-			}
-			
-			@Override
-			public void onError(String errorCode, Exception e) {
-				Log.w(TAG, "TreasureData.addEvent:onError errorCode=" + errorCode + ", ex=" + e);
-			}
-		});
-	}
-```
+You can also disable the individual core events as the following:
 
+- Disable Application Install: `disableAppInstalledEvent()`
+- Disable Application Open: `disableAppOpenEvent()`
+- Disable Application Update: `disableAppUpdatedEvent()`
 
 ## About error codes
 
@@ -314,11 +296,12 @@ If you've set an encryption key via `TreasureData.initializeEncryptionKey`, our 
 	TreasureData.sharedInstance().setDefaultDatabase("default_db");
 		:
 	TreasureData.sharedInstance().addEvent("demotbl", …);
-```	
+```
 
 ### Adding UUID of the device to each event automatically
 
 UUID of the device will be added to each event automatically if you call `TreasureData#enableAutoAppendUniqId()`. This value won't change until the application is uninstalled.
+You can reset the UUID using `TreasureData#regenerateUUID()`
 
 ```
 	td.enableAutoAppendUniqId();
@@ -341,6 +324,7 @@ UUID will be added to each event record automatically if you call `enableAutoApp
 ```
 
 It outputs the value as a column name `record_uuid` by default.
+
 
 ### Adding device model information to each event automatically
 

@@ -8,6 +8,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
+import android.widget.CheckBox;
 import android.widget.Toast;
 import com.treasuredata.android.TDCallback;
 import com.treasuredata.android.TreasureData;
@@ -25,39 +26,6 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        if (TreasureData.sharedInstance().isFirstRun(this)) {
-            Map<String, Object> event = new HashMap<String, Object>();
-            event.put("first_run", true);
-            event.put("app_name", "td-android-sdk-demo");
-            TreasureData.sharedInstance().addEventWithCallback("demotbl", event, new TDCallback()
-            {
-                @Override
-                public void onSuccess()
-                {
-                    TreasureData.sharedInstance().uploadEventsWithCallback(new TDCallback()
-                    {
-                        @Override
-                        public void onSuccess()
-                        {
-                            TreasureData.sharedInstance().clearFirstRun(MainActivity.this);
-                        }
-
-                        @Override
-                        public void onError(String errorCode, Exception e)
-                        {
-                            Log.w(TAG, "TreasureData.uploadEvent:onError errorCode=" + errorCode + ", ex=" + e);
-                        }
-                    });
-                }
-
-                @Override
-                public void onError(String errorCode, Exception e)
-                {
-                    Log.w(TAG, "TreasureData.addEvent:onError errorCode=" + errorCode + ", ex=" + e);
-                }
-            });
-        }
 
         // For default callback, optional.
         TreasureData.sharedInstance().setAddEventCallBack(addEventCallback);
@@ -113,6 +81,19 @@ public class MainActivity extends Activity {
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 TreasureData.sharedInstance().uploadEventsWithCallback(uploadEventsCallback);
                 return false;
+            }
+        });
+
+        CheckBox checkBox = (CheckBox) findViewById(R.id.opt_out);
+        checkBox.setChecked(TreasureData.sharedInstance().isOptedOut());
+
+        checkBox.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                CheckBox checkBox = (CheckBox)view;
+                final boolean optOut = checkBox.isChecked();
+                Log.d(TAG, "optOut : " + optOut );
+                TreasureData.sharedInstance().setOptOut(optOut);
             }
         });
     }

@@ -2,20 +2,15 @@ package com.treasuredata.android;
 
 import android.app.Activity;
 import android.app.Application;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.Settings;
 import io.keen.client.java.KeenClient;
 import org.komamitsu.android.util.Log;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -26,7 +21,7 @@ import java.util.regex.Pattern;
 
 public class TreasureData {
     private static final String TAG = TreasureData.class.getSimpleName();
-    private static final String VERSION = "0.1.17";
+    private static final String VERSION = "0.1.18";
     private static final String LABEL_ADD_EVENT = "addEvent";
     private static final String LABEL_UPLOAD_EVENTS = "uploadEvents";
     private static final Pattern DATABASE_NAME_PATTERN = Pattern.compile("^[0-9a-z_]{3,255}$");
@@ -36,6 +31,7 @@ public class TreasureData {
     private static final String SHARED_PREF_VERSION_KEY = "version";
     private static final String SHARED_PREF_BUILD_KEY = "build";
     private static final String SHARED_PREF_KEY_FIRST_RUN = "first_run";
+    private static final String SHARED_PREF_OPT_OUT_KEY = "opt_out";
     private static final String EVENT_KEY_UUID = "td_uuid";
     private static final String EVENT_KEY_SESSION_ID = "td_session_id";
     private static final String EVENT_KEY_SESSION_EVENT = "td_session_event";
@@ -52,14 +48,10 @@ public class TreasureData {
     private static final String EVENT_KEY_PREV_APP_VER_NUM = "td_prev_app_ver_num";
     private static final String EVENT_KEY_LOCALE_COUNTRY = "td_locale_country";
     private static final String EVENT_KEY_LOCALE_LANG = "td_locale_lang";
-    private static final String EVENT_KEY_USER_ID = "td_user_id";
-    private static final String EVENT_KEY_GAID = "td_gaid";
     private static final String EVENT_KEY_EVENT = "td_android_event";
     private static final String EVENT_KEY_SERVERSIDE_UPLOAD_TIMESTAMP = "#SSUT";
     private static final String EVENT_DEFAULT_KEY_RECORD_UUID = "record_uuid";
     private static final String OS_TYPE = "Android";
-    private static final String SETTING_ADVERTISING_ID = "advertising_id";
-    private static final String DEFAULT_APP_LIFECYCLE_EVENT_TABLE = "td_app_lifecycle_event";
     private static final String EVENT_APP_INSTALL = "TD_ANDROID_APP_INSTALL";
     private static final String EVENT_APP_OPEN = "TD_ANDROID_APP_OPEN";
     private static final String EVENT_APP_UPDATE = "TD_ANDROID_APP_UPDATE";
@@ -74,20 +66,19 @@ public class TreasureData {
     private final Context context;
     private final TDClient client;
     private final String uuid;
-    private volatile String userId;
-    private volatile String gaid;
     private volatile String defaultDatabase;
-    private volatile String defaultTable;
+    private volatile String autoTrackingTable;
     private volatile TDCallback addEventCallBack;
     private volatile TDCallback uploadEventsCallBack;
     private volatile boolean autoAppendUniqId;
     private volatile boolean autoAppendModelInformation;
     private volatile boolean autoAppendAppInformation;
     private volatile boolean autoAppendLocaleInformation;
-    private volatile boolean autoTrackApplicationLifecycleEvents = true;
-    private volatile boolean autoTrackApplicationInstalledEvent = true;
-    private volatile boolean autoTrackApplicationOpenEvent = true;
-    private volatile boolean autoTrackApplicationUpdatedEvent = true;
+    private volatile boolean autoTrackAppLifecycleEvents;
+    private volatile boolean autoTrackAppInstalledEvent = true;
+    private volatile boolean autoTrackAppOpenEvent = true;
+    private volatile boolean autoTrackAppUpdatedEvent = true;
+    private volatile boolean optOut;
     private static volatile long sessionTimeoutMilli = Session.DEFAULT_SESSION_PENDING_MILLIS;
     private final String appVersion;
     private final int appVersionNumber;
@@ -100,7 +91,6 @@ public class TreasureData {
         synchronized (TreasureData.class) {
             if (sharedInstance == null) {
                 sharedInstance = new TreasureData(context, apiKey);
-                sharedInstance.initialize();
             }
         }
         return sharedInstance;
@@ -120,15 +110,6 @@ public class TreasureData {
         return sharedInstance;
     }
 
-    private void initialize() {
-        AsyncTask.execute(new Runnable() {
-            @Override
-            public void run() {
-                fetchAdvertisingId();
-            }
-        });
-    }
-
     private SharedPreferences getSharedPreference(Context context) {
         return context.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
     }
@@ -145,41 +126,15 @@ public class TreasureData {
         }
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-
-    private void fetchAdvertisingId() {
-        if("Amazon".equals(Build.MANUFACTURER)) {
-            fetchAmazonAdvertisingId();
-        }else {
-            fetchGoogleAdvertisingId();
+    public void regenerateUUID() {
+        SharedPreferences sharedPreferences = getSharedPreference(context);
+        synchronized (this) {
+            String uuid = UUID.randomUUID().toString();
+            sharedPreferences.edit().putString(SHARED_PREF_KEY_UUID, uuid).commit();
         }
     }
 
-    private void fetchAmazonAdvertisingId() {
-        ContentResolver cr = context.getContentResolver();
-        gaid = Settings.Secure.getString(cr, SETTING_ADVERTISING_ID);
-    }
-
-    private void fetchGoogleAdvertisingId() {
-        try {
-            Class AdvertisingIdClient = Class
-                    .forName("com.google.android.gms.ads.identifier.AdvertisingIdClient");
-            Method getAdvertisingInfo = AdvertisingIdClient.getMethod("getAdvertisingIdInfo",
-                    Context.class);
-            Object adInfo = getAdvertisingInfo.invoke(null, context);
-            Method getId = adInfo.getClass().getMethod("getId");
-            gaid = (String) getId.invoke(adInfo);
-        } catch (ClassNotFoundException e) {
-            Log.w(TAG, "Google Play Services SDK not found");
-        } catch (InvocationTargetException e) {
-            Log.w(TAG, "Google Play Services not available");
-        } catch (Exception e) {
-            Log.e(TAG, "Encountered an error connecting to Google Play Services", e);
-        }
-    }
-
+    @Deprecated
     public boolean isFirstRun(Context context) {
         SharedPreferences sharedPreferences = getSharedPreference(context);
         synchronized (this) {
@@ -187,6 +142,7 @@ public class TreasureData {
         }
     }
 
+    @Deprecated
     public void clearFirstRun(Context context) {
         SharedPreferences sharedPreferences = getSharedPreference(context);
         synchronized (this) {
@@ -194,9 +150,40 @@ public class TreasureData {
         }
     }
 
+    /**
+     * Sets opt out. If true then the SDK does not track any events.
+     *
+     * @param optOut whether or not to opt the user out of tracking
+     */
+    public void setOptOut(final boolean optOut) {
+        this.optOut = optOut;
+        SharedPreferences sharedPreferences = getSharedPreference(context);
+        synchronized (this) {
+            sharedPreferences.edit().putBoolean(SHARED_PREF_OPT_OUT_KEY, optOut).commit();
+        }
+    }
+
+    /**
+     * Returns whether or not the user is opted out of tracking.
+     *
+     * @return the optOut flag value
+     */
+    public boolean isOptedOut() {
+        return optOut;
+    }
+
+    private boolean getOptOut() {
+        SharedPreferences sharedPreferences = getSharedPreference(context);
+        synchronized (this) {
+            boolean optOut = sharedPreferences.getBoolean(SHARED_PREF_OPT_OUT_KEY, false);
+            return  optOut;
+        }
+    }
+
     public TreasureData(Context context, String apiKey) {
         Context applicationContext = context.getApplicationContext();
         this.context = applicationContext;
+        optOut = getOptOut();
         uuid = getUUID();
 
         TDClient client = null;
@@ -228,12 +215,12 @@ public class TreasureData {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
             final Application application = (Application) applicationContext;
             application.registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks() {
-                final AtomicBoolean trackedApplicationLifecycleEvents = new AtomicBoolean(false);
+                final AtomicBoolean trackedAppLifecycleEvents = new AtomicBoolean(false);
 
                 @Override
                 public void onActivityCreated(Activity activity, Bundle bundle) {
-                    if (!trackedApplicationLifecycleEvents.getAndSet(true)
-                            && autoTrackApplicationLifecycleEvents) {
+                    if (!trackedAppLifecycleEvents.getAndSet(true)
+                            && autoTrackAppLifecycleEvents) {
                         trackApplicationLifecycleEvents();
                     }
                 }
@@ -272,13 +259,6 @@ public class TreasureData {
     }
 
     private void trackApplicationLifecycleEvents() {
-        String table = DEFAULT_APP_LIFECYCLE_EVENT_TABLE;
-
-        if (defaultTable == null) {
-            Log.w(TAG, "Default table is not set, auto tracking events are uploaded to " + DEFAULT_APP_LIFECYCLE_EVENT_TABLE);
-        }else {
-            table = defaultTable;
-        }
 
         String currentVersion = appVersion;
         int currentBuild = appVersionNumber;
@@ -288,28 +268,28 @@ public class TreasureData {
         int previousBuild = sharedPreferences.getInt(SHARED_PREF_BUILD_KEY, 0);
 
         Map<String, Object> record;
-        if (autoTrackApplicationInstalledEvent && previousBuild == 0) {
+        if (autoTrackAppInstalledEvent && previousBuild == 0) {
             record = new HashMap<String, Object>();
             record.put(EVENT_KEY_EVENT, EVENT_APP_INSTALL);
             record.put(EVENT_KEY_APP_VER_NUM, currentBuild);
             record.put(EVENT_KEY_APP_VER, currentVersion);
-            addEvent(table, record);
-        }else if (autoTrackApplicationUpdatedEvent && currentBuild != previousBuild) {
+            addEvent(autoTrackingTable, record);
+        }else if (autoTrackAppUpdatedEvent && currentBuild != previousBuild) {
             record = new HashMap<String, Object>();
             record.put(EVENT_KEY_EVENT, EVENT_APP_UPDATE);
             record.put(EVENT_KEY_APP_VER_NUM, currentBuild);
             record.put(EVENT_KEY_APP_VER, currentVersion);
             record.put(EVENT_KEY_PREV_APP_VER_NUM, previousBuild);
             record.put(EVENT_KEY_PREV_APP_VER, previousVersion);
-            addEvent(table, record);
+            addEvent(autoTrackingTable, record);
         }
 
-        if (autoTrackApplicationOpenEvent) {
+        if (autoTrackAppOpenEvent) {
             record = new HashMap<String, Object>();
             record.put(EVENT_KEY_EVENT, EVENT_APP_OPEN);
             record.put(EVENT_KEY_APP_VER_NUM, currentBuild);
             record.put(EVENT_KEY_APP_VER, currentVersion);
-            addEvent(table, record);
+            addEvent(autoTrackingTable, record);
         }
 
         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -354,10 +334,6 @@ public class TreasureData {
         this.defaultDatabase = defaultDatabase;
     }
 
-    public void setDefaultTable(String defaultTable) {
-        this.defaultTable = defaultTable;
-    }
-
     public synchronized void setAddEventCallBack(TDCallback callBack) {
         this.addEventCallBack = callBack;
     }
@@ -396,6 +372,11 @@ public class TreasureData {
     }
 
     public void addEventWithCallback(String database, String table, Map<String, Object> origRecord, TDCallback callback) {
+
+        if (isOptedOut()) {
+            return;
+        }
+
         if (client == null) {
             Log.w(TAG, "TDClient is null");
             return;
@@ -418,14 +399,6 @@ public class TreasureData {
         Map<String, Object> record = new HashMap<String, Object>();
         if (origRecord != null) {
             record.putAll(origRecord);
-        }
-
-        if (gaid != null) {
-            record.put(EVENT_KEY_GAID, gaid);
-        }
-
-        if (userId != null) {
-            record.put(EVENT_KEY_USER_ID, userId);
         }
 
         appendSessionId(record);
@@ -484,6 +457,10 @@ public class TreasureData {
     }
 
     public void uploadEventsWithCallback(TDCallback callback) {
+        if (isOptedOut()) {
+            return;
+        }
+
         if (client == null) {
             Log.w(TAG, "TDClient is null");
             return;
@@ -579,20 +556,29 @@ public class TreasureData {
         record.put(autoAppendRecordUUIDColumn, UUID.randomUUID().toString());
     }
 
-    public void disableTrackApplicationLifecycleEvents() {
-        this.autoTrackApplicationLifecycleEvents = false;
+    public void enableTrackAppLifecycleEvents(String table) {
+        if (table == null) {
+            Log.w(TAG, "table shouldn't be null");
+            return;
+        }
+        this.autoTrackAppLifecycleEvents = true;
+        this.autoTrackingTable = table;
     }
 
-    public void disableApplicationInstalledEvent() {
-        this.autoTrackApplicationInstalledEvent = false;
+    public void disableTrackAppLifecycleEvents() {
+        this.autoTrackAppLifecycleEvents = false;
     }
 
-    public void disableApplicationUpdatedEvent() {
-        this.autoTrackApplicationUpdatedEvent = false;
+    public void disableAppInstalledEvent() {
+        this.autoTrackAppInstalledEvent = false;
     }
 
-    public void disableApplicationOpenEvent() {
-        this.autoTrackApplicationOpenEvent = false;
+    public void disableAppUpdatedEvent() {
+        this.autoTrackAppUpdatedEvent = false;
+    }
+
+    public void disableAppOpenEvent() {
+        this.autoTrackAppOpenEvent = false;
     }
 
     public void disableAutoAppendUniqId() {

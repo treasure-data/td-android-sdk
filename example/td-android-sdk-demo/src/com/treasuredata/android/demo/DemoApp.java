@@ -12,6 +12,7 @@ public class DemoApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        TreasureData.initializeApiEndpoint("http://in.treasuredata.com/");
         TreasureData.enableLogging();
         TreasureData.initializeEncryptionKey("hello world");
         TreasureData.setSessionTimeoutMilli(30 * 1000);
@@ -22,8 +23,8 @@ public class DemoApp extends Application {
         TreasureData.sharedInstance().enableAutoAppendAppInformation();
         TreasureData.sharedInstance().enableAutoAppendLocaleInformation();
         TreasureData.sharedInstance().setDefaultDatabase("testdb");
-        TreasureData.sharedInstande().setDefaultTable("demotbl");
         TreasureData.sharedInstance().enableServerSideUploadTimestamp("server_upload_time");
         TreasureData.sharedInstance().enableAutoAppendRecordUUID();
+        TreasureData.sharedInstance().enableTrackAppLifecycleEvents("td_app_lifecycle_event");
     }
 }
