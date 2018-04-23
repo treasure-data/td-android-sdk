@@ -170,6 +170,34 @@ public class TreasureDataTest extends TestCase {
         assertEquals(0, client.addedEvent.size());
     }
 
+    public void testAddEventAndUploadCustomEventBlocked() throws IOException {
+        Map<String, Object> records = new HashMap<String, Object>();
+        records.put("key", "val");
+        when(td.isCustomEventBlocked()).thenReturn(true);
+        td.addEvent("db_", "tbl", records);
+        td.uploadEvents();
+        assertEquals(0, client.addedEvent.size());
+    }
+
+    public void testAddEventAndUploadAutoEventWhileCustomEventBlocked() throws IOException {
+        Map<String, Object> records = new HashMap<String, Object>();
+        records.put("key", "val");
+        records.put("__is_auto_track_event", "true");
+        when(td.isCustomEventBlocked()).thenReturn(true);
+        td.addEvent("db_", "tbl", records);
+        td.uploadEvents();
+        assertEquals(1, client.addedEvent.size());
+    }
+
+    public void testAddEventAndUploadCustomEventUnBlocked() throws IOException {
+        Map<String, Object> records = new HashMap<String, Object>();
+        records.put("key", "val");
+        when(td.isCustomEventBlocked()).thenReturn(false);
+        td.addEvent("db_", "tbl", records);
+        td.uploadEvents();
+        assertEquals(1, client.addedEvent.size());
+    }
+
     public void testAddEventAndUploadEventsOptIn() throws IOException {
         Map<String, Object> records = new HashMap<String, Object>();
         records.put("key", "val");
