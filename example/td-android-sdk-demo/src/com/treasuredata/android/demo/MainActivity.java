@@ -84,16 +84,41 @@ public class MainActivity extends Activity {
             }
         });
 
-        CheckBox checkBox = (CheckBox) findViewById(R.id.opt_out);
-        checkBox.setChecked(TreasureData.sharedInstance().isOptedOut());
+        CheckBox checkBox = (CheckBox) findViewById(R.id.block_auto_events);
+        checkBox.setChecked(TreasureData.sharedInstance().isAutoEventBlocked());
 
         checkBox.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
                 CheckBox checkBox = (CheckBox)view;
-                final boolean optOut = checkBox.isChecked();
-                Log.d(TAG, "optOut : " + optOut );
-                TreasureData.sharedInstance().setOptOut(optOut);
+                if (checkBox.isChecked()) {
+                    TreasureData.sharedInstance().blockAutoEvents();
+                } else {
+                    TreasureData.sharedInstance().unblockAutoEvents();
+                }
+            }
+        });
+
+        checkBox = (CheckBox) findViewById(R.id.block_custom_events);
+        checkBox.setChecked(TreasureData.sharedInstance().isCustomEventBlocked());
+
+        checkBox.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                CheckBox checkBox = (CheckBox)view;
+                if (checkBox.isChecked()) {
+                    TreasureData.sharedInstance().blockCustomEvents();
+                } else {
+                    TreasureData.sharedInstance().unblockCustomEvents();
+                }
+            }
+        });
+
+        findViewById(R.id.reset).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                addEventCallback.eventName = "reset UUID";
+                TreasureData.sharedInstance().resetUUID();
             }
         });
     }
@@ -137,14 +162,26 @@ public class MainActivity extends Activity {
     class UploadEventsCallback implements TDCallback {
         @Override
         public void onSuccess() {
-            String message = "TreasureData.uploadEvents:onSuccess";
+            final String message = "TreasureData.uploadEvents:onSuccess";
             Log.d(TAG, message);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
+                }
+            });
         }
 
         @Override
         public void onError(String errorCode, Exception e) {
-            String message = "TreasureData.uploadEvents:onError[" + errorCode + ": errorCode=" + errorCode + ", ex=" + e + "]";
+            final String message = "TreasureData.uploadEvents:onError[" + errorCode + ": errorCode=" + errorCode + ", ex=" + e + "]";
             Log.d(TAG, message);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
+                }
+            });
         }
     }
 

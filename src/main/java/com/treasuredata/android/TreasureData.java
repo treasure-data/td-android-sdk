@@ -32,7 +32,7 @@ public class TreasureData {
     private static final String SHARED_PREF_BUILD_KEY = "build";
     private static final String SHARED_PREF_KEY_FIRST_RUN = "first_run";
     private static final String SHARED_PREF_OPT_OUT = "opt_out";
-    private static final String SHARED_PREF_AUTO_TRACK_APP_LIFECYCLE_EVENT = "auto_track_app_lifecycle_event";
+    private static final String SHARED_PREF_TRACK_AUTO_EVENT_BLOCKED = "track_auto_event_blocked";
     private static final String SHARED_PREF_TRACK_CUSTOM_EVENT_BLOCKED = "track_custom_event_blocked";
     private static final String EVENT_KEY_UUID = "td_uuid";
     private static final String EVENT_KEY_SESSION_ID = "td_session_id";
@@ -84,6 +84,7 @@ public class TreasureData {
     private volatile boolean autoTrackAppUpdatedEvent = true;
     private volatile boolean optOut;
     private volatile boolean trackCustomEventBlocked;
+    private volatile boolean trackAutoEventBlocked;
     private static volatile long sessionTimeoutMilli = Session.DEFAULT_SESSION_PENDING_MILLIS;
     private final String appVersion;
     private final int appVersionNumber;
@@ -199,7 +200,7 @@ public class TreasureData {
         this.context = applicationContext;
         optOut = getOptOut();
         uuid = getUUID();
-        autoTrackAppLifecycleEvents = isTrackAppLifecycleEventBlocked();
+        trackAutoEventBlocked = isAutoEventBlocked();
         trackCustomEventBlocked = getCustomEventBlocked();
 
         TDClient client = null;
@@ -236,7 +237,7 @@ public class TreasureData {
                 @Override
                 public void onActivityCreated(Activity activity, Bundle bundle) {
                     if (!trackedAppLifecycleEvents.getAndSet(true)
-                            && autoTrackAppLifecycleEvents) {
+                            && autoTrackAppLifecycleEvents && trackAutoEventBlocked) {
                         trackApplicationLifecycleEvents();
                     }
                 }
@@ -397,6 +398,10 @@ public class TreasureData {
         }
 
         if(isCustomEventBlocked() && isCustomEvent(origRecord)) {
+            return;
+        }
+
+        if(isAutoEventBlocked() && !isCustomEvent(origRecord)) {
             return;
         }
 
@@ -588,26 +593,31 @@ public class TreasureData {
             return;
         }
         this.autoTrackAppLifecycleEvents = true;
-        blockTrackAppLifecycleEvents(this.autoTrackAppLifecycleEvents);
         this.autoTrackingTable = table;
     }
 
-    public void blockTrackAppLifecycleEvents() {
-        this.autoTrackAppLifecycleEvents = false;
-        blockTrackAppLifecycleEvents(this.autoTrackAppLifecycleEvents);
+    public void blockAutoEvents() {
+        this.trackAutoEventBlocked = true;
+        blockAutoEvents(this.trackAutoEventBlocked);
     }
 
-    private void blockTrackAppLifecycleEvents(boolean blocked) {
+    public void unblockAutoEvents() {
+        this.trackAutoEventBlocked = false;
+        blockAutoEvents(this.trackAutoEventBlocked);
+    }
+
+
+    private void blockAutoEvents(boolean blocked) {
         SharedPreferences sharedPreferences = getSharedPreference(context);
         synchronized (this) {
-            sharedPreferences.edit().putBoolean(SHARED_PREF_AUTO_TRACK_APP_LIFECYCLE_EVENT,  blocked).commit();
+            sharedPreferences.edit().putBoolean(SHARED_PREF_TRACK_AUTO_EVENT_BLOCKED,  blocked).commit();
         }
     }
 
-    public boolean isTrackAppLifecycleEventBlocked() {
+    public boolean isAutoEventBlocked() {
         SharedPreferences sharedPreferences = getSharedPreference(context);
         synchronized (this) {
-            return sharedPreferences.getBoolean(SHARED_PREF_AUTO_TRACK_APP_LIFECYCLE_EVENT, false);
+            return sharedPreferences.getBoolean(SHARED_PREF_TRACK_AUTO_EVENT_BLOCKED, false);
         }
     }
 
