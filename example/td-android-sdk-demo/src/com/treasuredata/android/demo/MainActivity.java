@@ -91,11 +91,7 @@ public class MainActivity extends Activity {
             @Override
             public void onClick(View view) {
                 CheckBox checkBox = (CheckBox)view;
-                if (checkBox.isChecked()) {
-                    TreasureData.sharedInstance().blockAutoEvents();
-                } else {
-                    TreasureData.sharedInstance().unblockAutoEvents();
-                }
+                TreasureData.sharedInstance().blockAutoEvents(checkBox.isChecked());
             }
         });
 
@@ -106,11 +102,7 @@ public class MainActivity extends Activity {
             @Override
             public void onClick(View view) {
                 CheckBox checkBox = (CheckBox)view;
-                if (checkBox.isChecked()) {
-                    TreasureData.sharedInstance().blockCustomEvents();
-                } else {
-                    TreasureData.sharedInstance().unblockCustomEvents();
-                }
+                TreasureData.sharedInstance().blockCustomEvents(checkBox.isChecked());
             }
         });
 

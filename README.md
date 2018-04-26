@@ -252,8 +252,11 @@ App lifecycle events include : Application Install, Application Open, Applicatio
 
 Depending on the countries where you sell your app (e.g. the EU), you may need to offer the ability for users to opt-out of tracking data inside your app.
 
-- To turn off auto tracking events (when application life cycle event tracking is able) : `TreasureData#blockAutoEvents`. To turn on it again : `TreasureData#unblockAutoEvents`
-- To turn off custom events (the events you are tracking by `TreasureData#addEvent`) : `TreasureData#blockCustomEvents`. To turn on it again :  `TreasureData#unblockCustomEvents`
+- To turn off auto tracking events (when application lifecycle event tracking is enable) : `TreasureData#blockAutoEvents`. To turn on it again : `TreasureData#unblockAutoEvents`
+- To turn off custom events (the events you are tracking by `TreasureData#addEvent`, `TreasureData#addEventWithCallback` ) : `TreasureData#blockCustomEvents`. To turn on it again :  `TreasureData#unblockCustomEvents`
+
+The functions have effects across device reboots, so you can simply call this once during your application.
+
 ## About error codes
 
 `TreasureData#addEventWithCallback` and `TreasureData#uploadEventsWithCallback` call back `TDCallback#onError` method with `errorCode` argument. This argument is useful to know the cause type of the error. There are the following error codes.
@@ -328,7 +331,7 @@ It outputs the value as a column name `record_uuid` by default.
 
 ### Adding device model information to each event automatically
 
-Device model infromation will be added to each event automatically if you call `TreasureData#enableAutoAppendModelInformation`.
+Device model information will be added to each event automatically if you call `TreasureData#enableAutoAppendModelInformation`.
 
 ```
 	td.enableAutoAppendModelInformation();
@@ -348,7 +351,7 @@ It outputs the following column names and values:
 
 ### Adding application package version information to each event automatically
 
-Application package version infromation will be added to each event automatically if you call `TreasureData#enableAutoAppendAppInformation`.
+Application package version information will be added to each event automatically if you call `TreasureData#enableAutoAppendAppInformation`.
 
 ```
 	td.enableAutoAppendAppInformation();
@@ -363,7 +366,7 @@ It outputs the following column names and values:
 
 ### Adding locale configuration information to each event automatically
 
-Locale configuration infromation will be added to each event automatically if you call `TreasureData#enableAutoAppendLocaleInformation`.
+Locale configuration information will be added to each event automatically if you call `TreasureData#enableAutoAppendLocaleInformation`.
 
 ```
 	td.enableAutoAppendLocaleInformation();

@@ -569,23 +569,22 @@ public class TreasureData {
      * Block auto event tracking. This setting has no effect to custom tracking
      */
     public void blockAutoEvents() {
-        this.trackAutoEventBlocked = true;
-        blockAutoEvents(this.trackAutoEventBlocked);
+        blockAutoEvents(true);
     }
 
     /**
      * Unblock auto event tracking. This setting has no effect to custom tracking
      */
     public void unblockAutoEvents() {
-        this.trackAutoEventBlocked = false;
-        blockAutoEvents(this.trackAutoEventBlocked);
+        blockAutoEvents(false);
     }
 
 
-    private void blockAutoEvents(boolean blocked) {
+    public void blockAutoEvents(boolean blocked) {
+        this.trackAutoEventBlocked = blocked;
         SharedPreferences sharedPreferences = getSharedPreference(context);
         synchronized (this) {
-            sharedPreferences.edit().putBoolean(SHARED_PREF_TRACK_AUTO_EVENT_BLOCKED,  blocked).commit();
+            sharedPreferences.edit().putBoolean(SHARED_PREF_TRACK_AUTO_EVENT_BLOCKED,  this.trackAutoEventBlocked).commit();
         }
     }
 
@@ -608,16 +607,14 @@ public class TreasureData {
      * Block custom event tracking. This setting has no effect to auto tracking
      */
     public void blockCustomEvents() {
-        this.trackCustomEventBlocked = true;
-        blockCustomEvents(this.trackCustomEventBlocked);
+        blockCustomEvents(true);
     }
 
     /**
      * Unblock custom event tracking. This setting has no effect to auto tracking
      */
     public void unblockCustomEvents() {
-        this.trackCustomEventBlocked = false;
-        blockCustomEvents(this.trackCustomEventBlocked);
+        blockCustomEvents(false);
     }
 
     /**
@@ -628,10 +625,11 @@ public class TreasureData {
         return this.trackCustomEventBlocked;
     }
 
-    private void blockCustomEvents(boolean blocked) {
+    public void blockCustomEvents(boolean blocked) {
+        this.trackCustomEventBlocked = blocked;
         SharedPreferences sharedPreferences = getSharedPreference(context);
         synchronized (this) {
-            sharedPreferences.edit().putBoolean(SHARED_PREF_TRACK_CUSTOM_EVENT_BLOCKED,  blocked).commit();
+            sharedPreferences.edit().putBoolean(SHARED_PREF_TRACK_CUSTOM_EVENT_BLOCKED,  this.trackCustomEventBlocked).commit();
         }
     }
 
