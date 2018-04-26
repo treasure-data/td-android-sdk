@@ -1,15 +1,12 @@
 # Change Log
 
 ## Version 0.1.18
-_2018-04-18_
+_2018-04-26_
 
 * Auto event tracking is off by default
 * Add TreasureData#enableTrackAppLifecycleEvents(String table)
-* Add TreasureData#setOptOut(boolean optOut)
-* Add TreasureData#isOptedOut()
-* Add TreasureData#regenerateUUID()
-* Remove TreasureData#setUserId(String userId)
-* Not collect gaid
+* Add TreasureData#resetUUID(String table)
+* Add functions for auto tracking events and custom event opt out
 * Add Opt Out example for td-android-sdk-demo
 
 ## Version 0.1.17

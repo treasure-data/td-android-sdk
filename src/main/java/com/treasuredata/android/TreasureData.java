@@ -212,7 +212,7 @@ public class TreasureData {
                 @Override
                 public void onActivityCreated(Activity activity, Bundle bundle) {
                     if (!trackedAppLifecycleEvents.getAndSet(true)
-                            && autoTrackAppLifecycleEvents && trackAutoEventBlocked) {
+                            && autoTrackAppLifecycleEvents) {
                         trackApplicationLifecycleEvents();
                     }
                 }
