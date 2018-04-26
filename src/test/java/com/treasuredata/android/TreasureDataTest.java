@@ -161,15 +161,6 @@ public class TreasureDataTest extends TestCase {
         assertNotSame(client1.getDefaultProject().getProjectId(), client2.getDefaultProject().getProjectId());
     }
 
-    public void testAddEventAndUploadEventsOptOut() throws IOException {
-        Map<String, Object> records = new HashMap<String, Object>();
-        records.put("key", "val");
-        when(td.isOptedOut()).thenReturn(true);
-        td.addEvent("db_", "tbl", records);
-        td.uploadEvents();
-        assertEquals(0, client.addedEvent.size());
-    }
-
     public void testAddEventAndUploadCustomEventBlocked() throws IOException {
         Map<String, Object> records = new HashMap<String, Object>();
         records.put("key", "val");
@@ -193,15 +184,6 @@ public class TreasureDataTest extends TestCase {
         Map<String, Object> records = new HashMap<String, Object>();
         records.put("key", "val");
         when(td.isCustomEventBlocked()).thenReturn(false);
-        td.addEvent("db_", "tbl", records);
-        td.uploadEvents();
-        assertEquals(1, client.addedEvent.size());
-    }
-
-    public void testAddEventAndUploadEventsOptIn() throws IOException {
-        Map<String, Object> records = new HashMap<String, Object>();
-        records.put("key", "val");
-        when(td.isOptedOut()).thenReturn(false);
         td.addEvent("db_", "tbl", records);
         td.uploadEvents();
         assertEquals(1, client.addedEvent.size());

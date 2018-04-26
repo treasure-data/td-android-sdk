@@ -31,7 +31,6 @@ public class TreasureData {
     private static final String SHARED_PREF_VERSION_KEY = "version";
     private static final String SHARED_PREF_BUILD_KEY = "build";
     private static final String SHARED_PREF_KEY_FIRST_RUN = "first_run";
-    private static final String SHARED_PREF_OPT_OUT = "opt_out";
     private static final String SHARED_PREF_TRACK_AUTO_EVENT_BLOCKED = "track_auto_event_blocked";
     private static final String SHARED_PREF_TRACK_CUSTOM_EVENT_BLOCKED = "track_custom_event_blocked";
     private static final String EVENT_KEY_UUID = "td_uuid";
@@ -52,6 +51,7 @@ public class TreasureData {
     private static final String EVENT_KEY_LOCALE_LANG = "td_locale_lang";
     private static final String EVENT_KEY_EVENT = "td_android_event";
     private static final String EVENT_KEY_AUTO_TRACK_EVENT_PRIVATE = "__is_auto_track_event";
+    private static final String EVENT_KEY_RESET_UUID_EVENT_PRIVATE = "__is_reset_uuid_event";
     private static final String EVENT_KEY_SERVERSIDE_UPLOAD_TIMESTAMP = "#SSUT";
     private static final String EVENT_DEFAULT_KEY_RECORD_UUID = "record_uuid";
     private static final String OS_TYPE = "Android";
@@ -82,7 +82,6 @@ public class TreasureData {
     private volatile boolean autoTrackAppInstalledEvent = true;
     private volatile boolean autoTrackAppOpenEvent = true;
     private volatile boolean autoTrackAppUpdatedEvent = true;
-    private volatile boolean optOut;
     private volatile boolean trackCustomEventBlocked;
     private volatile boolean trackAutoEventBlocked;
     private static volatile long sessionTimeoutMilli = Session.DEFAULT_SESSION_PENDING_MILLIS;
@@ -133,15 +132,22 @@ public class TreasureData {
     }
 
     /**
-     * Reset UUID and send td_uuid_reset event with old uuid
+     * Reset UUID and send td_uuid_reset event with old uuid to a target table
      */
-    public void resetUUID() {
+    public void resetUUID(String table) {
         // Send td_uuid_reset event
         Map record = new HashMap<String, Object>();
         record.put(EVENT_KEY_EVENT, EVENT_RESET_UUID);
         record.put(EVENT_KEY_UUID, uuid);
-        record.put(EVENT_KEY_AUTO_TRACK_EVENT_PRIVATE, true);
-        addEvent(autoTrackingTable, record);
+        record.put(EVENT_KEY_RESET_UUID_EVENT_PRIVATE, true);
+        addEvent(table, record);
+        resetUniqId();
+    }
+
+    /**
+     * Reset UUID
+     */
+    public void resetUniqId() {
         SharedPreferences sharedPreferences = getSharedPreference(context);
         synchronized (this) {
             String uuid = UUID.randomUUID().toString();
@@ -165,42 +171,11 @@ public class TreasureData {
         }
     }
 
-    /**
-     * Sets opt out. If true then the SDK does not track any events.
-     *
-     * @param optOut whether or not to opt the user out of tracking
-     */
-    public void setOptOut(final boolean optOut) {
-        this.optOut = optOut;
-        SharedPreferences sharedPreferences = getSharedPreference(context);
-        synchronized (this) {
-            sharedPreferences.edit().putBoolean(SHARED_PREF_OPT_OUT, optOut).commit();
-        }
-    }
-
-    /**
-     * Returns whether or not the user is opted out of tracking.
-     *
-     * @return the optOut flag value
-     */
-    public boolean isOptedOut() {
-        return optOut;
-    }
-
-    private boolean getOptOut() {
-        SharedPreferences sharedPreferences = getSharedPreference(context);
-        synchronized (this) {
-            boolean optOut = sharedPreferences.getBoolean(SHARED_PREF_OPT_OUT, false);
-            return  optOut;
-        }
-    }
-
     public TreasureData(Context context, String apiKey) {
         Context applicationContext = context.getApplicationContext();
         this.context = applicationContext;
-        optOut = getOptOut();
         uuid = getUUID();
-        trackAutoEventBlocked = isAutoEventBlocked();
+        trackAutoEventBlocked = getAutoEventBlocked();
         trackCustomEventBlocked = getCustomEventBlocked();
 
         TDClient client = null;
@@ -393,20 +368,17 @@ public class TreasureData {
 
     public void addEventWithCallback(String database, String table, Map<String, Object> origRecord, TDCallback callback) {
 
-        if (isOptedOut()) {
-            return;
-        }
-
         if(isCustomEventBlocked() && isCustomEvent(origRecord)) {
             return;
         }
 
-        if(isAutoEventBlocked() && !isCustomEvent(origRecord)) {
+        if(isAutoEventBlocked() && isAutoEvent(origRecord)) {
             return;
         }
 
         // Remove private key
         origRecord.remove(EVENT_KEY_AUTO_TRACK_EVENT_PRIVATE);
+        origRecord.remove(EVENT_KEY_RESET_UUID_EVENT_PRIVATE);
 
         if (client == null) {
             Log.w(TAG, "TDClient is null");
@@ -488,9 +460,6 @@ public class TreasureData {
     }
 
     public void uploadEventsWithCallback(TDCallback callback) {
-        if (isOptedOut()) {
-            return;
-        }
 
         if (client == null) {
             Log.w(TAG, "TDClient is null");
@@ -596,11 +565,17 @@ public class TreasureData {
         this.autoTrackingTable = table;
     }
 
+    /**
+     * Block auto event tracking. This setting has no effect to custom tracking
+     */
     public void blockAutoEvents() {
         this.trackAutoEventBlocked = true;
         blockAutoEvents(this.trackAutoEventBlocked);
     }
 
+    /**
+     * Unblock auto event tracking. This setting has no effect to custom tracking
+     */
     public void unblockAutoEvents() {
         this.trackAutoEventBlocked = false;
         blockAutoEvents(this.trackAutoEventBlocked);
@@ -614,7 +589,15 @@ public class TreasureData {
         }
     }
 
+    /**
+     * Whether or not the auto event tracking is blocked
+     * @return true : blocked, false : unblocked
+     */
     public boolean isAutoEventBlocked() {
+        return this.trackAutoEventBlocked;
+    }
+
+    private boolean getAutoEventBlocked() {
         SharedPreferences sharedPreferences = getSharedPreference(context);
         synchronized (this) {
             return sharedPreferences.getBoolean(SHARED_PREF_TRACK_AUTO_EVENT_BLOCKED, false);
@@ -661,7 +644,11 @@ public class TreasureData {
     }
 
     private boolean isCustomEvent(Map record) {
-        return !record.containsKey(EVENT_KEY_AUTO_TRACK_EVENT_PRIVATE);
+        return !record.containsKey(EVENT_KEY_AUTO_TRACK_EVENT_PRIVATE) && !record.containsKey(EVENT_KEY_RESET_UUID_EVENT_PRIVATE);
+    }
+
+    private boolean isAutoEvent(Map record) {
+        return record.containsKey(EVENT_KEY_AUTO_TRACK_EVENT_PRIVATE);
     }
 
     public void disableAppInstalledEvent() {
