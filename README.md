@@ -157,14 +157,6 @@ It depends on the characteristic of your application when to upload and how ofte
 
 The sent events is going to be buffered for a few minutes before they get imported into Treasure Data storage.
 
-### Opt out 
-
-You can opt out event tracking by using `TreasureData#setOptOut(true)`
-
-Then you can opt in event tracking again by using `TreasureData#setOptOut(false)`
-
-Opt out status is able to be retrieved by using `TreasureData#isOptedOut()`
-
 ### Retry uploading and deduplication
 
 This SDK imports events in exactly once style with the combination of these features.
@@ -248,14 +240,20 @@ In this case, you can get the current session ID using `TreasureData.getSessionI
 ### Track app lifecycle events automatically
 
 App lifecycle event tracking is optional and not able by default. You can track app lifecycle events automatically using :
-`TreasureData#enableTrackAppLifecycleEvents(String table)` and then disable it `TreasureData#disableTrackAppLifecycleEvents()`
+`TreasureData#enableTrackAppLifecycleEvents(String table)`
 
-You can also disable the individual core events as the following:
+App lifecycle events include : Application Install, Application Open, Application Update. You can disable the individual core events as the following:
 
 - Disable Application Install: `disableAppInstalledEvent()`
 - Disable Application Open: `disableAppOpenEvent()`
 - Disable Application Update: `disableAppUpdatedEvent()`
 
+### Opt out 
+
+Depending on the countries where you sell your app (e.g. the EU), you may need to offer the ability for users to opt-out of tracking data inside your app.
+
+- To turn off auto tracking events (when application life cycle event tracking is able) : `TreasureData#blockAutoEvents`. To turn on it again : `TreasureData#unblockAutoEvents`
+- To turn off custom events (the events you are tracking by `TreasureData#addEvent`) : `TreasureData#blockCustomEvents`. To turn on it again :  `TreasureData#unblockCustomEvents`
 ## About error codes
 
 `TreasureData#addEventWithCallback` and `TreasureData#uploadEventsWithCallback` call back `TDCallback#onError` method with `errorCode` argument. This argument is useful to know the cause type of the error. There are the following error codes.
@@ -301,7 +299,6 @@ If you've set an encryption key via `TreasureData.initializeEncryptionKey`, our 
 ### Adding UUID of the device to each event automatically
 
 UUID of the device will be added to each event automatically if you call `TreasureData#enableAutoAppendUniqId()`. This value won't change until the application is uninstalled.
-You can reset the UUID using `TreasureData#regenerateUUID()`
 
 ```
 	td.enableAutoAppendUniqId();
@@ -310,6 +307,9 @@ You can reset the UUID using `TreasureData#regenerateUUID()`
 ```
 
 It outputs the value as a column name `td_uuid`.
+
+You can reset the UUID using `TreasureData#resetUniqId()`.
+Also, you can use `TreasureData#resetUUID(String table)` to send `td_reset_uuid` event with old uuid to the target table.
 
 ### Adding an UUID to each event record automatically
 
