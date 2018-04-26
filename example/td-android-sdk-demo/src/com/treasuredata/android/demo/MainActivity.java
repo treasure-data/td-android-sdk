@@ -118,7 +118,7 @@ public class MainActivity extends Activity {
             @Override
             public void onClick(View view) {
                 addEventCallback.eventName = "reset UUID";
-                TreasureData.sharedInstance().resetUUID();
+                TreasureData.sharedInstance().resetUUID("demotbl");
             }
         });
     }
