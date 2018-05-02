@@ -69,7 +69,7 @@ public class TreasureData {
 
     private final Context context;
     private final TDClient client;
-    private final String uuid;
+    private String uuid;
     private volatile String defaultDatabase;
     private volatile String autoTrackingTable;
     private volatile TDCallback addEventCallBack;
@@ -137,6 +137,7 @@ public class TreasureData {
     public void resetUUID(String table) {
         // Send td_uuid_reset event
         Map record = new HashMap<String, Object>();
+        uuid = getUUID();
         record.put(EVENT_KEY_EVENT, EVENT_RESET_UUID);
         record.put(EVENT_KEY_UUID, uuid);
         record.put(EVENT_KEY_RESET_UUID_EVENT_PRIVATE, true);
