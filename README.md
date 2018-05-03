@@ -240,7 +240,7 @@ In this case, you can get the current session ID using `TreasureData.getSessionI
 ### Track app lifecycle events automatically
 
 App lifecycle event tracking is optional and not able by default. You can track app lifecycle events automatically using :
-`TreasureData#enableTrackAppLifecycleEvents(String table)`
+`TreasureData#trackAppLifecycleEvents(String table)`
 
 App lifecycle events include : Application Install, Application Open, Application Update. You can disable the individual core events as the following:
 
@@ -252,8 +252,8 @@ App lifecycle events include : Application Install, Application Open, Applicatio
 
 Depending on the countries where you sell your app (e.g. the EU), you may need to offer the ability for users to opt-out of tracking data inside your app.
 
-- To turn off auto tracking events (when application lifecycle event tracking is enable) : `TreasureData#blockAutoEvents`. To turn on it again : `TreasureData#unblockAutoEvents`
-- To turn off custom events (the events you are tracking by `TreasureData#addEvent`, `TreasureData#addEventWithCallback` ) : `TreasureData#blockCustomEvents`. To turn on it again :  `TreasureData#unblockCustomEvents`
+- To turn off auto tracking events (when application lifecycle event tracking is enable) : `TreasureData#disableAutoEvents`. To turn on it again : `TreasureData#enableAutoEvents`
+- To turn off custom events (the events you are tracking by `TreasureData#addEvent`, `TreasureData#addEventWithCallback` ) : `TreasureData#disableCustomEvents`. To turn on it again :  `TreasureData#enableCustomEvents`
 
 The functions have effects across device reboots, so you can simply call this once during your application.
 

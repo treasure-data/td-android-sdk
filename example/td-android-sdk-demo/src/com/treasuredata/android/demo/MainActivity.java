@@ -84,25 +84,25 @@ public class MainActivity extends Activity {
             }
         });
 
-        CheckBox checkBox = (CheckBox) findViewById(R.id.block_auto_events);
-        checkBox.setChecked(TreasureData.sharedInstance().isAutoEventBlocked());
+        CheckBox checkBox = (CheckBox) findViewById(R.id.disable_auto_events);
+        checkBox.setChecked(TreasureData.sharedInstance().isAutoEventDisabled());
 
         checkBox.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
                 CheckBox checkBox = (CheckBox)view;
-                TreasureData.sharedInstance().blockAutoEvents(checkBox.isChecked());
+                TreasureData.sharedInstance().disableAutoEvents(checkBox.isChecked());
             }
         });
 
-        checkBox = (CheckBox) findViewById(R.id.block_custom_events);
-        checkBox.setChecked(TreasureData.sharedInstance().isCustomEventBlocked());
+        checkBox = (CheckBox) findViewById(R.id.disable_custom_events);
+        checkBox.setChecked(TreasureData.sharedInstance().isCustomEventDisabled());
 
         checkBox.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
                 CheckBox checkBox = (CheckBox)view;
-                TreasureData.sharedInstance().blockCustomEvents(checkBox.isChecked());
+                TreasureData.sharedInstance().disableCustomEvents(checkBox.isChecked());
             }
         });
 

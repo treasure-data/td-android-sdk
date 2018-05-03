@@ -31,8 +31,8 @@ public class TreasureData {
     private static final String SHARED_PREF_VERSION_KEY = "version";
     private static final String SHARED_PREF_BUILD_KEY = "build";
     private static final String SHARED_PREF_KEY_FIRST_RUN = "first_run";
-    private static final String SHARED_PREF_TRACK_AUTO_EVENT_BLOCKED = "track_auto_event_blocked";
-    private static final String SHARED_PREF_TRACK_CUSTOM_EVENT_BLOCKED = "track_custom_event_blocked";
+    private static final String SHARED_PREF_AUTO_EVENT_DISABLED = "auto_event_disabled";
+    private static final String SHARED_PREF_CUSTOM_EVENT_DISABLED = "custom_event_disabled";
     private static final String EVENT_KEY_UUID = "td_uuid";
     private static final String EVENT_KEY_SESSION_ID = "td_session_id";
     private static final String EVENT_KEY_SESSION_EVENT = "td_session_event";
@@ -82,8 +82,8 @@ public class TreasureData {
     private volatile boolean autoTrackAppInstalledEvent = true;
     private volatile boolean autoTrackAppOpenEvent = true;
     private volatile boolean autoTrackAppUpdatedEvent = true;
-    private volatile boolean trackCustomEventBlocked;
-    private volatile boolean trackAutoEventBlocked;
+    private volatile boolean customEventDisabled;
+    private volatile boolean autoEventDisabled;
     private static volatile long sessionTimeoutMilli = Session.DEFAULT_SESSION_PENDING_MILLIS;
     private final String appVersion;
     private final int appVersionNumber;
@@ -156,7 +156,6 @@ public class TreasureData {
         }
     }
 
-    @Deprecated
     public boolean isFirstRun(Context context) {
         SharedPreferences sharedPreferences = getSharedPreference(context);
         synchronized (this) {
@@ -164,7 +163,6 @@ public class TreasureData {
         }
     }
 
-    @Deprecated
     public void clearFirstRun(Context context) {
         SharedPreferences sharedPreferences = getSharedPreference(context);
         synchronized (this) {
@@ -176,8 +174,8 @@ public class TreasureData {
         Context applicationContext = context.getApplicationContext();
         this.context = applicationContext;
         uuid = getUUID();
-        trackAutoEventBlocked = getAutoEventBlocked();
-        trackCustomEventBlocked = getCustomEventBlocked();
+        autoEventDisabled = getAutoEventDisabled();
+        customEventDisabled = getCustomEventDisabled();
 
         TDClient client = null;
         if (apiKey == null && TDClient.getDefaultApiKey() == null) {
@@ -369,11 +367,11 @@ public class TreasureData {
 
     public void addEventWithCallback(String database, String table, Map<String, Object> origRecord, TDCallback callback) {
 
-        if(isCustomEventBlocked() && isCustomEvent(origRecord)) {
+        if(isCustomEventDisabled() && isCustomEvent(origRecord)) {
             return;
         }
 
-        if(isAutoEventBlocked() && isAutoEvent(origRecord)) {
+        if(isAutoEventDisabled() && isAutoEvent(origRecord)) {
             return;
         }
 
@@ -557,7 +555,7 @@ public class TreasureData {
         record.put(autoAppendRecordUUIDColumn, UUID.randomUUID().toString());
     }
 
-    public void enableTrackAppLifecycleEvents(String table) {
+    public void trackAppLifecycleEvents(String table) {
         if (table == null) {
             Log.w(TAG, "table shouldn't be null");
             return;
@@ -567,78 +565,78 @@ public class TreasureData {
     }
 
     /**
-     * Block auto event tracking. This setting has no effect to custom tracking
+     * Disable auto event tracking. This setting has no effect to custom tracking
      */
-    public void blockAutoEvents() {
-        blockAutoEvents(true);
+    public void disableAutoEvents() {
+        disableAutoEvents(true);
     }
 
     /**
-     * Unblock auto event tracking. This setting has no effect to custom tracking
+     * Re-enable auto event tracking. This setting has no effect to custom tracking
      */
-    public void unblockAutoEvents() {
-        blockAutoEvents(false);
+    public void enableAutoEvents() {
+        disableAutoEvents(false);
     }
 
 
-    public void blockAutoEvents(boolean blocked) {
-        this.trackAutoEventBlocked = blocked;
+    public void disableAutoEvents(boolean optOut) {
+        this.autoEventDisabled = optOut;
         SharedPreferences sharedPreferences = getSharedPreference(context);
         synchronized (this) {
-            sharedPreferences.edit().putBoolean(SHARED_PREF_TRACK_AUTO_EVENT_BLOCKED,  this.trackAutoEventBlocked).commit();
+            sharedPreferences.edit().putBoolean(SHARED_PREF_AUTO_EVENT_DISABLED,  this.autoEventDisabled).commit();
         }
     }
 
     /**
-     * Whether or not the auto event tracking is blocked
-     * @return true : blocked, false : unblocked
+     * Whether or not the auto event tracking is disabled
+     * @return true : disable, false : enable
      */
-    public boolean isAutoEventBlocked() {
-        return this.trackAutoEventBlocked;
+    public boolean isAutoEventDisabled() {
+        return this.autoEventDisabled;
     }
 
-    private boolean getAutoEventBlocked() {
+    private boolean getAutoEventDisabled() {
         SharedPreferences sharedPreferences = getSharedPreference(context);
         synchronized (this) {
-            return sharedPreferences.getBoolean(SHARED_PREF_TRACK_AUTO_EVENT_BLOCKED, false);
+            return sharedPreferences.getBoolean(SHARED_PREF_AUTO_EVENT_DISABLED, false);
         }
     }
 
     /**
-     * Block custom event tracking. This setting has no effect to auto tracking
+     * Disable custom event tracking. This setting has no effect to auto tracking
      */
-    public void blockCustomEvents() {
-        blockCustomEvents(true);
+    public void disableCustomEvents() {
+        disableCustomEvents(true);
     }
 
     /**
-     * Unblock custom event tracking. This setting has no effect to auto tracking
+     * Re-enable custom event tracking. This setting has no effect to auto tracking
      */
-    public void unblockCustomEvents() {
-        blockCustomEvents(false);
+    public void enableCustomEvents() {
+        disableCustomEvents(false);
     }
 
     /**
-     * Whether or not the custom event tracking is blocked
-     * @return true : blocked, false : unblocked
+     * Whether or not the custom event tracking is disable
+     * @return true : disable, false : enable
      */
-    public boolean isCustomEventBlocked() {
-        return this.trackCustomEventBlocked;
+    public boolean isCustomEventDisabled() {
+        return this.customEventDisabled;
     }
 
-    public void blockCustomEvents(boolean blocked) {
-        this.trackCustomEventBlocked = blocked;
+    public void disableCustomEvents(boolean blocked) {
+        this.customEventDisabled = blocked;
         SharedPreferences sharedPreferences = getSharedPreference(context);
         synchronized (this) {
-            sharedPreferences.edit().putBoolean(SHARED_PREF_TRACK_CUSTOM_EVENT_BLOCKED,  this.trackCustomEventBlocked).commit();
+            sharedPreferences.edit().putBoolean(SHARED_PREF_CUSTOM_EVENT_DISABLED,  this.customEventDisabled).commit();
         }
     }
 
-    private boolean getCustomEventBlocked() {
+    private boolean getCustomEventDisabled() {
         SharedPreferences sharedPreferences = getSharedPreference(context);
         synchronized (this) {
-            this.trackCustomEventBlocked = sharedPreferences.getBoolean(SHARED_PREF_TRACK_CUSTOM_EVENT_BLOCKED, false);
-            return this.trackCustomEventBlocked;
+            this.customEventDisabled = sharedPreferences.getBoolean(SHARED_PREF_CUSTOM_EVENT_DISABLED, false);
+            return this.customEventDisabled;
         }
     }
 
