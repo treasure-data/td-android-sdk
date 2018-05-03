@@ -624,8 +624,8 @@ public class TreasureData {
         return this.customEventDisabled;
     }
 
-    public void disableCustomEvents(boolean blocked) {
-        this.customEventDisabled = blocked;
+    public void disableCustomEvents(boolean optOut) {
+        this.customEventDisabled = optOut;
         SharedPreferences sharedPreferences = getSharedPreference(context);
         synchronized (this) {
             sharedPreferences.edit().putBoolean(SHARED_PREF_CUSTOM_EVENT_DISABLED,  this.customEventDisabled).commit();
