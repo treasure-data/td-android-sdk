@@ -84,25 +84,25 @@ public class MainActivity extends Activity {
             }
         });
 
-        CheckBox checkBox = (CheckBox) findViewById(R.id.disable_auto_events);
-        checkBox.setChecked(TreasureData.sharedInstance().isAutoEventDisabled());
+        CheckBox checkBox = (CheckBox) findViewById(R.id.enable_auto_events);
+        checkBox.setChecked(TreasureData.sharedInstance().isAppLifecycleEventEnabled());
 
         checkBox.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
                 CheckBox checkBox = (CheckBox)view;
-                TreasureData.sharedInstance().disableAutoEvents(checkBox.isChecked());
+                TreasureData.sharedInstance().enableAppLifecycleEvent(checkBox.isChecked());
             }
         });
 
-        checkBox = (CheckBox) findViewById(R.id.disable_custom_events);
-        checkBox.setChecked(TreasureData.sharedInstance().isCustomEventDisabled());
+        checkBox = (CheckBox) findViewById(R.id.enable_custom_events);
+        checkBox.setChecked(TreasureData.sharedInstance().isCustomEventEnabled());
 
         checkBox.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
                 CheckBox checkBox = (CheckBox)view;
-                TreasureData.sharedInstance().disableCustomEvents(checkBox.isChecked());
+                TreasureData.sharedInstance().enableCustomEvent(checkBox.isChecked());
             }
         });
 
@@ -110,7 +110,7 @@ public class MainActivity extends Activity {
             @Override
             public void onClick(View view) {
                 addEventCallback.eventName = "reset UUID";
-                TreasureData.sharedInstance().resetUUID("demotbl");
+                TreasureData.sharedInstance().resetUniqId();
             }
         });
     }
