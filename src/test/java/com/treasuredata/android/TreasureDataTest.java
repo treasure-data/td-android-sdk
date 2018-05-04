@@ -161,29 +161,30 @@ public class TreasureDataTest extends TestCase {
         assertNotSame(client1.getDefaultProject().getProjectId(), client2.getDefaultProject().getProjectId());
     }
 
-    public void testAddEventAndUploadCustomEventBlocked() throws IOException {
+    public void testAddEventAndUploadCustomEventDisabled() throws IOException {
         Map<String, Object> records = new HashMap<String, Object>();
         records.put("key", "val");
-        when(td.isCustomEventDisabled()).thenReturn(true);
+        when(td.isCustomEventEnabled()).thenReturn(false);
         td.addEvent("db_", "tbl", records);
         td.uploadEvents();
         assertEquals(0, client.addedEvent.size());
     }
 
-    public void testAddEventAndUploadAutoEventWhileCustomEventBlocked() throws IOException {
+    public void testAddEventAndUploadAppLifecycleEventWhileCustomEventDisabled() throws IOException {
         Map<String, Object> records = new HashMap<String, Object>();
         records.put("key", "val");
-        records.put("__is_auto_track_event", "true");
-        when(td.isCustomEventDisabled()).thenReturn(true);
+        records.put("__is_app_lifecycle_event", "true");
+        when(td.isAppLifecycleEventEnabled()).thenReturn(true);
+        when(td.isCustomEventEnabled()).thenReturn(false);
         td.addEvent("db_", "tbl", records);
         td.uploadEvents();
         assertEquals(1, client.addedEvent.size());
     }
 
-    public void testAddEventAndUploadCustomEventUnBlocked() throws IOException {
+    public void testAddEventAndUploadCustomEventEnabled() throws IOException {
         Map<String, Object> records = new HashMap<String, Object>();
         records.put("key", "val");
-        when(td.isCustomEventDisabled()).thenReturn(false);
+        when(td.isCustomEventEnabled()).thenReturn(true);
         td.addEvent("db_", "tbl", records);
         td.uploadEvents();
         assertEquals(1, client.addedEvent.size());

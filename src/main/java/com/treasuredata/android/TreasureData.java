@@ -1,23 +1,16 @@
 package com.treasuredata.android;
 
-import android.app.Activity;
-import android.app.Application;
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.content.pm.PackageInfo;
-import android.os.Build;
-import android.os.Bundle;
-import io.keen.client.java.KeenClient;
-import org.komamitsu.android.util.Log;
+import android.app.*;
+import android.content.*;
+import android.content.pm.*;
+import android.os.*;
+import io.keen.client.java.*;
+import org.komamitsu.android.util.*;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.UUID;
-import java.util.WeakHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.regex.Pattern;
+import java.io.*;
+import java.util.*;
+import java.util.concurrent.atomic.*;
+import java.util.regex.*;
 
 public class TreasureData {
     private static final String TAG = TreasureData.class.getSimpleName();
@@ -31,8 +24,8 @@ public class TreasureData {
     private static final String SHARED_PREF_VERSION_KEY = "version";
     private static final String SHARED_PREF_BUILD_KEY = "build";
     private static final String SHARED_PREF_KEY_FIRST_RUN = "first_run";
-    private static final String SHARED_PREF_AUTO_EVENT_DISABLED = "auto_event_disabled";
-    private static final String SHARED_PREF_CUSTOM_EVENT_DISABLED = "custom_event_disabled";
+    private static final String SHARED_PREF_APP_LIFECYCLE_EVENT_ENABLED = "app_lifecycle_event_enabled";
+    private static final String SHARED_PREF_CUSTOM_EVENT_ENABLED = "custom_event_enabled";
     private static final String EVENT_KEY_UUID = "td_uuid";
     private static final String EVENT_KEY_SESSION_ID = "td_session_id";
     private static final String EVENT_KEY_SESSION_EVENT = "td_session_event";
@@ -50,7 +43,7 @@ public class TreasureData {
     private static final String EVENT_KEY_LOCALE_COUNTRY = "td_locale_country";
     private static final String EVENT_KEY_LOCALE_LANG = "td_locale_lang";
     private static final String EVENT_KEY_EVENT = "td_android_event";
-    private static final String EVENT_KEY_AUTO_TRACK_EVENT_PRIVATE = "__is_auto_track_event";
+    private static final String EVENT_KEY_APP_LIFECYCLE_EVENT_PRIVATE = "__is_app_lifecycle_event";
     private static final String EVENT_KEY_RESET_UUID_EVENT_PRIVATE = "__is_reset_uuid_event";
     private static final String EVENT_KEY_SERVERSIDE_UPLOAD_TIMESTAMP = "#SSUT";
     private static final String EVENT_DEFAULT_KEY_RECORD_UUID = "record_uuid";
@@ -58,7 +51,9 @@ public class TreasureData {
     private static final String EVENT_APP_INSTALL = "TD_ANDROID_APP_INSTALL";
     private static final String EVENT_APP_OPEN = "TD_ANDROID_APP_OPEN";
     private static final String EVENT_APP_UPDATE = "TD_ANDROID_APP_UPDATE";
-    private static final String EVENT_RESET_UUID = "td_uuid_reset";
+    private static final String EVENT_RESET_UUID = "forget_device_uuid";
+    private static final String TD_DEFAULT_DATABASE = "td";
+    private static final String TD_DEFAULT_TABLE = "td_android";
 
     static {
         TDHttpHandler.VERSION = TreasureData.VERSION;
@@ -71,19 +66,18 @@ public class TreasureData {
     private final TDClient client;
     private String uuid;
     private volatile String defaultDatabase;
-    private volatile String autoTrackingTable;
+    private volatile String defaultTable;
     private volatile TDCallback addEventCallBack;
     private volatile TDCallback uploadEventsCallBack;
     private volatile boolean autoAppendUniqId;
     private volatile boolean autoAppendModelInformation;
     private volatile boolean autoAppendAppInformation;
     private volatile boolean autoAppendLocaleInformation;
-    private volatile boolean autoTrackAppLifecycleEvents;
     private volatile boolean autoTrackAppInstalledEvent = true;
     private volatile boolean autoTrackAppOpenEvent = true;
     private volatile boolean autoTrackAppUpdatedEvent = true;
-    private volatile boolean customEventDisabled;
-    private volatile boolean autoEventDisabled;
+    private volatile boolean customEventEnabled = true;
+    private volatile boolean appLifecycleEventEnabled;
     private static volatile long sessionTimeoutMilli = Session.DEFAULT_SESSION_PENDING_MILLIS;
     private final String appVersion;
     private final int appVersionNumber;
@@ -131,24 +125,34 @@ public class TreasureData {
         }
     }
 
+
     /**
-     * Reset UUID and send td_uuid_reset event with old uuid to a target table
+     * Reset UUID and send forget_device_uuid event with old uuid
      */
-    public void resetUUID(String table) {
-        // Send td_uuid_reset event
+    public void resetUniqId() {
+        String targetDatabase = TD_DEFAULT_DATABASE;
+        if (defaultDatabase == null) {
+            Log.w(TAG, "Default database is not set, forget_device_uuid event will be uploaded to " + TD_DEFAULT_DATABASE);
+        } else {
+            targetDatabase = defaultDatabase;
+        }
+
+        String targetTable = TD_DEFAULT_TABLE;
+        if (defaultTable == null) {
+            Log.w(TAG, "Default table is not set, forget_device_uuid event will be uploaded to " + TD_DEFAULT_TABLE);
+        } else {
+            targetTable = defaultTable;
+        }
+
+        // Send forget_device_uuid event
         Map record = new HashMap<String, Object>();
         uuid = getUUID();
         record.put(EVENT_KEY_EVENT, EVENT_RESET_UUID);
         record.put(EVENT_KEY_UUID, uuid);
         record.put(EVENT_KEY_RESET_UUID_EVENT_PRIVATE, true);
-        addEvent(table, record);
-        resetUniqId();
-    }
+        addEvent(targetDatabase, targetTable, record);
 
-    /**
-     * Reset UUID
-     */
-    public void resetUniqId() {
+        // Reset UUID
         SharedPreferences sharedPreferences = getSharedPreference(context);
         synchronized (this) {
             String uuid = UUID.randomUUID().toString();
@@ -173,9 +177,9 @@ public class TreasureData {
     public TreasureData(Context context, String apiKey) {
         Context applicationContext = context.getApplicationContext();
         this.context = applicationContext;
-        uuid = getUUID();
-        autoEventDisabled = getAutoEventDisabled();
-        customEventDisabled = getCustomEventDisabled();
+        this.uuid = getUUID();
+        this.appLifecycleEventEnabled = getAppLifecycleEventEnabled();
+        this.customEventEnabled = getCustomEventEnabled();
 
         TDClient client = null;
         if (apiKey == null && TDClient.getDefaultApiKey() == null) {
@@ -211,7 +215,7 @@ public class TreasureData {
                 @Override
                 public void onActivityCreated(Activity activity, Bundle bundle) {
                     if (!trackedAppLifecycleEvents.getAndSet(true)
-                            && autoTrackAppLifecycleEvents) {
+                            && appLifecycleEventEnabled) {
                         trackApplicationLifecycleEvents();
                     }
                 }
@@ -251,6 +255,20 @@ public class TreasureData {
 
     private void trackApplicationLifecycleEvents() {
 
+        String targetDatabase = TD_DEFAULT_DATABASE;
+        if (defaultDatabase == null) {
+            Log.w(TAG, "Default database is not set, app lifecycle events will be uploaded to " + TD_DEFAULT_DATABASE);
+        } else {
+            targetDatabase = defaultDatabase;
+        }
+
+        String targetTable = TD_DEFAULT_TABLE;
+        if (defaultTable == null) {
+            Log.w(TAG, "Default table is not set, auto app lifecycle events will be uploaded to " + TD_DEFAULT_TABLE);
+        } else {
+            targetTable = defaultTable;
+        }
+
         String currentVersion = appVersion;
         int currentBuild = appVersionNumber;
 
@@ -264,8 +282,8 @@ public class TreasureData {
             record.put(EVENT_KEY_EVENT, EVENT_APP_INSTALL);
             record.put(EVENT_KEY_APP_VER_NUM, currentBuild);
             record.put(EVENT_KEY_APP_VER, currentVersion);
-            record.put(EVENT_KEY_AUTO_TRACK_EVENT_PRIVATE, true);
-            addEvent(autoTrackingTable, record);
+            record.put(EVENT_KEY_APP_LIFECYCLE_EVENT_PRIVATE, true);
+            addEvent(targetDatabase, targetTable, record);
         }else if (autoTrackAppUpdatedEvent && currentBuild != previousBuild) {
             record = new HashMap<String, Object>();
             record.put(EVENT_KEY_EVENT, EVENT_APP_UPDATE);
@@ -273,8 +291,8 @@ public class TreasureData {
             record.put(EVENT_KEY_APP_VER, currentVersion);
             record.put(EVENT_KEY_PREV_APP_VER_NUM, previousBuild);
             record.put(EVENT_KEY_PREV_APP_VER, previousVersion);
-            record.put(EVENT_KEY_AUTO_TRACK_EVENT_PRIVATE, true);
-            addEvent(autoTrackingTable, record);
+            record.put(EVENT_KEY_APP_LIFECYCLE_EVENT_PRIVATE, true);
+            addEvent(targetDatabase, targetTable, record);
         }
 
         if (autoTrackAppOpenEvent) {
@@ -282,8 +300,8 @@ public class TreasureData {
             record.put(EVENT_KEY_EVENT, EVENT_APP_OPEN);
             record.put(EVENT_KEY_APP_VER_NUM, currentBuild);
             record.put(EVENT_KEY_APP_VER, currentVersion);
-            record.put(EVENT_KEY_AUTO_TRACK_EVENT_PRIVATE, true);
-            addEvent(autoTrackingTable, record);
+            record.put(EVENT_KEY_APP_LIFECYCLE_EVENT_PRIVATE, true);
+            addEvent(targetDatabase, targetTable, record);
         }
 
         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -328,6 +346,10 @@ public class TreasureData {
         this.defaultDatabase = defaultDatabase;
     }
 
+    public void setDefaultTable(String defaultTable) {
+        this.defaultTable = defaultTable;
+    }
+
     public synchronized void setAddEventCallBack(TDCallback callBack) {
         this.addEventCallBack = callBack;
     }
@@ -367,16 +389,16 @@ public class TreasureData {
 
     public void addEventWithCallback(String database, String table, Map<String, Object> origRecord, TDCallback callback) {
 
-        if(isCustomEventDisabled() && isCustomEvent(origRecord)) {
+        if(!isCustomEventEnabled() && isCustomEvent(origRecord)) {
             return;
         }
 
-        if(isAutoEventDisabled() && isAutoEvent(origRecord)) {
+        if(!isAppLifecycleEventEnabled() && isAppLifecycleEvent(origRecord)) {
             return;
         }
 
         // Remove private key
-        origRecord.remove(EVENT_KEY_AUTO_TRACK_EVENT_PRIVATE);
+        origRecord.remove(EVENT_KEY_APP_LIFECYCLE_EVENT_PRIVATE);
         origRecord.remove(EVENT_KEY_RESET_UUID_EVENT_PRIVATE);
 
         if (client == null) {
@@ -555,97 +577,89 @@ public class TreasureData {
         record.put(autoAppendRecordUUIDColumn, UUID.randomUUID().toString());
     }
 
-    public void trackAppLifecycleEvents(String table) {
-        if (table == null) {
-            Log.w(TAG, "table shouldn't be null");
-            return;
-        }
-        this.autoTrackAppLifecycleEvents = true;
-        this.autoTrackingTable = table;
+    /**
+     * Enable app lifecycle tracking. This setting has no effect to custom tracking
+     */
+    public void enableAppLifecycleEvent() {
+        enableAppLifecycleEvent(true);
     }
 
     /**
-     * Disable auto event tracking. This setting has no effect to custom tracking
+     * Disable app lifecycle tracking. This setting has no effect to custom tracking
      */
-    public void disableAutoEvents() {
-        disableAutoEvents(true);
-    }
-
-    /**
-     * Re-enable auto event tracking. This setting has no effect to custom tracking
-     */
-    public void enableAutoEvents() {
-        disableAutoEvents(false);
+    public void disableAppLifecycleEvent() {
+        enableAppLifecycleEvent(false);
     }
 
 
-    public void disableAutoEvents(boolean optOut) {
-        this.autoEventDisabled = optOut;
+    public void enableAppLifecycleEvent(boolean enabled) {
+        this.appLifecycleEventEnabled = enabled;
         SharedPreferences sharedPreferences = getSharedPreference(context);
         synchronized (this) {
-            sharedPreferences.edit().putBoolean(SHARED_PREF_AUTO_EVENT_DISABLED,  this.autoEventDisabled).commit();
+            sharedPreferences.edit().putBoolean(SHARED_PREF_APP_LIFECYCLE_EVENT_ENABLED,  this.appLifecycleEventEnabled).commit();
         }
     }
 
     /**
-     * Whether or not the auto event tracking is disabled
-     * @return true : disable, false : enable
+     * Whether or not the app lifecycle tracking is enabled
+     * @return true : enabled, false : disabled
      */
-    public boolean isAutoEventDisabled() {
-        return this.autoEventDisabled;
+    public boolean isAppLifecycleEventEnabled() {
+        return this.appLifecycleEventEnabled;
     }
 
-    private boolean getAutoEventDisabled() {
+    private boolean getAppLifecycleEventEnabled() {
         SharedPreferences sharedPreferences = getSharedPreference(context);
         synchronized (this) {
-            return sharedPreferences.getBoolean(SHARED_PREF_AUTO_EVENT_DISABLED, false);
+            return sharedPreferences.getBoolean(SHARED_PREF_APP_LIFECYCLE_EVENT_ENABLED, false);
         }
+    }
+
+
+    /**
+     * Enable custom event tracking. This setting has no effect to auto tracking
+     */
+    public void enableCustomEvent() {
+        enableCustomEvent(true);
     }
 
     /**
      * Disable custom event tracking. This setting has no effect to auto tracking
      */
-    public void disableCustomEvents() {
-        disableCustomEvents(true);
+    public void disableCustomEvent() {
+        enableCustomEvent(false);
     }
 
     /**
-     * Re-enable custom event tracking. This setting has no effect to auto tracking
+     * Whether or not the custom event tracking is enable
+     * @return true : enable, false : disabled
      */
-    public void enableCustomEvents() {
-        disableCustomEvents(false);
+    public boolean isCustomEventEnabled() {
+        return this.customEventEnabled;
     }
 
-    /**
-     * Whether or not the custom event tracking is disable
-     * @return true : disable, false : enable
-     */
-    public boolean isCustomEventDisabled() {
-        return this.customEventDisabled;
-    }
-
-    public void disableCustomEvents(boolean optOut) {
-        this.customEventDisabled = optOut;
+    public void enableCustomEvent(boolean enabled) {
+        this.customEventEnabled = enabled;
         SharedPreferences sharedPreferences = getSharedPreference(context);
         synchronized (this) {
-            sharedPreferences.edit().putBoolean(SHARED_PREF_CUSTOM_EVENT_DISABLED,  this.customEventDisabled).commit();
+            sharedPreferences.edit().putBoolean(SHARED_PREF_CUSTOM_EVENT_ENABLED,  this.customEventEnabled).commit();
         }
     }
 
-    private boolean getCustomEventDisabled() {
+    private boolean getCustomEventEnabled() {
         SharedPreferences sharedPreferences = getSharedPreference(context);
         synchronized (this) {
-            this.customEventDisabled = sharedPreferences.getBoolean(SHARED_PREF_CUSTOM_EVENT_DISABLED, false);
-            return this.customEventDisabled;
+            this.customEventEnabled = sharedPreferences.getBoolean(SHARED_PREF_CUSTOM_EVENT_ENABLED, true);
+            return this.customEventEnabled;
         }
     }
 
     private boolean isCustomEvent(Map record) {
-        return !record.containsKey(EVENT_KEY_AUTO_TRACK_EVENT_PRIVATE) && !record.containsKey(EVENT_KEY_RESET_UUID_EVENT_PRIVATE);
+        return !record.containsKey(EVENT_KEY_APP_LIFECYCLE_EVENT_PRIVATE) && !record.containsKey(EVENT_KEY_RESET_UUID_EVENT_PRIVATE);
     }
 
-    private boolean isAutoEvent(Map record) {
-        return record.containsKey(EVENT_KEY_AUTO_TRACK_EVENT_PRIVATE);
+    private boolean isAppLifecycleEvent(Map record) {
+        return record.containsKey(EVENT_KEY_APP_LIFECYCLE_EVENT_PRIVATE);
     }
 
     public void disableAppInstalledEvent() {
