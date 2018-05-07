@@ -51,6 +51,7 @@ public class ExampleApp extends Application {
     TreasureData.disableLogging();
     TreasureData.initializeSharedInstance(this, "YOUR_WRITE_ONLY_API_KEY");
     TreasureData.sharedInstance.setDefaultDatabase("your_application_name");
+    TreasureData.sharedInstance.setDefaultTable("your_event_name");
     TreasureData.sharedInstance.enableAutoAppendUniqId();
     TreasureData.sharedInstance.enableAutoAppendModelInformation();
     TreasureData.sharedInstance.enableAutoAppendAppInformation();
@@ -239,8 +240,8 @@ In this case, you can get the current session ID using `TreasureData.getSessionI
 
 ### Track app lifecycle events automatically
 
-App lifecycle event tracking is optional and not able by default. You can track app lifecycle events automatically using :
-`TreasureData#trackAppLifecycleEvents(String table)`
+App lifecycle event tracking is optional and not enable by default. You can track app lifecycle events automatically using :
+`TreasureData#enableAppLifecycleEvent()`
 
 App lifecycle events include : Application Install, Application Open, Application Update. You can disable the individual core events as the following:
 
@@ -252,10 +253,11 @@ App lifecycle events include : Application Install, Application Open, Applicatio
 
 Depending on the countries where you sell your app (e.g. the EU), you may need to offer the ability for users to opt-out of tracking data inside your app.
 
-- To turn off auto tracking events (when application lifecycle event tracking is enable) : `TreasureData#disableAutoEvents`. To turn on it again : `TreasureData#enableAutoEvents`
-- To turn off custom events (the events you are tracking by `TreasureData#addEvent`, `TreasureData#addEventWithCallback` ) : `TreasureData#disableCustomEvents`. To turn on it again :  `TreasureData#enableCustomEvents`
+- To turn off auto tracking events (when application lifecycle event tracking is enable) : `TreasureData#disableAppLifecycleEvent()`.
+- To turn off custom events (the events you are tracking by `TreasureData#addEvent`, `TreasureData#addEventWithCallback` ) : `TreasureData#disableCustomEvent`. To turn on it again :  `TreasureData#enableCustomEvent`
 
-The functions have effects across device reboots, so you can simply call this once during your application.
+You can query the state of tracking events by using : `TreasureData#isAppLifecycleEventEnabled()` and `TreasureData#isCustomEventEnabled()`
+The states have effects across device reboots, app updates, so you can simply call this once during your application.
 
 ## About error codes
 
@@ -311,8 +313,7 @@ UUID of the device will be added to each event automatically if you call `Treasu
 
 It outputs the value as a column name `td_uuid`.
 
-You can reset the UUID using `TreasureData#resetUniqId()`.
-Also, you can use `TreasureData#resetUUID(String table)` to send `td_reset_uuid` event with old uuid to the target table.
+You can reset the UUID and send `forget_device_uuid` event with old UUID using `TreasureData#resetUniqId()`. 
 
 ### Adding an UUID to each event record automatically
 
