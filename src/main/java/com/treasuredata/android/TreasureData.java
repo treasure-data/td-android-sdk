@@ -1,16 +1,23 @@
 package com.treasuredata.android;
 
-import android.app.*;
-import android.content.*;
-import android.content.pm.*;
-import android.os.*;
-import io.keen.client.java.*;
-import org.komamitsu.android.util.*;
+import android.app.Activity;
+import android.app.Application;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.os.Build;
+import android.os.Bundle;
+import io.keen.client.java.KeenClient;
+import org.komamitsu.android.util.Log;
 
-import java.io.*;
-import java.util.*;
-import java.util.concurrent.atomic.*;
-import java.util.regex.*;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.UUID;
+import java.util.WeakHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Pattern;
 
 public class TreasureData {
     private static final String TAG = TreasureData.class.getSimpleName();
