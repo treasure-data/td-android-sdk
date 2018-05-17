@@ -33,6 +33,7 @@ public class TreasureData {
     private static final String SHARED_PREF_KEY_FIRST_RUN = "first_run";
     private static final String SHARED_PREF_APP_LIFECYCLE_EVENT_ENABLED = "app_lifecycle_event_enabled";
     private static final String SHARED_PREF_CUSTOM_EVENT_ENABLED = "custom_event_enabled";
+    private static final String SHARED_PREF_KEY_IS_UNITY = "TDIsUnity";
     private static final String EVENT_KEY_UUID = "td_uuid";
     private static final String EVENT_KEY_SESSION_ID = "td_session_id";
     private static final String EVENT_KEY_SESSION_EVENT = "td_session_event";
@@ -50,6 +51,7 @@ public class TreasureData {
     private static final String EVENT_KEY_LOCALE_COUNTRY = "td_locale_country";
     private static final String EVENT_KEY_LOCALE_LANG = "td_locale_lang";
     private static final String EVENT_KEY_EVENT = "td_android_event";
+    private static final String EVENT_KEY_UNITY_EVENT = "td_unity_event";
     private static final String EVENT_KEY_APP_LIFECYCLE_EVENT_PRIVATE = "__is_app_lifecycle_event";
     private static final String EVENT_KEY_RESET_UUID_EVENT_PRIVATE = "__is_reset_uuid_event";
     private static final String EVENT_KEY_SERVERSIDE_UPLOAD_TIMESTAMP = "#SSUT";
@@ -154,7 +156,7 @@ public class TreasureData {
         // Send forget_device_uuid event
         Map record = new HashMap<String, Object>();
         uuid = getUUID();
-        record.put(EVENT_KEY_EVENT, EVENT_RESET_UUID);
+        record.put(isOnUnity() ? EVENT_KEY_UNITY_EVENT : EVENT_KEY_EVENT, EVENT_RESET_UUID);
         record.put(EVENT_KEY_UUID, uuid);
         record.put(EVENT_KEY_RESET_UUID_EVENT_PRIVATE, true);
         addEvent(targetDatabase, targetTable, record);
@@ -819,6 +821,14 @@ public class TreasureData {
 
     public void disableAutoAppendRecordUUID() {
         autoAppendRecordUUIDColumn = null;
+    }
+
+    private boolean isOnUnity() {
+        return context
+                // Default preference name of Unity's PlayerPrefs
+                .getSharedPreferences(context.getPackageName() + ".v2.playerprefs", Context.MODE_PRIVATE)
+                // Since Unity's PlayerPrefs doesn't support boolean
+                .getInt(SHARED_PREF_KEY_IS_UNITY, 0) == 1;
     }
 
     // Only for testing
