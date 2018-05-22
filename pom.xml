@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.treasuredata</groupId>
   <artifactId>td-android-sdk</artifactId>
-  <version>0.1.18</version>
+  <version>0.1.19-SNAPSHOT</version>
   <name>Android SDK for Treasure Data Cloud</name>
   <description>Android SDK for Treasure Data Cloud.</description>
   <url>https://github.com/treasure-data/td-android-sdk</url>
