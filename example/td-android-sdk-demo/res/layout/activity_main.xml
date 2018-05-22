@@ -12,6 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="48dip"
         android:layout_alignParentTop="true">
+
         <TextView
             android:id="@+id/navi_news"
             android:text="News"
@@ -32,6 +33,7 @@
             android:text="Upload"
             style="@style/NaviLabel"
             android:background="#ffaacda0"/>
+
     </LinearLayout>
     <LinearLayout
         android:orientation="horizontal"
@@ -40,7 +42,6 @@
         android:layout_height="1dip"
         android:layout_below="@id/navi"
     />
-
     <TextView
         android:id="@+id/title"
         android:text="TD Android SDK Demo"
@@ -63,6 +64,39 @@
         android:layout_marginTop="12dip"
         android:layout_marginLeft="28dip"
         android:layout_marginRight="28dip"
-        android:layout_marginBottom="28dip"
         android:src="@drawable/wine"/>
+
+    <LinearLayout
+            android:id="@+id/nav"
+            android:layout_width="match_parent"
+            android:layout_height="36dip"
+            android:layout_alignParentBottom="true"
+            android:layout_below="@id/image"
+            android:background="#FFFFFF"
+            android:orientation="horizontal">
+
+        <CheckBox
+                android:id="@+id/enable_auto_events"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="12dip"
+                android:layout_weight="1"
+                android:text="Enable Auto Events"
+                android:textColor="#999999" />
+
+        <CheckBox
+                android:id="@+id/enable_custom_events"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Enable Custom Events"
+                android:textColor="#999999" />
+
+        <Button
+                android:id="@+id/reset"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginRight="12dip"
+                android:text="Reset UUID" />
+    </LinearLayout>
 </RelativeLayout>

@@ -13,6 +13,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 public class TreasureDataTest extends TestCase {
@@ -96,7 +97,7 @@ public class TreasureDataTest extends TestCase {
         when(context.getApplicationContext()).thenReturn(application);
 
         client = new MockTDClient(DUMMY_API_KEY);
-        td = createTreasureData(context, client);
+        td = spy(createTreasureData(context, client));
     }
 
     public void tearDown() {
@@ -153,13 +154,40 @@ public class TreasureDataTest extends TestCase {
     public void testApiKey() throws IOException, NoSuchAlgorithmException {
         String apikey1 = DUMMY_API_KEY + "1";
         MockTDClient client1 = new MockTDClient(apikey1);
-        // System.out.println("client1.getDefaultProject().getProjectId()=" + client1.getDefaultProject().getProjectId());
 
         String apikey2 = DUMMY_API_KEY + "2";
         MockTDClient client2 = new MockTDClient(apikey2);
-        // System.out.println("client2.getDefaultProject().getProjectId()=" + client2.getDefaultProject().getProjectId());
 
         assertNotSame(client1.getDefaultProject().getProjectId(), client2.getDefaultProject().getProjectId());
+    }
+
+    public void testAddEventAndUploadCustomEventDisabled() throws IOException {
+        Map<String, Object> records = new HashMap<String, Object>();
+        records.put("key", "val");
+        when(td.isCustomEventEnabled()).thenReturn(false);
+        td.addEvent("db_", "tbl", records);
+        td.uploadEvents();
+        assertEquals(0, client.addedEvent.size());
+    }
+
+    public void testAddEventAndUploadAppLifecycleEventWhileCustomEventDisabled() throws IOException {
+        Map<String, Object> records = new HashMap<String, Object>();
+        records.put("key", "val");
+        records.put("__is_app_lifecycle_event", "true");
+        when(td.isAppLifecycleEventEnabled()).thenReturn(true);
+        when(td.isCustomEventEnabled()).thenReturn(false);
+        td.addEvent("db_", "tbl", records);
+        td.uploadEvents();
+        assertEquals(1, client.addedEvent.size());
+    }
+
+    public void testAddEventAndUploadCustomEventEnabled() throws IOException {
+        Map<String, Object> records = new HashMap<String, Object>();
+        records.put("key", "val");
+        when(td.isCustomEventEnabled()).thenReturn(true);
+        td.addEvent("db_", "tbl", records);
+        td.uploadEvents();
+        assertEquals(1, client.addedEvent.size());
     }
 
     public void testAddEventAndUploadEventsWithoutCallBack() throws IOException {

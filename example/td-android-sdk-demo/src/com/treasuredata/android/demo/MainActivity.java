@@ -8,6 +8,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
+import android.widget.CheckBox;
 import android.widget.Toast;
 import com.treasuredata.android.TDCallback;
 import com.treasuredata.android.TreasureData;
@@ -25,39 +26,6 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        if (TreasureData.sharedInstance().isFirstRun(this)) {
-            Map<String, Object> event = new HashMap<String, Object>();
-            event.put("first_run", true);
-            event.put("app_name", "td-android-sdk-demo");
-            TreasureData.sharedInstance().addEventWithCallback("demotbl", event, new TDCallback()
-            {
-                @Override
-                public void onSuccess()
-                {
-                    TreasureData.sharedInstance().uploadEventsWithCallback(new TDCallback()
-                    {
-                        @Override
-                        public void onSuccess()
-                        {
-                            TreasureData.sharedInstance().clearFirstRun(MainActivity.this);
-                        }
-
-                        @Override
-                        public void onError(String errorCode, Exception e)
-                        {
-                            Log.w(TAG, "TreasureData.uploadEvent:onError errorCode=" + errorCode + ", ex=" + e);
-                        }
-                    });
-                }
-
-                @Override
-                public void onError(String errorCode, Exception e)
-                {
-                    Log.w(TAG, "TreasureData.addEvent:onError errorCode=" + errorCode + ", ex=" + e);
-                }
-            });
-        }
 
         // For default callback, optional.
         TreasureData.sharedInstance().setAddEventCallBack(addEventCallback);
@@ -115,6 +83,36 @@ public class MainActivity extends Activity {
                 return false;
             }
         });
+
+        CheckBox checkBox = (CheckBox) findViewById(R.id.enable_auto_events);
+        checkBox.setChecked(TreasureData.sharedInstance().isAppLifecycleEventEnabled());
+
+        checkBox.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                CheckBox checkBox = (CheckBox)view;
+                TreasureData.sharedInstance().enableAppLifecycleEvent(checkBox.isChecked());
+            }
+        });
+
+        checkBox = (CheckBox) findViewById(R.id.enable_custom_events);
+        checkBox.setChecked(TreasureData.sharedInstance().isCustomEventEnabled());
+
+        checkBox.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                CheckBox checkBox = (CheckBox)view;
+                TreasureData.sharedInstance().enableCustomEvent(checkBox.isChecked());
+            }
+        });
+
+        findViewById(R.id.reset).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                addEventCallback.eventName = "reset UUID";
+                TreasureData.sharedInstance().resetUniqId();
+            }
+        });
     }
 
     @Override
@@ -156,14 +154,26 @@ public class MainActivity extends Activity {
     class UploadEventsCallback implements TDCallback {
         @Override
         public void onSuccess() {
-            String message = "TreasureData.uploadEvents:onSuccess";
+            final String message = "TreasureData.uploadEvents:onSuccess";
             Log.d(TAG, message);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
+                }
+            });
         }
 
         @Override
         public void onError(String errorCode, Exception e) {
-            String message = "TreasureData.uploadEvents:onError[" + errorCode + ": errorCode=" + errorCode + ", ex=" + e + "]";
+            final String message = "TreasureData.uploadEvents:onError[" + errorCode + ": errorCode=" + errorCode + ", ex=" + e + "]";
             Log.d(TAG, message);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
+                }
+            });
         }
     }
 

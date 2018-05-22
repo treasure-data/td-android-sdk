@@ -1,5 +1,12 @@
 # Change Log
 
+## Version 0.1.18
+_2018-08-03_
+
+* Auto event tracking is optional and off by default
+* Add functions for auto tracking events and custom event opt out
+* Add Opt Out example for td-android-sdk-demo
+
 ## Version 0.1.17
 _2018-03-01_
 
