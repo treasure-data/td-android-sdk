@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.os.Build;
 import android.os.Bundle;
+import com.treasuredata.android.internal.InAppPurchaseEventActivityLifecycleTracker;
 import io.keen.client.java.KeenClient;
 import org.komamitsu.android.util.Log;
 
@@ -68,6 +69,7 @@ public class TreasureData {
         TDHttpHandler.VERSION = TreasureData.VERSION;
     }
 
+    private static Context applicationContext;
     private static TreasureData sharedInstance;
     private final static WeakHashMap<Context, Session> sessions = new WeakHashMap<Context, Session>();
 
@@ -116,6 +118,10 @@ public class TreasureData {
             }
         }
         return sharedInstance;
+    }
+
+    public static Context getApplicationContext() {
+        return applicationContext;
     }
 
     private SharedPreferences getSharedPreference(Context context) {
@@ -184,7 +190,7 @@ public class TreasureData {
     }
 
     public TreasureData(Context context, String apiKey) {
-        Context applicationContext = context.getApplicationContext();
+        applicationContext = context.getApplicationContext();
         this.context = applicationContext;
         this.uuid = getUUID();
         this.appLifecycleEventEnabled = getAppLifecycleEventEnabled();
@@ -260,6 +266,8 @@ public class TreasureData {
                 }
             });
         }
+
+        InAppPurchaseEventActivityLifecycleTracker.track(this);
     }
 
     private void trackApplicationLifecycleEvents() {
