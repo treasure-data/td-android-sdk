@@ -4,7 +4,9 @@ public class InAppPurchaseConstants {
     public static final String EVENT_KEY = "td_android_event";
     public static final String IAP_EVENT_NAME = "TD_ANDROID_IN_APP_PURCHASE";
     public static final String IAP_PRODUCT_ID = "td_iap_product_id";
+    public static final String IAP_ORDER_ID = "td_iap_order_id";
     public static final String IAP_PRODUCT_PRICE = "td_iap_product_price";
+    public static final String IAP_PRODUCT_PRICE_AMOUNT_MICROS= "td_iap_product_price_amount_micros";
     public static final String IAP_PRODUCT_CURRENCY = "td_iap_product_currency";
     public static final String IAP_PURCHASE_TIME = "td_iap_purchase_time";
     public static final String IAP_PURCHASE_TOKEN = "td_iap_purchase_token";

@@ -168,7 +168,7 @@ public class InAppPurchaseEventActivityLifecycleTracker {
                 context, skuList, inAppBillingObj, INAPP);
 
         for (Map.Entry<String, String> entry : skuDetailsMap.entrySet()) {
-            String purchase = entry.getKey();
+            String purchase = purchaseMap.get(entry.getKey());
             String skuDetails = entry.getValue();
             trackPurchaseInapp(purchase, skuDetails);
         }
@@ -182,8 +182,10 @@ public class InAppPurchaseEventActivityLifecycleTracker {
             record.put(InAppPurchaseConstants.EVENT_KEY, InAppPurchaseConstants.IAP_EVENT_NAME);
 
             String productId = purchaseJSON.getString("productId");
+            String orderId = purchaseJSON.getString("orderId");
             String title = skuDetailsJSON.optString("title");
-            BigDecimal price = new BigDecimal(skuDetailsJSON.getLong("price_amount_micros") / 1000000.0);
+            String price = skuDetailsJSON.getString("price_amount_micros");
+            Long priceAmountMicros = skuDetailsJSON.getLong("price_amount_micros");
             String currency = skuDetailsJSON.getString("price_currency_code");
             String description = skuDetailsJSON.optString("description");
             String type = skuDetailsJSON.optString("type");
@@ -192,8 +194,10 @@ public class InAppPurchaseEventActivityLifecycleTracker {
             String packageName = purchaseJSON.optString("packageName");
 
             record.put(InAppPurchaseConstants.IAP_PRODUCT_ID, productId);
+            record.put(InAppPurchaseConstants.IAP_ORDER_ID, orderId);
             record.put(InAppPurchaseConstants.IAP_PRODUCT_TITLE, title);
             record.put(InAppPurchaseConstants.IAP_PRODUCT_PRICE, price);
+            record.put(InAppPurchaseConstants.IAP_PRODUCT_PRICE_AMOUNT_MICROS, priceAmountMicros);
             record.put(InAppPurchaseConstants.IAP_PRODUCT_CURRENCY, currency);
             record.put(InAppPurchaseConstants.IAP_PRODUCT_DESCRIPTION, description);
             record.put(InAppPurchaseConstants.IAP_PRODUCT_TYPE, type);
@@ -219,7 +223,7 @@ public class InAppPurchaseEventActivityLifecycleTracker {
             }
 
             // TODO: Get default data base and table from TreasureData
-            treasureData.addEvent("td", "td_android", record);
+            treasureData.addEvent("vv_td_android", "td_android", record);
         } catch (JSONException e) {
             Log.e(TAG, "Error parsing in-app subscription data.", e);
         }
