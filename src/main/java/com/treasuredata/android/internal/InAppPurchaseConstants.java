@@ -16,7 +16,7 @@ public class InAppPurchaseConstants {
     public static final String IAP_PACKAGE_NAME = "td_iap_package_name";
     public static final String IAP_SUBSCRIPTION_AUTORENEWING = "td_iap_subs_auto_renewing";
     public static final String IAP_SUBSCRIPTION_PERIOD = "td_iap_subs_period";
-    public static final String IAP_FREE_TRIAL_PERIOD = "td_free_trial_period";
-    public static final String IAP_INTRO_PRICE_AMOUNT_MICROS = "td_intro_price_amount_micros";
-    public static final String IAP_INTRO_PRICE_CYCLES = "td_intro_price_cycles";
+    public static final String IAP_FREE_TRIAL_PERIOD = "td_iap_free_trial_period";
+    public static final String IAP_INTRO_PRICE_AMOUNT_MICROS = "td_iap_intro_price_amount_micros";
+    public static final String IAP_INTRO_PRICE_CYCLES = "td_iap_intro_price_cycles";
 }
