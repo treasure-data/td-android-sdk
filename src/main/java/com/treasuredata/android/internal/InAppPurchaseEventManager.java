@@ -23,14 +23,10 @@ public class InAppPurchaseEventManager {
             "td_sdk_sku_details";
     private static final String PURCHASE_INAPP_SHARED_PREF_NAME =
             "td_sdk_sku_purchase_inapp";
-    private static final String PURCHASE_SUBS_SHARED_PREF_NAME =
-            "td_sdk_sku_purchase_subs";
     private static final SharedPreferences skuDetailSharedPrefs =
             TreasureData.getApplicationContext().getSharedPreferences(SKU_DETAILS_SHARED_PREF_NAME, Context.MODE_PRIVATE);
     private static final SharedPreferences purchaseInappSharedPrefs =
             TreasureData.getApplicationContext().getSharedPreferences(PURCHASE_INAPP_SHARED_PREF_NAME, Context.MODE_PRIVATE);
-    private static final SharedPreferences purchaseSubsSharedPrefs =
-            TreasureData.getApplicationContext().getSharedPreferences(PURCHASE_SUBS_SHARED_PREF_NAME, Context.MODE_PRIVATE);
 
     private static final int PURCHASE_EXPIRE_TIME_SEC = 12 * 60 * 60; // 12 h
 
@@ -123,8 +119,8 @@ public class InAppPurchaseEventManager {
         long nowSec = System.currentTimeMillis() / 1000L;
 
         SharedPreferences.Editor editor = skuDetailSharedPrefs.edit();
-        for (Map.Entry<String, String> pair : skuDetailsMap.entrySet()) {
-            editor.putString(pair.getKey(), nowSec + ";" + pair.getValue());
+        for (Map.Entry<String, String> entry : skuDetailsMap.entrySet()) {
+            editor.putString(entry.getKey(), nowSec + ";" + entry.getValue());
         }
 
         editor.apply();
