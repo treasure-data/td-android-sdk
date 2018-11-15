@@ -176,9 +176,10 @@ public class InAppPurchaseEventActivityLifecycleTracker {
 
     private static void trackPurchaseInapp(String purchase, String skuDetails) {
         try {
-            Map<String, Object> record = new HashMap<>();
             JSONObject purchaseJSON = new JSONObject(purchase);
             JSONObject skuDetailsJSON = new JSONObject(skuDetails);
+            Map<String, Object> record = new HashMap<>();
+            record.put(InAppPurchaseConstants.EVENT_KEY, InAppPurchaseConstants.IAP_EVENT_NAME);
 
             String productId = purchaseJSON.getString("productId");
             String title = skuDetailsJSON.optString("title");
