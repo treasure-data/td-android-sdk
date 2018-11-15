@@ -183,7 +183,7 @@ public class InAppPurchaseEventActivityLifecycleTracker {
             String productId = purchaseJSON.getString("productId");
             String orderId = purchaseJSON.getString("orderId");
             String title = skuDetailsJSON.optString("title");
-            String price = skuDetailsJSON.getString("price_amount_micros");
+            String price = skuDetailsJSON.getString("price");
             Long priceAmountMicros = skuDetailsJSON.getLong("price_amount_micros");
             String currency = skuDetailsJSON.getString("price_currency_code");
             String description = skuDetailsJSON.optString("description");
@@ -222,7 +222,7 @@ public class InAppPurchaseEventActivityLifecycleTracker {
             }
 
             // TODO: Get default data base and table from TreasureData
-            treasureData.addEvent("vv_td_android", "td_android", record);
+            treasureData.addEvent("td_android", "iap_events", record);
         } catch (JSONException e) {
             Log.e(TAG, "Error parsing in-app subscription data.", e);
         }
