@@ -13,7 +13,6 @@ import com.treasuredata.android.TreasureData;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -217,7 +216,7 @@ public class InAppPurchaseEventActivityLifecycleTracker {
                 record.put(InAppPurchaseConstants.IAP_FREE_TRIAL_PERIOD, freeTrialPeriod);
                 record.put(InAppPurchaseConstants.IAP_INTRO_PRICE_CYCLES, introductoryPriceCycles);
                 if (!introductoryPriceCycles.isEmpty()) {
-                    BigDecimal introductoryPriceAmountMicros = new BigDecimal(skuDetailsJSON.getLong("introductoryPriceAmountMicros"));
+                    Long introductoryPriceAmountMicros = skuDetailsJSON.getLong("introductoryPriceAmountMicros");
                     record.put(InAppPurchaseConstants.IAP_INTRO_PRICE_AMOUNT_MICROS, introductoryPriceAmountMicros);
                 }
             }
