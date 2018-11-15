@@ -8,7 +8,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class InAppPurchaseEventManager {
     private static final String TAG = InAppPurchaseEventManager.class.getSimpleName();
@@ -31,6 +33,9 @@ public class InAppPurchaseEventManager {
             TreasureData.getApplicationContext().getSharedPreferences(PURCHASE_SUBS_SHARED_PREF_NAME, Context.MODE_PRIVATE);
 
     private static final int PURCHASE_EXPIRE_TIME_SEC = 12 * 60 * 60; // 12 h
+
+    // SKU detail cache setting
+    private static final int SKU_DETAIL_EXPIRE_TIME_SEC = 12 * 60 * 60; // 12 h
 
     private InAppPurchaseEventManager() {
 
@@ -72,5 +77,56 @@ public class InAppPurchaseEventManager {
         editor.apply();
 
         return filteredPurchases;
+    }
+
+    public static Map<String, String> getAndCacheSkuDetails(
+            Context context, ArrayList<String> skuList,
+            Object inAppBillingObj, String type) {
+
+        Map<String, String> skuDetailsMap = readSkuDetailsFromCache(skuList);
+
+        ArrayList<String> unresolvedSkuList = new ArrayList<>();
+        for (String sku : skuList) {
+            if (!skuDetailsMap.containsKey(sku)) {
+                unresolvedSkuList.add(sku);
+            }
+        }
+
+        skuDetailsMap.putAll(InAppBillingDelegate.getSkuDetails(
+                context, inAppBillingObj, unresolvedSkuList,  type));
+        writeSkuDetailsToCache(skuDetailsMap);
+
+        return skuDetailsMap;
+    }
+
+    private static Map<String, String> readSkuDetailsFromCache(
+            ArrayList<String> skuList) {
+
+        Map<String, String> skuDetailsMap = new HashMap<>();
+        long nowSec = System.currentTimeMillis() / 1000L;
+
+        for (String sku : skuList) {
+            String rawString = skuDetailSharedPrefs.getString(sku, null);
+            if (rawString != null) {
+                String[] splitted = rawString.split(";", 2);
+                long timeSec = Long.parseLong(splitted[0]);
+                if (nowSec - timeSec < SKU_DETAIL_EXPIRE_TIME_SEC) {
+                    skuDetailsMap.put(sku, splitted[1]);
+                }
+            }
+        }
+
+        return skuDetailsMap;
+    }
+
+    private static void writeSkuDetailsToCache(Map<String, String> skuDetailsMap) {
+        long nowSec = System.currentTimeMillis() / 1000L;
+
+        SharedPreferences.Editor editor = skuDetailSharedPrefs.edit();
+        for (Map.Entry<String, String> pair : skuDetailsMap.entrySet()) {
+            editor.putString(pair.getKey(), nowSec + ";" + pair.getValue());
+        }
+
+        editor.apply();
     }
 }

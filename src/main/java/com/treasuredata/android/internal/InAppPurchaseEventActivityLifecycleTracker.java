@@ -13,6 +13,7 @@ import com.treasuredata.android.TreasureData;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,6 +21,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class InAppPurchaseEventActivityLifecycleTracker {
     private static final String TAG = InAppPurchaseEventActivityLifecycleTracker.class.getSimpleName();
+
+    // Purchase types
+    private static final String SUBSCRIPTION = "subs";
+    private static final String INAPP = "inapp";
 
     private static final String BILLING_ACTIVITY_NAME =
             "com.android.billingclient.api.ProxyBillingActivity";
@@ -157,6 +162,65 @@ public class InAppPurchaseEventActivityLifecycleTracker {
             catch (JSONException e){
                 Log.e(TAG, "Error parsing in-app purchase data.", e);
             }
+        }
+
+        final Map<String, String> skuDetailsMap = InAppPurchaseEventManager.getAndCacheSkuDetails(
+                context, skuList, inAppBillingObj, INAPP);
+
+        for (Map.Entry<String, String> entry : skuDetailsMap.entrySet()) {
+            String purchase = entry.getKey();
+            String skuDetails = entry.getValue();
+            trackPurchaseInapp(purchase, skuDetails);
+        }
+    }
+
+    private static void trackPurchaseInapp(String purchase, String skuDetails) {
+        try {
+            Map<String, Object> record = new HashMap<>();
+            JSONObject purchaseJSON = new JSONObject(purchase);
+            JSONObject skuDetailsJSON = new JSONObject(skuDetails);
+
+            String productId = purchaseJSON.getString("productId");
+            String title = skuDetailsJSON.optString("title");
+            BigDecimal price = new BigDecimal(skuDetailsJSON.getLong("price_amount_micros") / 1000000.0);
+            String currency = skuDetailsJSON.getString("price_currency_code");
+            String description = skuDetailsJSON.optString("description");
+            String type = skuDetailsJSON.optString("type");
+            Long purchaseTime = purchaseJSON.getLong("purchaseTime");
+            String purchaseToken = purchaseJSON.getString("purchaseToken");
+            String packageName = purchaseJSON.optString("packageName");
+
+            record.put(InAppPurchaseConstants.IAP_PRODUCT_ID, productId);
+            record.put(InAppPurchaseConstants.IAP_PRODUCT_TITLE, title);
+            record.put(InAppPurchaseConstants.IAP_PRODUCT_PRICE, price);
+            record.put(InAppPurchaseConstants.IAP_PRODUCT_CURRENCY, currency);
+            record.put(InAppPurchaseConstants.IAP_PRODUCT_DESCRIPTION, description);
+            record.put(InAppPurchaseConstants.IAP_PRODUCT_TYPE, type);
+            record.put(InAppPurchaseConstants.IAP_PURCHASE_TIME, purchaseTime);
+            record.put(InAppPurchaseConstants.IAP_PURCHASE_TOKEN, purchaseToken);
+            record.put(InAppPurchaseConstants.IAP_PACKAGE_NAME, packageName);
+
+            if (type.equals(SUBSCRIPTION)) {
+                Boolean autoRenewing = purchaseJSON.optBoolean("autoRenewing",
+                                false);
+                String subscriptionPeriod = skuDetailsJSON.optString("subscriptionPeriod");
+                String freeTrialPeriod = skuDetailsJSON.optString("freeTrialPeriod");
+                String introductoryPriceCycles = skuDetailsJSON.optString("introductoryPriceCycles");
+
+                record.put(InAppPurchaseConstants.IAP_SUBSCRIPTION_AUTORENEWING, autoRenewing);
+                record.put(InAppPurchaseConstants.IAP_SUBSCRIPTION_PERIOD, subscriptionPeriod);
+                record.put(InAppPurchaseConstants.IAP_FREE_TRIAL_PERIOD, freeTrialPeriod);
+                record.put(InAppPurchaseConstants.IAP_INTRO_PRICE_CYCLES, introductoryPriceCycles);
+                if (!introductoryPriceCycles.isEmpty()) {
+                    BigDecimal introductoryPriceAmountMicros = new BigDecimal(skuDetailsJSON.getLong("introductoryPriceAmountMicros"));
+                    record.put(InAppPurchaseConstants.IAP_INTRO_PRICE_AMOUNT_MICROS, introductoryPriceAmountMicros);
+                }
+            }
+
+            // TODO: Get default data base and table from TreasureData
+            treasureData.addEvent("td", "td_android", record);
+        } catch (JSONException e) {
+            Log.e(TAG, "Error parsing in-app subscription data.", e);
         }
     }
 }
