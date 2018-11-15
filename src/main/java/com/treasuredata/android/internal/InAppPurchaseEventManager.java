@@ -66,7 +66,7 @@ public class InAppPurchaseEventManager {
                 editor.putString(sku, purchaseToken);
                 filteredPurchases.add(purchase);
             } catch (JSONException e) {
-                Log.e(TAG, "Unable to parse purchase, not json object: ", e);
+                Log.e(TAG, "Unable to parse purchase, not a json object: ", e);
             }
         }
 

@@ -159,7 +159,7 @@ public class InAppPurchaseEventActivityLifecycleTracker {
                 skuList.add(sku);
             }
             catch (JSONException e){
-                Log.e(TAG, "Error parsing in-app purchase data.", e);
+                Log.e(TAG, "Unable to parse purchase, not a json object:.", e);
             }
         }
 
@@ -224,7 +224,7 @@ public class InAppPurchaseEventActivityLifecycleTracker {
             // TODO: Get default data base and table from TreasureData
             treasureData.addEvent("td_android", "iap_events", record);
         } catch (JSONException e) {
-            Log.e(TAG, "Error parsing in-app subscription data.", e);
+            Log.e(TAG, "Unable to parse purchase, not a json object:", e);
         }
     }
 }
