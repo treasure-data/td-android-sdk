@@ -181,7 +181,7 @@ public class InAppPurchaseEventActivityLifecycleTracker {
             record.put(InAppPurchaseConstants.EVENT_KEY, InAppPurchaseConstants.IAP_EVENT_NAME);
 
             String productId = purchaseJSON.getString("productId");
-            String orderId = purchaseJSON.getString("orderId");
+            String orderId = purchaseJSON.optString("orderId");
             String title = skuDetailsJSON.optString("title");
             String price = skuDetailsJSON.getString("price");
             Long priceAmountMicros = skuDetailsJSON.getLong("price_amount_micros");
@@ -222,7 +222,7 @@ public class InAppPurchaseEventActivityLifecycleTracker {
             }
 
             // TODO: Get default data base and table from TreasureData
-            treasureData.addEvent("td_android", "iap_events", record);
+            treasureData.addEvent("vv_td_android", "iap_events", record);
         } catch (JSONException e) {
             Log.e(TAG, "Unable to parse purchase, not a json object:", e);
         }
