@@ -12,12 +12,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.treasuredata.android.internal.InAppPurchaseConstants.INAPP;
+
 public class InAppPurchaseEventManager {
     private static final String TAG = InAppPurchaseEventManager.class.getSimpleName();
-
-    // Purchase types
-    private static final String SUBSCRIPTION = "subs";
-    private static final String INAPP = "inapp";
 
     private static final String SKU_DETAILS_SHARED_PREF_NAME =
             "td_sdk_sku_details";
@@ -37,13 +35,13 @@ public class InAppPurchaseEventManager {
 
     }
 
-    public static ArrayList<String> getPurchasesInapp(Context context, Object inAppBillingObj) {
+    public static List<String> getPurchasesInapp(Context context, Object inAppBillingObj) {
 
         return filterAndCachePurchasesInapp(InAppBillingDelegate.getPurchases(context, inAppBillingObj, INAPP));
     }
 
-    private static ArrayList<String> filterAndCachePurchasesInapp(List<String> purchases) {
-        ArrayList<String> filteredPurchases = new ArrayList<>();
+    private static List<String> filterAndCachePurchasesInapp(List<String> purchases) {
+        List<String> filteredPurchases = new ArrayList<>();
         SharedPreferences.Editor editor = purchaseInappSharedPrefs.edit();
         long nowSec = System.currentTimeMillis() / 1000L;
         for (String purchase : purchases) {
@@ -76,8 +74,7 @@ public class InAppPurchaseEventManager {
     }
 
     public static Map<String, String> getAndCacheSkuDetails(
-            Context context, ArrayList<String> skuList,
-            Object inAppBillingObj, String type) {
+            Context context, Object inAppBillingObj, List<String> skuList, String type) {
 
         Map<String, String> skuDetailsMap = readSkuDetailsFromCache(skuList);
 
@@ -96,7 +93,7 @@ public class InAppPurchaseEventManager {
     }
 
     private static Map<String, String> readSkuDetailsFromCache(
-            ArrayList<String> skuList) {
+            List<String> skuList) {
 
         Map<String, String> skuDetailsMap = new HashMap<>();
         long nowSec = System.currentTimeMillis() / 1000L;

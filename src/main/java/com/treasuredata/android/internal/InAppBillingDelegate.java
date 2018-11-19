@@ -12,6 +12,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class InAppBillingDelegate {
@@ -85,8 +86,8 @@ public class InAppBillingDelegate {
      * purchase information and a signature of the data to be validated.
      * This will return all SKUs that have been purchased that have not been consumed.
      */
-    public static ArrayList<String> getPurchases(Context context, Object inAppBillingObj, String type) {
-        ArrayList<String> purchases = new ArrayList<>();
+    public static List<String> getPurchases(Context context, Object inAppBillingObj, String type) {
+        List<String> purchases = new ArrayList<>();
 
         if (inAppBillingObj == null) {
             return purchases;
@@ -130,8 +131,8 @@ public class InAppBillingDelegate {
      * Returns the most recent purchase made by the user for each SKU, even if that purchase is
      * expired, canceled, or consumed.
      */
-    public static ArrayList<String> getPurchaseHistory(Context context, Object inAppBillingObj, String type) {
-        ArrayList<String> purchases = new ArrayList<>();
+    public static List<String> getPurchaseHistory(Context context, Object inAppBillingObj, String type) {
+        List<String> purchases = new ArrayList<>();
 
         if (!isBillingSupported(context, inAppBillingObj, type)) {
             return purchases;
@@ -156,7 +157,7 @@ public class InAppBillingDelegate {
             Bundle purchaseBundle = (Bundle) resultObject;
             int response = purchaseBundle.getInt(RESPONSE_CODE);
             if (response == 0) {
-                ArrayList<String> purchaseDataList =
+                List<String> purchaseDataList =
                         purchaseBundle.getStringArrayList(INAPP_PURCHASE_DATA_LIST);
 
                 for (String purchaseData : purchaseDataList) {
@@ -216,7 +217,7 @@ public class InAppBillingDelegate {
             Bundle bundle = (Bundle) result;
             int response = bundle.getInt(RESPONSE_CODE);
             if (response == 0) {
-                ArrayList<String> skuDetailsList = bundle.getStringArrayList(DETAILS_LIST);
+                List<String> skuDetailsList = bundle.getStringArrayList(DETAILS_LIST);
                 if (skuDetailsList != null && skuList.size() == skuDetailsList.size()) {
                     for (int i = 0; i < skuList.size(); i++) {
                         skuDetailsMap.put(skuList.get(i), skuDetailsList.get(i));

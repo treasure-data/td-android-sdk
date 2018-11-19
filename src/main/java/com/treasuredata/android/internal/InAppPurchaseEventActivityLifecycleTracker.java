@@ -15,15 +15,15 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static com.treasuredata.android.internal.InAppPurchaseConstants.INAPP;
+import static com.treasuredata.android.internal.InAppPurchaseConstants.SUBSCRIPTION;
+
 public class InAppPurchaseEventActivityLifecycleTracker {
     private static final String TAG = InAppPurchaseEventActivityLifecycleTracker.class.getSimpleName();
-
-    // Purchase types
-    private static final String SUBSCRIPTION = "subs";
-    private static final String INAPP = "inapp";
 
     private static final String BILLING_ACTIVITY_NAME =
             "com.android.billingclient.api.ProxyBillingActivity";
@@ -110,7 +110,7 @@ public class InAppPurchaseEventActivityLifecycleTracker {
             @Override
             public void onActivityResumed(Activity activity) {
                 final Context context = TreasureData.getApplicationContext();
-                ArrayList<String> purchasesInapp = InAppPurchaseEventManager
+                List<String> purchasesInapp = InAppPurchaseEventManager
                         .getPurchasesInapp(context, inAppBillingObj);
 
                 trackPurchaseInapp(context, purchasesInapp);
@@ -143,13 +143,13 @@ public class InAppPurchaseEventActivityLifecycleTracker {
         return hasBillingService != null;
     }
 
-    private static void trackPurchaseInapp(final Context context, ArrayList<String> purchases) {
+    private static void trackPurchaseInapp(final Context context, List<String> purchases) {
         if (purchases.isEmpty()) {
             return;
         }
 
         final Map<String, String> purchaseMap = new HashMap<>();
-        ArrayList<String> skuList = new ArrayList<>();
+        List<String> skuList = new ArrayList<>();
         for (String purchase : purchases) {
             try {
                 JSONObject purchaseJson = new JSONObject(purchase);
@@ -164,7 +164,7 @@ public class InAppPurchaseEventActivityLifecycleTracker {
         }
 
         final Map<String, String> skuDetailsMap = InAppPurchaseEventManager.getAndCacheSkuDetails(
-                context, skuList, inAppBillingObj, INAPP);
+                context, inAppBillingObj, skuList, INAPP);
 
         for (Map.Entry<String, String> entry : skuDetailsMap.entrySet()) {
             String purchase = purchaseMap.get(entry.getKey());

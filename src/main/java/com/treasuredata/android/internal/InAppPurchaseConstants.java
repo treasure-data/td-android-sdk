@@ -1,6 +1,9 @@
 package com.treasuredata.android.internal;
 
 public class InAppPurchaseConstants {
+    // Purchase types
+    public static final String SUBSCRIPTION = "subs";
+    public static final String INAPP = "inapp";
     public static final String EVENT_KEY = "td_android_event";
     public static final String IAP_EVENT_NAME = "TD_ANDROID_IN_APP_PURCHASE";
     public static final String IAP_PRODUCT_ID = "td_iap_product_id";
