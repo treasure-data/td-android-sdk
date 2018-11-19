@@ -188,6 +188,8 @@ public class InAppPurchaseEventActivityLifecycleTracker {
             String currency = skuDetailsJSON.getString("price_currency_code");
             String description = skuDetailsJSON.optString("description");
             String type = skuDetailsJSON.optString("type");
+            Integer purchaseState = purchaseJSON.optInt("purchaseState");
+            String developerPayload = purchaseJSON.optString("developerPayload");
             Long purchaseTime = purchaseJSON.getLong("purchaseTime");
             String purchaseToken = purchaseJSON.getString("purchaseToken");
             String packageName = purchaseJSON.optString("packageName");
@@ -200,6 +202,8 @@ public class InAppPurchaseEventActivityLifecycleTracker {
             record.put(InAppPurchaseConstants.IAP_PRODUCT_CURRENCY, currency);
             record.put(InAppPurchaseConstants.IAP_PRODUCT_DESCRIPTION, description);
             record.put(InAppPurchaseConstants.IAP_PRODUCT_TYPE, type);
+            record.put(InAppPurchaseConstants.IAP_PURCHASE_STATE, purchaseState);
+            record.put(InAppPurchaseConstants.IAP_PURCHASE_DEVELOPER_PAYLOAD, developerPayload);
             record.put(InAppPurchaseConstants.IAP_PURCHASE_TIME, purchaseTime);
             record.put(InAppPurchaseConstants.IAP_PURCHASE_TOKEN, purchaseToken);
             record.put(InAppPurchaseConstants.IAP_PACKAGE_NAME, packageName);

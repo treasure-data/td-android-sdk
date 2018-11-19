@@ -13,6 +13,8 @@ public class InAppPurchaseConstants {
     public static final String IAP_PRODUCT_CURRENCY = "td_iap_product_currency";
     public static final String IAP_PURCHASE_TIME = "td_iap_purchase_time";
     public static final String IAP_PURCHASE_TOKEN = "td_iap_purchase_token";
+    public static final String IAP_PURCHASE_STATE = "td_iap_purchase_state";
+    public static final String IAP_PURCHASE_DEVELOPER_PAYLOAD = "td_iap_purchase_developer_payload";
     public static final String IAP_PRODUCT_TYPE = "td_iap_product_type";
     public static final String IAP_PRODUCT_TITLE = "td_iap_product_title";
     public static final String IAP_PRODUCT_DESCRIPTION = "td_iap_product_description";
