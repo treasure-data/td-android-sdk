@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.treasuredata.android.internal.InAppPurchaseConstants.INAPP;
+import static com.treasuredata.android.internal.InAppPurchaseConstants.SUBSCRIPTION;
 
 public class InAppPurchaseEventManager {
     private static final String TAG = InAppPurchaseEventManager.class.getSimpleName();
@@ -37,10 +38,15 @@ public class InAppPurchaseEventManager {
 
     public static List<String> getPurchasesInapp(Context context, Object inAppBillingObj) {
 
-        return filterAndCachePurchasesInapp(InAppBillingDelegate.getPurchases(context, inAppBillingObj, INAPP));
+        return filterAndCachePurchases(InAppBillingDelegate.getPurchases(context, inAppBillingObj, INAPP));
     }
 
-    private static List<String> filterAndCachePurchasesInapp(List<String> purchases) {
+    public static List<String> getPurchasesSubs(Context context, Object inAppBillingObj) {
+
+        return filterAndCachePurchases(InAppBillingDelegate.getPurchases(context, inAppBillingObj, SUBSCRIPTION));
+    }
+
+    private static List<String> filterAndCachePurchases(List<String> purchases) {
         List<String> filteredPurchases = new ArrayList<>();
         SharedPreferences.Editor editor = purchaseInappSharedPrefs.edit();
         long nowSec = System.currentTimeMillis() / 1000L;

@@ -23,5 +23,6 @@ public class InAppPurchaseConstants {
     public static final String IAP_SUBSCRIPTION_PERIOD = "td_iap_subs_period";
     public static final String IAP_FREE_TRIAL_PERIOD = "td_iap_free_trial_period";
     public static final String IAP_INTRO_PRICE_AMOUNT_MICROS = "td_iap_intro_price_amount_micros";
+    public static final String IAP_INTRO_PRICE_PERIOD = "td_iap_intro_price_period";
     public static final String IAP_INTRO_PRICE_CYCLES = "td_iap_intro_price_cycles";
 }

@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static com.treasuredata.android.internal.InAppPurchaseConstants.IAP_INTRO_PRICE_PERIOD;
 import static com.treasuredata.android.internal.InAppPurchaseConstants.INAPP;
 import static com.treasuredata.android.internal.InAppPurchaseConstants.SUBSCRIPTION;
 
@@ -113,7 +114,12 @@ public class InAppPurchaseEventActivityLifecycleTracker {
                 List<String> purchasesInapp = InAppPurchaseEventManager
                         .getPurchasesInapp(context, inAppBillingObj);
 
-                trackPurchaseInapp(context, purchasesInapp);
+                trackPurchases(context, purchasesInapp, INAPP);
+
+                List<String> purchasesSubs = InAppPurchaseEventManager
+                        .getPurchasesSubs(context, inAppBillingObj);
+
+                trackPurchases(context, purchasesSubs, SUBSCRIPTION);
             }
 
             @Override
@@ -143,7 +149,7 @@ public class InAppPurchaseEventActivityLifecycleTracker {
         return hasBillingService != null;
     }
 
-    private static void trackPurchaseInapp(final Context context, List<String> purchases) {
+    private static void trackPurchases(final Context context, List<String> purchases, String type) {
         if (purchases.isEmpty()) {
             return;
         }
@@ -164,16 +170,16 @@ public class InAppPurchaseEventActivityLifecycleTracker {
         }
 
         final Map<String, String> skuDetailsMap = InAppPurchaseEventManager.getAndCacheSkuDetails(
-                context, inAppBillingObj, skuList, INAPP);
+                context, inAppBillingObj, skuList, type);
 
         for (Map.Entry<String, String> entry : skuDetailsMap.entrySet()) {
             String purchase = purchaseMap.get(entry.getKey());
             String skuDetails = entry.getValue();
-            trackPurchaseInapp(purchase, skuDetails);
+            trackPurchases(purchase, skuDetails);
         }
     }
 
-    private static void trackPurchaseInapp(String purchase, String skuDetails) {
+    private static void trackPurchases(String purchase, String skuDetails) {
         try {
             JSONObject purchaseJSON = new JSONObject(purchase);
             JSONObject skuDetailsJSON = new JSONObject(skuDetails);
@@ -213,13 +219,16 @@ public class InAppPurchaseEventActivityLifecycleTracker {
                                 false);
                 String subscriptionPeriod = skuDetailsJSON.optString("subscriptionPeriod");
                 String freeTrialPeriod = skuDetailsJSON.optString("freeTrialPeriod");
-                String introductoryPriceCycles = skuDetailsJSON.optString("introductoryPriceCycles");
+                String introductoryPricePeriod = skuDetailsJSON.optString("introductoryPricePeriod");
 
                 record.put(InAppPurchaseConstants.IAP_SUBSCRIPTION_AUTORENEWING, autoRenewing);
                 record.put(InAppPurchaseConstants.IAP_SUBSCRIPTION_PERIOD, subscriptionPeriod);
                 record.put(InAppPurchaseConstants.IAP_FREE_TRIAL_PERIOD, freeTrialPeriod);
-                record.put(InAppPurchaseConstants.IAP_INTRO_PRICE_CYCLES, introductoryPriceCycles);
-                if (!introductoryPriceCycles.isEmpty()) {
+
+                if (!introductoryPricePeriod.isEmpty()) {
+                    record.put(IAP_INTRO_PRICE_PERIOD, introductoryPricePeriod);
+                    Long introductoryPriceCycles = skuDetailsJSON.optLong("introductoryPriceCycles");
+                    record.put(InAppPurchaseConstants.IAP_INTRO_PRICE_CYCLES, introductoryPriceCycles);
                     Long introductoryPriceAmountMicros = skuDetailsJSON.getLong("introductoryPriceAmountMicros");
                     record.put(InAppPurchaseConstants.IAP_INTRO_PRICE_AMOUNT_MICROS, introductoryPriceAmountMicros);
                 }
