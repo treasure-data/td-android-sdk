@@ -124,6 +124,22 @@ public class TreasureData {
         return applicationContext;
     }
 
+    public static String getTdDefaultDatabase() {
+        return TD_DEFAULT_DATABASE;
+    }
+
+    public static String getTdDefaultTable() {
+        return TD_DEFAULT_TABLE;
+    }
+
+    public String getDefaultDatabase() {
+        return defaultDatabase;
+    }
+
+    public String getDefaultTable() {
+        return defaultTable;
+    }
+
     private SharedPreferences getSharedPreference(Context context) {
         return context.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
     }

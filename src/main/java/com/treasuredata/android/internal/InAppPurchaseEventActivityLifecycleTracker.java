@@ -32,7 +32,7 @@ public class InAppPurchaseEventActivityLifecycleTracker {
     private static boolean hasBiillingActivity = false;
     private static ServiceConnection serviceConnection;
     private static Application.ActivityLifecycleCallbacks callbacks;
-    private static Intent intent;
+    private static Intent serviceIntent;
     private static Object inAppBillingObj;
 
     private static final AtomicBoolean isTracking = new AtomicBoolean(false);
@@ -58,7 +58,7 @@ public class InAppPurchaseEventActivityLifecycleTracker {
         if (context instanceof Application) {
             Application application = (Application) context;
             application.registerActivityLifecycleCallbacks(callbacks);
-            context.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
+            context.bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE);
         }
     }
 
@@ -80,7 +80,7 @@ public class InAppPurchaseEventActivityLifecycleTracker {
             hasBiillingActivity = false;
         }
 
-        intent = new Intent("com.android.vending.billing.InAppBillingService.BIND")
+        serviceIntent = new Intent("com.android.vending.billing.InAppBillingService.BIND")
                 .setPackage("com.android.vending");
 
         serviceConnection = new ServiceConnection() {
@@ -225,8 +225,20 @@ public class InAppPurchaseEventActivityLifecycleTracker {
                 }
             }
 
-            // TODO: Get default data base and table from TreasureData
-            treasureData.addEvent("vv_td_android", "iap_events", record);
+            String targetDatabase = TreasureData.getTdDefaultDatabase();
+            if (treasureData.getDefaultDatabase() == null) {
+                Log.w(TAG, "Default database is not set, iap event will be uploaded to " + targetDatabase);
+            } else {
+                targetDatabase = treasureData.getDefaultDatabase();
+            }
+
+            String targetTable = TreasureData.getTdDefaultTable();
+            if (treasureData.getDefaultTable() == null) {
+                Log.w(TAG, "Default table is not set, iap event will be uploaded to " + targetTable);
+            } else {
+                targetTable = treasureData.getDefaultTable();
+            }
+            treasureData.addEvent(targetDatabase, targetTable, record);
         } catch (JSONException e) {
             Log.e(TAG, "Unable to parse purchase, not a json object:", e);
         }
