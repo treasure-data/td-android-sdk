@@ -206,8 +206,11 @@ public class InAppPurchaseEventActivityLifecycleTracker {
             record.put(InAppPurchaseConstants.IAP_PRODUCT_PRICE, price);
             record.put(InAppPurchaseConstants.IAP_PRODUCT_PRICE_AMOUNT_MICROS, priceAmountMicros);
             record.put(InAppPurchaseConstants.IAP_PRODUCT_CURRENCY, currency);
-            record.put(InAppPurchaseConstants.IAP_PRODUCT_DESCRIPTION, description);
+
+            // Quantity is always 1 for Android IAP purchase
+            record.put(InAppPurchaseConstants.IAP_QUANTITY, 1);
             record.put(InAppPurchaseConstants.IAP_PRODUCT_TYPE, type);
+            record.put(InAppPurchaseConstants.IAP_PRODUCT_DESCRIPTION, description);
             record.put(InAppPurchaseConstants.IAP_PURCHASE_STATE, purchaseState);
             record.put(InAppPurchaseConstants.IAP_PURCHASE_DEVELOPER_PAYLOAD, developerPayload);
             record.put(InAppPurchaseConstants.IAP_PURCHASE_TIME, purchaseTime);
