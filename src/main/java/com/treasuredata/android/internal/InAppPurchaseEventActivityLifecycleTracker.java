@@ -30,7 +30,7 @@ public class InAppPurchaseEventActivityLifecycleTracker {
             "com.android.billingclient.api.ProxyBillingActivity";
 
     private static Boolean hasBillingService = null;
-    private static boolean hasBiillingActivity = false;
+    private static boolean hasBillingActivity = false;
     private static ServiceConnection serviceConnection;
     private static Application.ActivityLifecycleCallbacks callbacks;
     private static Intent serviceIntent;
@@ -76,9 +76,9 @@ public class InAppPurchaseEventActivityLifecycleTracker {
 
         try {
             Class.forName(BILLING_ACTIVITY_NAME);
-            hasBiillingActivity = true;
+            hasBillingActivity = true;
         } catch (ClassNotFoundException ignored) {
-            hasBiillingActivity = false;
+            hasBillingActivity = false;
         }
 
         serviceIntent = new Intent("com.android.vending.billing.InAppBillingService.BIND")
