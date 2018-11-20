@@ -89,10 +89,6 @@ public class InAppBillingDelegate {
     public static List<String> getPurchases(Context context, Object inAppBillingObj, String type) {
         List<String> purchases = new ArrayList<>();
 
-        if (inAppBillingObj == null) {
-            return purchases;
-        }
-
         if (!isBillingSupported(context, inAppBillingObj, type)) {
             return purchases;
         }
@@ -197,7 +193,7 @@ public class InAppBillingDelegate {
             Context context, Object inAppBillingObj, ArrayList<String> skuList, String type) {
         Map<String, String> skuDetailsMap = new HashMap<>();
 
-        if (inAppBillingObj == null || skuList.isEmpty()) {
+        if (skuList.isEmpty()) {
             return skuDetailsMap;
         }
 
