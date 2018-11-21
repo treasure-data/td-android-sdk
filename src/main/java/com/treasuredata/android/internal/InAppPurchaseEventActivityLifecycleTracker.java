@@ -110,16 +110,21 @@ public class InAppPurchaseEventActivityLifecycleTracker {
 
             @Override
             public void onActivityResumed(Activity activity) {
-                final Context context = TreasureData.getApplicationContext();
-                List<String> purchasesInapp = InAppPurchaseEventManager
-                        .getPurchasesInapp(context, inAppBillingObj);
+                TreasureData.getExecutor().execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        final Context context = TreasureData.getApplicationContext();
+                        List<String> purchasesInapp = InAppPurchaseEventManager
+                                .getPurchasesInapp(context, inAppBillingObj);
 
-                trackPurchases(context, purchasesInapp, INAPP);
+                        trackPurchases(context, purchasesInapp, INAPP);
 
-                List<String> purchasesSubs = InAppPurchaseEventManager
-                        .getPurchasesSubs(context, inAppBillingObj);
+                        List<String> purchasesSubs = InAppPurchaseEventManager
+                                .getPurchasesSubs(context, inAppBillingObj);
 
-                trackPurchases(context, purchasesSubs, SUBSCRIPTION);
+                        trackPurchases(context, purchasesSubs, SUBSCRIPTION);
+                    }
+                });
             }
 
             @Override

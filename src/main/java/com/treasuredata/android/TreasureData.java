@@ -5,6 +5,7 @@ import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import com.treasuredata.android.internal.InAppPurchaseEventActivityLifecycleTracker;
@@ -17,6 +18,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.WeakHashMap;
+import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
@@ -96,6 +98,8 @@ public class TreasureData {
     private volatile String serverSideUploadTimestampColumn;
     private Session session = new Session();
     private volatile String autoAppendRecordUUIDColumn;
+    private static Executor executor;
+    private static final Object LOCK = new Object();
 
     public static TreasureData initializeSharedInstance(Context context, String apiKey) {
         synchronized (TreasureData.class) {
@@ -122,6 +126,15 @@ public class TreasureData {
 
     public static Context getApplicationContext() {
         return applicationContext;
+    }
+
+    public static Executor getExecutor() {
+        synchronized (LOCK) {
+            if (TreasureData.executor == null) {
+                TreasureData.executor = AsyncTask.THREAD_POOL_EXECUTOR;
+            }
+        }
+        return TreasureData.executor;
     }
 
     public static String getTdDefaultDatabase() {
@@ -245,10 +258,15 @@ public class TreasureData {
 
                 @Override
                 public void onActivityCreated(Activity activity, Bundle bundle) {
-                    if (!trackedAppLifecycleEvents.getAndSet(true)
-                            && appLifecycleEventEnabled) {
-                        trackApplicationLifecycleEvents();
-                    }
+                    TreasureData.getExecutor().execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (!trackedAppLifecycleEvents.getAndSet(true)
+                                    && appLifecycleEventEnabled) {
+                                trackApplicationLifecycleEvents();
+                            }
+                        }
+                    });
                 }
 
                 @Override
