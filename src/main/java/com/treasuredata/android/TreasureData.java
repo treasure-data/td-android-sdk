@@ -219,8 +219,8 @@ public class TreasureData {
     }
 
     public TreasureData(Context context, String apiKey) {
-        applicationContext = context.getApplicationContext();
-        this.context = applicationContext;
+        TreasureData.applicationContext = context.getApplicationContext();
+        this.context = TreasureData.applicationContext;
         this.uuid = getUUID();
         this.appLifecycleEventEnabled = getAppLifecycleEventEnabled();
         this.customEventEnabled = getCustomEventEnabled();
@@ -299,9 +299,9 @@ public class TreasureData {
 
                 }
             });
-        }
 
-        InAppPurchaseEventActivityLifecycleTracker.track(this);
+            InAppPurchaseEventActivityLifecycleTracker.track(this);
+        }
     }
 
     private void trackApplicationLifecycleEvents() {
