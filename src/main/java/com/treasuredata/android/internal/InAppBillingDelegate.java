@@ -3,7 +3,6 @@ package com.treasuredata.android.internal;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.support.annotation.Nullable;
 import android.util.Log;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -62,7 +61,6 @@ public class InAppBillingDelegate {
         }
     }
 
-    @Nullable
     public static Object asInterface(Context context, IBinder service) {
         Object[] args = new Object[]{service};
         return invokeMethod(context, IN_APP_BILLING_SERVICE_STUB,
@@ -225,12 +223,10 @@ public class InAppBillingDelegate {
         return skuDetailsMap;
     }
 
-    @Nullable
     private static Object invokeMethod(Context context, String methodName, Object obj, Object[] args) {
         return invokeMethod(context, IN_APP_BILLING_SERVICE, methodName, obj, args);
     }
 
-    @Nullable
     private static Object invokeMethod(Context context, String className, String methodName, Object obj, Object[] args) {
         Class<?> classObj = getClass(context, className);
         if (classObj == null) {
@@ -261,7 +257,6 @@ public class InAppBillingDelegate {
         return null;
     }
 
-    @Nullable
     private static Method getMethod(Class<?> classObj, String methodName) {
         Method method = methodMap.get(methodName);
         if (method != null) {
@@ -301,7 +296,6 @@ public class InAppBillingDelegate {
         return method;
     }
 
-    @Nullable
     private static Class<?> getClass(Context context, String className) {
         Class<?> classObj = classMap.get(className);
         if (classObj != null) {

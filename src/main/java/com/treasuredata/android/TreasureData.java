@@ -299,7 +299,6 @@ public class TreasureData {
 
                 }
             });
-
             InAppPurchaseEventActivityLifecycleTracker.track(this);
         }
     }

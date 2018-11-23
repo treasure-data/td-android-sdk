@@ -108,12 +108,6 @@
     </dependency>
 
     <dependency>
-      <groupId>com.android.support</groupId>
-      <artifactId>support-annotations</artifactId>
-      <version>27.1.1</version>
-    </dependency>
-
-    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.11</version>

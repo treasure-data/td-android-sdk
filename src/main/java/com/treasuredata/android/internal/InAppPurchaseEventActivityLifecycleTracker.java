@@ -6,6 +6,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
@@ -59,7 +60,14 @@ public class InAppPurchaseEventActivityLifecycleTracker {
         if (context instanceof Application) {
             Application application = (Application) context;
             application.registerActivityLifecycleCallbacks(callbacks);
-            context.bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE);
+            List<ResolveInfo> intentServices = context.getPackageManager().queryIntentServices(serviceIntent, 0);
+            if (intentServices != null && !intentServices.isEmpty()) {
+                // service available to handle that Intent
+                context.bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE);
+            }
+            else {
+                Log.e(TAG, "Billing service is unavailable on device");
+            }
         }
     }
 
@@ -87,7 +95,6 @@ public class InAppPurchaseEventActivityLifecycleTracker {
         serviceConnection = new ServiceConnection() {
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
-
                 inAppBillingObj = InAppBillingDelegate.asInterface(TreasureData.getApplicationContext(), service);
             }
 
@@ -121,7 +128,6 @@ public class InAppPurchaseEventActivityLifecycleTracker {
 
                         List<String> purchasesSubs = InAppPurchaseEventManager
                                 .getPurchasesSubs(context, inAppBillingObj);
-
                         trackPurchases(context, purchasesSubs, SUBSCRIPTION);
                     }
                 });
