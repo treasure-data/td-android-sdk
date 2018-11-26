@@ -279,7 +279,7 @@ The states have effects across device reboots, app updates, so you can simply ca
 The API endpoint (default: https://in.treasuredata.com) can be modified using  `TreasureData.initializeApiEndpoint`. For example:
 
 ```
-    TreasureData.initializeApiEndpoint("https://in.treasuredata.com");
+    TreasureData.initializeApiEndpoint("https://specifying-another-endpoint.com");
     td = new TreasureData(this, "your_api_key");
 ```
 
