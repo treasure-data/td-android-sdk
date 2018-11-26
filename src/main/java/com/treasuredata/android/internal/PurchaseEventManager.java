@@ -32,6 +32,9 @@ public class PurchaseEventManager {
     // SKU detail cache setting
     private static final int SKU_DETAIL_EXPIRE_TIME_SEC = 12 * 60 * 60; // 12 h
 
+    private static final int SKU_DETAIL_CACHE_CLEAR_TIME_LIMIT_SEC = 7 * 24 * 60 * 60; // 7 days
+    private static final String SKU_DETAIL_LAST_CLEARED_TIME = "SKU_DETAIL_LAST_CLEARED_TIME";
+
     private PurchaseEventManager() {
 
     }
@@ -127,5 +130,22 @@ public class PurchaseEventManager {
         }
 
         editor.apply();
+    }
+
+    public static void clearSkuDetailsCache() {
+        long nowSec = System.currentTimeMillis() / 1000L;
+
+        // Sku details cache
+        long lastClearedTimeSec = skuDetailSharedPrefs.getLong(SKU_DETAIL_LAST_CLEARED_TIME, 0);
+        if (lastClearedTimeSec == 0) {
+            skuDetailSharedPrefs.edit()
+                    .putLong(SKU_DETAIL_LAST_CLEARED_TIME, nowSec)
+                    .apply();
+        } else if ((nowSec - lastClearedTimeSec) > SKU_DETAIL_CACHE_CLEAR_TIME_LIMIT_SEC) {
+            skuDetailSharedPrefs.edit()
+                    .clear()
+                    .putLong(SKU_DETAIL_LAST_CLEARED_TIME, nowSec)
+                    .apply();
+        }
     }
 }

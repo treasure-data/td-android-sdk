@@ -89,6 +89,8 @@ public class PurchaseEventActivityLifecycleTracker {
             hasBillingActivity = false;
         }
 
+        PurchaseEventManager.clearSkuDetailsCache();
+
         serviceIntent = new Intent("com.android.vending.billing.InAppBillingService.BIND")
                 .setPackage("com.android.vending");
 
