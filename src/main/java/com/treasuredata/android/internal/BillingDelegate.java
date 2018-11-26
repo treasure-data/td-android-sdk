@@ -14,9 +14,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class InAppBillingDelegate {
+public class BillingDelegate {
 
-    private static final String TAG = InAppBillingDelegate.class.getSimpleName();
+    private static final String TAG = BillingDelegate.class.getSimpleName();
 
     // Method and class cache
     private static final HashMap<String, Method> methodMap =
@@ -47,7 +47,7 @@ public class InAppBillingDelegate {
     private static final int MAX_QUERY_PURCHASE_NUM = 30;
     private static final int PURCHASE_STOP_QUERY_TIME_SEC = 30 * 60; // 30 minutes
 
-    private InAppBillingDelegate() {
+    private BillingDelegate() {
 
     }
 

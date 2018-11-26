@@ -8,7 +8,7 @@ import android.content.pm.PackageInfo;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import com.treasuredata.android.internal.InAppPurchaseEventActivityLifecycleTracker;
+import com.treasuredata.android.internal.PurchaseEventActivityLifecycleTracker;
 import io.keen.client.java.KeenClient;
 import org.komamitsu.android.util.Log;
 
@@ -299,7 +299,7 @@ public class TreasureData {
 
                 }
             });
-            InAppPurchaseEventActivityLifecycleTracker.track(this);
+            PurchaseEventActivityLifecycleTracker.track(this);
         }
     }
 

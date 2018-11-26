@@ -12,11 +12,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.treasuredata.android.internal.InAppPurchaseConstants.INAPP;
-import static com.treasuredata.android.internal.InAppPurchaseConstants.SUBSCRIPTION;
+import static com.treasuredata.android.internal.PurchaseConstants.INAPP;
+import static com.treasuredata.android.internal.PurchaseConstants.SUBSCRIPTION;
 
-public class InAppPurchaseEventManager {
-    private static final String TAG = InAppPurchaseEventManager.class.getSimpleName();
+public class PurchaseEventManager {
+    private static final String TAG = PurchaseEventManager.class.getSimpleName();
 
     private static final String SKU_DETAILS_SHARED_PREF_NAME =
             "td_sdk_sku_details";
@@ -32,18 +32,18 @@ public class InAppPurchaseEventManager {
     // SKU detail cache setting
     private static final int SKU_DETAIL_EXPIRE_TIME_SEC = 12 * 60 * 60; // 12 h
 
-    private InAppPurchaseEventManager() {
+    private PurchaseEventManager() {
 
     }
 
     public static List<String> getPurchasesInapp(Context context, Object inAppBillingObj) {
 
-        return filterAndCachePurchases(InAppBillingDelegate.getPurchases(context, inAppBillingObj, INAPP));
+        return filterAndCachePurchases(BillingDelegate.getPurchases(context, inAppBillingObj, INAPP));
     }
 
     public static List<String> getPurchasesSubs(Context context, Object inAppBillingObj) {
 
-        return filterAndCachePurchases(InAppBillingDelegate.getPurchases(context, inAppBillingObj, SUBSCRIPTION));
+        return filterAndCachePurchases(BillingDelegate.getPurchases(context, inAppBillingObj, SUBSCRIPTION));
     }
 
     private static List<String> filterAndCachePurchases(List<String> purchases) {
@@ -91,7 +91,7 @@ public class InAppPurchaseEventManager {
             }
         }
 
-        skuDetailsMap.putAll(InAppBillingDelegate.getSkuDetails(
+        skuDetailsMap.putAll(BillingDelegate.getSkuDetails(
                 context, inAppBillingObj, unresolvedSkuList,  type));
         writeSkuDetailsToCache(skuDetailsMap);
 
