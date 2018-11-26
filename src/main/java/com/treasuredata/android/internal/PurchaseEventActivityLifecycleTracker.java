@@ -142,7 +142,24 @@ public class PurchaseEventActivityLifecycleTracker {
 
             @Override
             public void onActivityStopped(Activity activity) {
+                if (hasBillingActivity
+                        && activity.getLocalClassName().equals(BILLING_ACTIVITY_NAME)) {
+                    TreasureData.getExecutor().execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            final Context context = TreasureData.getApplicationContext();
+                            List<String> purchases = PurchaseEventManager
+                                    .getPurchasesInapp(context, inAppBillingObj);
 
+                            if (purchases.isEmpty()) {
+                                purchases = PurchaseEventManager
+                                        .getPurchaseHistoryInapp(context, inAppBillingObj);
+                            }
+
+                            trackPurchases(context, purchases, INAPP);
+                        }
+                    });
+                }
             }
 
             @Override

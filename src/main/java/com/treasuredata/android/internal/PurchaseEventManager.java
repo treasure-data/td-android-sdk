@@ -44,6 +44,10 @@ public class PurchaseEventManager {
         return filterAndCachePurchases(BillingDelegate.getPurchases(context, inAppBillingObj, INAPP));
     }
 
+    public static List<String> getPurchaseHistoryInapp(Context context, Object inAppBillingObj) {
+        return filterAndCachePurchases(BillingDelegate.getPurchaseHistory(context, inAppBillingObj, INAPP));
+    }
+
     public static List<String> getPurchasesSubs(Context context, Object inAppBillingObj) {
 
         return filterAndCachePurchases(BillingDelegate.getPurchases(context, inAppBillingObj, SUBSCRIPTION));
@@ -95,7 +99,7 @@ public class PurchaseEventManager {
         }
 
         skuDetailsMap.putAll(BillingDelegate.getSkuDetails(
-                context, inAppBillingObj, unresolvedSkuList,  type));
+                context, inAppBillingObj, unresolvedSkuList, type));
         writeSkuDetailsToCache(skuDetailsMap);
 
         return skuDetailsMap;
