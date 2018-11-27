@@ -12,7 +12,6 @@ public class DemoApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-      
         // TreasureData.initializeApiEndpoint("https://specify-other-endpoint-if-needed.com");
         TreasureData.enableLogging();
         TreasureData.initializeEncryptionKey("hello world");
