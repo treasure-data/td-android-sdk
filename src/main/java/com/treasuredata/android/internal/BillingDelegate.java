@@ -47,6 +47,9 @@ public class BillingDelegate {
     private static final int MAX_QUERY_PURCHASE_NUM = 30;
     private static final int PURCHASE_STOP_QUERY_TIME_SEC = 30 * 60; // 30 minutes
 
+    // Billing response codes
+    public static final int BILLING_RESPONSE_RESULT_OK = 0;
+
     private BillingDelegate() {
 
     }
@@ -103,7 +106,7 @@ public class BillingDelegate {
             if (resultObject != null) {
                 Bundle purchaseBundle = (Bundle) resultObject;
                 int response = purchaseBundle.getInt(RESPONSE_CODE);
-                if (response == 0) {
+                if (response == BILLING_RESPONSE_RESULT_OK) {
                     ArrayList<String> purchaseDataList =
                             purchaseBundle.getStringArrayList(INAPP_PURCHASE_DATA_LIST);
 
@@ -150,7 +153,7 @@ public class BillingDelegate {
             long nowSec = System.currentTimeMillis() / 1000L;
             Bundle purchaseBundle = (Bundle) resultObject;
             int response = purchaseBundle.getInt(RESPONSE_CODE);
-            if (response == 0) {
+            if (response == BILLING_RESPONSE_RESULT_OK) {
                 List<String> purchaseDataList =
                         purchaseBundle.getStringArrayList(INAPP_PURCHASE_DATA_LIST);
 
@@ -210,7 +213,7 @@ public class BillingDelegate {
         if (result != null) {
             Bundle bundle = (Bundle) result;
             int response = bundle.getInt(RESPONSE_CODE);
-            if (response == 0) {
+            if (response == BILLING_RESPONSE_RESULT_OK) {
                 List<String> skuDetailsList = bundle.getStringArrayList(DETAILS_LIST);
                 if (skuDetailsList != null && skuList.size() == skuDetailsList.size()) {
                     for (int i = 0; i < skuList.size(); i++) {
