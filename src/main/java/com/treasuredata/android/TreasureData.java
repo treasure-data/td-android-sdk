@@ -72,7 +72,7 @@ public class TreasureData {
     }
 
     private static Context applicationContext;
-    private static TreasureData sharedInstance;
+    private static volatile TreasureData sharedInstance;
     private final static WeakHashMap<Context, Session> sessions = new WeakHashMap<Context, Session>();
 
     private final Context context;
@@ -98,7 +98,7 @@ public class TreasureData {
     private volatile String serverSideUploadTimestampColumn;
     private Session session = new Session();
     private volatile String autoAppendRecordUUIDColumn;
-    private static Executor executor;
+    private static volatile Executor executor;
 
     public static TreasureData initializeSharedInstance(Context context, String apiKey) {
         synchronized (TreasureData.class) {
