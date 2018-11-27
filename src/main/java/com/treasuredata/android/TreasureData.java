@@ -99,7 +99,6 @@ public class TreasureData {
     private Session session = new Session();
     private volatile String autoAppendRecordUUIDColumn;
     private static Executor executor;
-    private static final Object LOCK = new Object();
 
     public static TreasureData initializeSharedInstance(Context context, String apiKey) {
         synchronized (TreasureData.class) {
@@ -132,12 +131,16 @@ public class TreasureData {
     }
 
     public static Executor getExecutor() {
-        synchronized (LOCK) {
-            if (TreasureData.executor == null) {
-                TreasureData.executor = AsyncTask.THREAD_POOL_EXECUTOR;
+        //Double check locking pattern
+        if (executor == null) { //Check for the first time
+            synchronized (TreasureData.class) {
+                if (executor == null) { //Check for the second time
+                    //If there is no instance available. Create new one
+                    executor = AsyncTask.THREAD_POOL_EXECUTOR;
+                }
             }
         }
-        return TreasureData.executor;
+        return executor;
     }
 
     public static String getTdDefaultDatabase() {
