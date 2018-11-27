@@ -115,10 +115,13 @@ public class TreasureData {
     }
 
     public static TreasureData sharedInstance() {
-        synchronized (TreasureData.class) {
-            if (sharedInstance == null) {
-                Log.w(TAG, "sharedInstance is initialized properly for testing only.");
-                return new NullTreasureData();
+        //Double check locking pattern
+        if (sharedInstance == null) {
+            synchronized (TreasureData.class) {
+                if (sharedInstance == null) {
+                    Log.w(TAG, "sharedInstance is initialized properly for testing only.");
+                    return new NullTreasureData();
+                }
             }
         }
         return sharedInstance;
