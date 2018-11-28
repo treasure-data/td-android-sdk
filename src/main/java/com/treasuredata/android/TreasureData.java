@@ -75,7 +75,7 @@ public class TreasureData {
     private static Context applicationContext;
     private static volatile TreasureData sharedInstance;
     private final static WeakHashMap<Context, Session> sessions = new WeakHashMap<Context, Session>();
-    public static final String EVENT_KEY_IN_APP_EVENT_PRIVATE = "__is_in_app_event";
+    public static final String EVENT_KEY_IN_APP_PURCHASE_EVENT_PRIVATE = "__is_in_app_purchase_event";
 
     private final Context context;
     private final TDClient client;
@@ -462,7 +462,7 @@ public class TreasureData {
         // Remove private key
         origRecord.remove(EVENT_KEY_APP_LIFECYCLE_EVENT_PRIVATE);
         origRecord.remove(EVENT_KEY_RESET_UUID_EVENT_PRIVATE);
-        origRecord.remove(EVENT_KEY_IN_APP_EVENT_PRIVATE);
+        origRecord.remove(EVENT_KEY_IN_APP_PURCHASE_EVENT_PRIVATE);
 
         if (client == null) {
             Log.w(TAG, "TDClient is null");
@@ -750,7 +750,7 @@ public class TreasureData {
     private static boolean isCustomEvent(Map record) {
         return !record.containsKey(EVENT_KEY_APP_LIFECYCLE_EVENT_PRIVATE)
                 && !record.containsKey(EVENT_KEY_RESET_UUID_EVENT_PRIVATE)
-                && !record.containsKey(EVENT_KEY_IN_APP_EVENT_PRIVATE);
+                && !record.containsKey(EVENT_KEY_IN_APP_PURCHASE_EVENT_PRIVATE);
     }
 
     private static boolean isAppLifecycleEvent(Map record) {
@@ -758,7 +758,7 @@ public class TreasureData {
     }
 
     private static boolean isInAppEvent(Map record) {
-        return record.containsKey(EVENT_KEY_IN_APP_EVENT_PRIVATE);
+        return record.containsKey(EVENT_KEY_IN_APP_PURCHASE_EVENT_PRIVATE);
     }
 
     public void disableAppInstalledEvent() {

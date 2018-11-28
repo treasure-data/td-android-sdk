@@ -274,7 +274,7 @@ public class PurchaseEventActivityLifecycleTracker {
                 }
             }
 
-            record.put(TreasureData.EVENT_KEY_IN_APP_EVENT_PRIVATE, true);
+            record.put(TreasureData.EVENT_KEY_IN_APP_PURCHASE_EVENT_PRIVATE, true);
 
             String targetDatabase = TreasureData.getTdDefaultDatabase();
             if (treasureData.getDefaultDatabase() == null) {
