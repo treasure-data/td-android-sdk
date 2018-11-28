@@ -21,9 +21,9 @@ public class PurchaseEventManager {
     private static final String SKU_DETAILS_SHARED_PREF_NAME =
             "td_sdk_sku_details";
     private static final String PURCHASE_INAPP_SHARED_PREF_NAME =
-            "td_sdk_sku_purchase_inapp";
+            "td_sdk_purchase_inapp";
     private static final String PURCHASE_SUBS_SHARED_PREF_NAME =
-            "td_sdk_sku_purchase_subs";
+            "td_sdk_purchase_subs";
     private static final SharedPreferences skuDetailSharedPrefs =
             TreasureData.getApplicationContext().getSharedPreferences(SKU_DETAILS_SHARED_PREF_NAME, Context.MODE_PRIVATE);
     private static final SharedPreferences purchaseInappSharedPrefs =
@@ -32,12 +32,12 @@ public class PurchaseEventManager {
             TreasureData.getApplicationContext().getSharedPreferences(PURCHASE_SUBS_SHARED_PREF_NAME, Context.MODE_PRIVATE);
 
 
-    private static final int PURCHASE_EXPIRE_TIME_SEC = 12 * 60 * 60; // 12 h
+    private static final int PURCHASE_EXPIRE_DURATION_SEC = 24 * 60 * 60; // 24 h
 
     // SKU detail cache setting
-    private static final int SKU_DETAIL_EXPIRE_TIME_SEC = 12 * 60 * 60; // 12 h
+    private static final int SKU_DETAIL_EXPIRE_DURATION_SEC = 24 * 60 * 60; // 24 h
+    private static final int SKU_DETAIL_CACHE_CLEAR_DURATION_SEC = 7 * 24 * 60 * 60; // 7 days
 
-    private static final int SKU_DETAIL_CACHE_CLEAR_TIME_LIMIT_SEC = 7 * 24 * 60 * 60; // 7 days
     private static final String SKU_DETAIL_LAST_CLEARED_TIME = "SKU_DETAIL_LAST_CLEARED_TIME";
 
     private PurchaseEventManager() {
@@ -68,7 +68,7 @@ public class PurchaseEventManager {
                 String sku = purchaseJson.getString("productId");
                 long purchaseTimeMillis = purchaseJson.getLong("purchaseTime");
                 String purchaseToken = purchaseJson.getString("purchaseToken");
-                if (nowSec - purchaseTimeMillis / 1000L > PURCHASE_EXPIRE_TIME_SEC) {
+                if (nowSec - purchaseTimeMillis / 1000L > PURCHASE_EXPIRE_DURATION_SEC) {
                     continue;
                 }
 
@@ -149,7 +149,7 @@ public class PurchaseEventManager {
             if (rawString != null) {
                 String[] splitted = rawString.split(";", 2);
                 long timeSec = Long.parseLong(splitted[0]);
-                if (nowSec - timeSec < SKU_DETAIL_EXPIRE_TIME_SEC) {
+                if (nowSec - timeSec < SKU_DETAIL_EXPIRE_DURATION_SEC) {
                     skuDetailsMap.put(sku, splitted[1]);
                 }
             }
@@ -169,7 +169,7 @@ public class PurchaseEventManager {
         editor.apply();
     }
 
-    public static void clearSkuDetailsCache() {
+    public static void clearAllSkuDetailsCache() {
         long nowSec = System.currentTimeMillis() / 1000L;
 
         // Sku details cache
@@ -178,7 +178,7 @@ public class PurchaseEventManager {
             skuDetailSharedPrefs.edit()
                     .putLong(SKU_DETAIL_LAST_CLEARED_TIME, nowSec)
                     .apply();
-        } else if ((nowSec - lastClearedTimeSec) > SKU_DETAIL_CACHE_CLEAR_TIME_LIMIT_SEC) {
+        } else if ((nowSec - lastClearedTimeSec) > SKU_DETAIL_CACHE_CLEAR_DURATION_SEC) {
             skuDetailSharedPrefs.edit()
                     .clear()
                     .putLong(SKU_DETAIL_LAST_CLEARED_TIME, nowSec)
