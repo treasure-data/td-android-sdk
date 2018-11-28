@@ -44,7 +44,8 @@ public class PurchaseEventActivityLifecycleTracker {
 
     }
 
-    public static void track(TreasureData treasureData) {
+    public static void update(TreasureData treasureData) {
+        PurchaseEventActivityLifecycleTracker.treasureData = treasureData;
         initialize();
         if (!hasBillingService) {
             return;
@@ -54,15 +55,13 @@ public class PurchaseEventActivityLifecycleTracker {
             return;
         }
 
-        PurchaseEventActivityLifecycleTracker.treasureData = treasureData;
-
         final Context context = TreasureData.getApplicationContext();
         if (context instanceof Application) {
             Application application = (Application) context;
             application.registerActivityLifecycleCallbacks(callbacks);
             List<ResolveInfo> intentServices = context.getPackageManager().queryIntentServices(serviceIntent, 0);
             if (intentServices != null && !intentServices.isEmpty()) {
-                // service available to handle that Intent
+                // Service available to handle that Intent
                 context.bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE);
             }
             else {
@@ -123,11 +122,14 @@ public class PurchaseEventActivityLifecycleTracker {
                     @Override
                     public void run() {
                         final Context context = TreasureData.getApplicationContext();
+
+                        // Log Purchase In app type (One-time product) for the app using In-app Billing with AIDL
+                        // (https://developer.android.com/google/play/billing/api)
                         List<String> purchasesInapp = PurchaseEventManager
                                 .getPurchasesInapp(context, inAppBillingObj);
-
                         trackPurchases(context, purchasesInapp, INAPP);
 
+                        // Log Purchase subscriptions type
                         List<String> purchasesSubs = PurchaseEventManager
                                 .getPurchasesSubs(context, inAppBillingObj);
                         trackPurchases(context, purchasesSubs, SUBSCRIPTION);
@@ -142,15 +144,20 @@ public class PurchaseEventActivityLifecycleTracker {
 
             @Override
             public void onActivityStopped(Activity activity) {
+                // Log Purchase In app type (One-time product) for the app using the Google Play Billing Library
+                // (https://developer.android.com/google/play/billing/billing_library_overview)
                 if (hasBillingActivity
                         && activity.getLocalClassName().equals(BILLING_ACTIVITY_NAME)) {
                     TreasureData.getExecutor().execute(new Runnable() {
                         @Override
                         public void run() {
                             final Context context = TreasureData.getApplicationContext();
+
+                            // First, retrieve the One-time products which have not been consumed
                             List<String> purchases = PurchaseEventManager
                                     .getPurchasesInapp(context, inAppBillingObj);
 
+                            // Second, retrieve the One-time products which have been consumed
                             if (purchases.isEmpty()) {
                                 purchases = PurchaseEventManager
                                         .getPurchaseHistoryInapp(context, inAppBillingObj);
@@ -266,6 +273,8 @@ public class PurchaseEventActivityLifecycleTracker {
                     record.put(PurchaseConstants.IAP_INTRO_PRICE_AMOUNT_MICROS, introductoryPriceAmountMicros);
                 }
             }
+
+            record.put(TreasureData.EVENT_KEY_IN_APP_EVENT_PRIVATE, true);
 
             String targetDatabase = TreasureData.getTdDefaultDatabase();
             if (treasureData.getDefaultDatabase() == null) {

@@ -35,6 +35,7 @@ public class TreasureData {
     private static final String SHARED_PREF_BUILD_KEY = "build";
     private static final String SHARED_PREF_KEY_FIRST_RUN = "first_run";
     private static final String SHARED_PREF_APP_LIFECYCLE_EVENT_ENABLED = "app_lifecycle_event_enabled";
+    private static final String SHARED_PREF_IAP_EVENT_ENABLED = "iap_event_enabled";
     private static final String SHARED_PREF_CUSTOM_EVENT_ENABLED = "custom_event_enabled";
     private static final String SHARED_PREF_KEY_IS_UNITY = "TDIsUnity";
     private static final String EVENT_KEY_UUID = "td_uuid";
@@ -74,6 +75,7 @@ public class TreasureData {
     private static Context applicationContext;
     private static volatile TreasureData sharedInstance;
     private final static WeakHashMap<Context, Session> sessions = new WeakHashMap<Context, Session>();
+    public static final String EVENT_KEY_IN_APP_EVENT_PRIVATE = "__is_in_app_event";
 
     private final Context context;
     private final TDClient client;
@@ -91,6 +93,7 @@ public class TreasureData {
     private volatile boolean autoTrackAppUpdatedEvent = true;
     private volatile boolean customEventEnabled = true;
     private volatile boolean appLifecycleEventEnabled;
+    private volatile boolean inAppPurchaseEventEnabled;
     private static volatile long sessionTimeoutMilli = Session.DEFAULT_SESSION_PENDING_MILLIS;
     private final String appVersion;
     private final int appVersionNumber;
@@ -175,7 +178,6 @@ public class TreasureData {
         }
     }
 
-
     /**
      * Reset UUID and send forget_device_uuid event with old uuid
      */
@@ -230,6 +232,7 @@ public class TreasureData {
         this.uuid = getUUID();
         this.appLifecycleEventEnabled = getAppLifecycleEventEnabled();
         this.customEventEnabled = getCustomEventEnabled();
+        this.inAppPurchaseEventEnabled = getInAppPurchaseEventEventEnabled();
 
         TDClient client = null;
         if (apiKey == null && TDClient.getDefaultApiKey() == null) {
@@ -305,7 +308,6 @@ public class TreasureData {
 
                 }
             });
-            PurchaseEventActivityLifecycleTracker.track(this);
         }
     }
 
@@ -453,9 +455,14 @@ public class TreasureData {
             return;
         }
 
+        if(!isInAppPurchaseEventEnabled() && isInAppEvent(origRecord)) {
+            return;
+        }
+
         // Remove private key
         origRecord.remove(EVENT_KEY_APP_LIFECYCLE_EVENT_PRIVATE);
         origRecord.remove(EVENT_KEY_RESET_UUID_EVENT_PRIVATE);
+        origRecord.remove(EVENT_KEY_IN_APP_EVENT_PRIVATE);
 
         if (client == null) {
             Log.w(TAG, "TDClient is null");
@@ -652,7 +659,7 @@ public class TreasureData {
         this.appLifecycleEventEnabled = enabled;
         SharedPreferences sharedPreferences = getSharedPreference(context);
         synchronized (this) {
-            sharedPreferences.edit().putBoolean(SHARED_PREF_APP_LIFECYCLE_EVENT_ENABLED,  this.appLifecycleEventEnabled).commit();
+            sharedPreferences.edit().putBoolean(SHARED_PREF_APP_LIFECYCLE_EVENT_ENABLED, this.appLifecycleEventEnabled).commit();
         }
     }
 
@@ -671,6 +678,36 @@ public class TreasureData {
         }
     }
 
+    public void enableInAppPurchaseEvent() {
+        enableInAppPurchaseEvent(true);
+    }
+
+    public void disableInAppPurchaseEvent() {
+        enableInAppPurchaseEvent(false);
+    }
+
+
+    public void enableInAppPurchaseEvent(boolean enabled) {
+        this.inAppPurchaseEventEnabled = enabled;
+        SharedPreferences sharedPreferences = getSharedPreference(context);
+        synchronized (this) {
+            sharedPreferences.edit().putBoolean(SHARED_PREF_IAP_EVENT_ENABLED, this.inAppPurchaseEventEnabled).commit();
+        }
+        if (enabled) {
+            PurchaseEventActivityLifecycleTracker.update(this);
+        }
+    }
+
+    public boolean isInAppPurchaseEventEnabled() {
+        return this.inAppPurchaseEventEnabled;
+    }
+
+    private boolean getInAppPurchaseEventEventEnabled() {
+        SharedPreferences sharedPreferences = getSharedPreference(context);
+        synchronized (this) {
+            return sharedPreferences.getBoolean(SHARED_PREF_IAP_EVENT_ENABLED, false);
+        }
+    }
 
     /**
      * Enable custom event tracking. This setting has no effect to auto tracking
@@ -710,12 +747,18 @@ public class TreasureData {
         }
     }
 
-    private boolean isCustomEvent(Map record) {
-        return !record.containsKey(EVENT_KEY_APP_LIFECYCLE_EVENT_PRIVATE) && !record.containsKey(EVENT_KEY_RESET_UUID_EVENT_PRIVATE);
+    private static boolean isCustomEvent(Map record) {
+        return !record.containsKey(EVENT_KEY_APP_LIFECYCLE_EVENT_PRIVATE)
+                && !record.containsKey(EVENT_KEY_RESET_UUID_EVENT_PRIVATE)
+                && !record.containsKey(EVENT_KEY_IN_APP_EVENT_PRIVATE);
     }
 
-    private boolean isAppLifecycleEvent(Map record) {
+    private static boolean isAppLifecycleEvent(Map record) {
         return record.containsKey(EVENT_KEY_APP_LIFECYCLE_EVENT_PRIVATE);
+    }
+
+    private static boolean isInAppEvent(Map record) {
+        return record.containsKey(EVENT_KEY_IN_APP_EVENT_PRIVATE);
     }
 
     public void disableAppInstalledEvent() {

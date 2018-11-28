@@ -22,10 +22,15 @@ public class PurchaseEventManager {
             "td_sdk_sku_details";
     private static final String PURCHASE_INAPP_SHARED_PREF_NAME =
             "td_sdk_sku_purchase_inapp";
+    private static final String PURCHASE_SUBS_SHARED_PREF_NAME =
+            "td_sdk_sku_purchase_subs";
     private static final SharedPreferences skuDetailSharedPrefs =
             TreasureData.getApplicationContext().getSharedPreferences(SKU_DETAILS_SHARED_PREF_NAME, Context.MODE_PRIVATE);
     private static final SharedPreferences purchaseInappSharedPrefs =
             TreasureData.getApplicationContext().getSharedPreferences(PURCHASE_INAPP_SHARED_PREF_NAME, Context.MODE_PRIVATE);
+    private static final SharedPreferences purchaseSubsSharedPrefs =
+            TreasureData.getApplicationContext().getSharedPreferences(PURCHASE_SUBS_SHARED_PREF_NAME, Context.MODE_PRIVATE);
+
 
     private static final int PURCHASE_EXPIRE_TIME_SEC = 12 * 60 * 60; // 12 h
 
@@ -41,19 +46,19 @@ public class PurchaseEventManager {
 
     public static List<String> getPurchasesInapp(Context context, Object inAppBillingObj) {
 
-        return filterAndCachePurchases(BillingDelegate.getPurchases(context, inAppBillingObj, INAPP));
+        return filterAndCachePurchasesInapp(BillingDelegate.getPurchases(context, inAppBillingObj, INAPP));
     }
 
     public static List<String> getPurchaseHistoryInapp(Context context, Object inAppBillingObj) {
-        return filterAndCachePurchases(BillingDelegate.getPurchaseHistory(context, inAppBillingObj, INAPP));
+        return filterAndCachePurchasesInapp(BillingDelegate.getPurchaseHistory(context, inAppBillingObj, INAPP));
     }
 
     public static List<String> getPurchasesSubs(Context context, Object inAppBillingObj) {
 
-        return filterAndCachePurchases(BillingDelegate.getPurchases(context, inAppBillingObj, SUBSCRIPTION));
+        return filterAndCachePurchasesSubs(BillingDelegate.getPurchases(context, inAppBillingObj, SUBSCRIPTION));
     }
 
-    private static List<String> filterAndCachePurchases(List<String> purchases) {
+    private static List<String> filterAndCachePurchasesInapp(List<String> purchases) {
         List<String> filteredPurchases = new ArrayList<>();
         SharedPreferences.Editor editor = purchaseInappSharedPrefs.edit();
         long nowSec = System.currentTimeMillis() / 1000L;
@@ -67,9 +72,37 @@ public class PurchaseEventManager {
                     continue;
                 }
 
-                String historyPurchaseToken = purchaseInappSharedPrefs.getString(sku, "");
+                String oldPurchaseToken = purchaseInappSharedPrefs.getString(sku, "");
 
-                if (historyPurchaseToken.equals(purchaseToken)) {
+                if (oldPurchaseToken.equals(purchaseToken)) {
+                    continue;
+                }
+
+                // Write new purchase into cache
+                editor.putString(sku, purchaseToken);
+                filteredPurchases.add(purchase);
+            } catch (JSONException e) {
+                Log.e(TAG, "Unable to parse purchase, not a json object: ", e);
+            }
+        }
+
+        editor.apply();
+
+        return filteredPurchases;
+    }
+
+    private static List<String> filterAndCachePurchasesSubs(List<String> purchases) {
+        List<String> filteredPurchases = new ArrayList<>();
+        SharedPreferences.Editor editor = purchaseSubsSharedPrefs.edit();
+        for (String purchase : purchases) {
+            try {
+                JSONObject purchaseJson = new JSONObject(purchase);
+                String sku = purchaseJson.getString("productId");
+                String purchaseToken = purchaseJson.getString("purchaseToken");
+
+                String oldPurchaseToken = purchaseSubsSharedPrefs.getString(sku, "");
+
+                if (oldPurchaseToken.equals(purchaseToken)) {
                     continue;
                 }
 
@@ -91,15 +124,15 @@ public class PurchaseEventManager {
 
         Map<String, String> skuDetailsMap = readSkuDetailsFromCache(skuList);
 
-        ArrayList<String> unresolvedSkuList = new ArrayList<>();
+        ArrayList<String> newSkuList = new ArrayList<>();
         for (String sku : skuList) {
             if (!skuDetailsMap.containsKey(sku)) {
-                unresolvedSkuList.add(sku);
+                newSkuList.add(sku);
             }
         }
 
         skuDetailsMap.putAll(BillingDelegate.getSkuDetails(
-                context, inAppBillingObj, unresolvedSkuList, type));
+                context, inAppBillingObj, newSkuList, type));
         writeSkuDetailsToCache(skuDetailsMap);
 
         return skuDetailsMap;
