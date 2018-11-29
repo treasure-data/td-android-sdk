@@ -455,7 +455,7 @@ public class TreasureData {
             return;
         }
 
-        if(!isInAppPurchaseEventEnabled() && isInAppEvent(origRecord)) {
+        if(!isInAppPurchaseEventEnabled() && isInAppPurchaseEvent(origRecord)) {
             return;
         }
 
@@ -686,7 +686,6 @@ public class TreasureData {
         enableInAppPurchaseEvent(false);
     }
 
-
     public void enableInAppPurchaseEvent(boolean enabled) {
         this.inAppPurchaseEventEnabled = enabled;
         SharedPreferences sharedPreferences = getSharedPreference(context);
@@ -757,7 +756,7 @@ public class TreasureData {
         return record.containsKey(EVENT_KEY_APP_LIFECYCLE_EVENT_PRIVATE);
     }
 
-    private static boolean isInAppEvent(Map record) {
+    private static boolean isInAppPurchaseEvent(Map record) {
         return record.containsKey(EVENT_KEY_IN_APP_PURCHASE_EVENT_PRIVATE);
     }
 
