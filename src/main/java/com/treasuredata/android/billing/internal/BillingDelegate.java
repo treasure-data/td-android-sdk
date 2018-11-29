@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class BillingDelegate {
+class BillingDelegate {
 
     private static final String TAG = BillingDelegate.class.getSimpleName();
 

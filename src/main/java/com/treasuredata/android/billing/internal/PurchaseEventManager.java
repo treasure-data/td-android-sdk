@@ -15,7 +15,7 @@ import java.util.Map;
 import static com.treasuredata.android.billing.internal.PurchaseConstants.INAPP;
 import static com.treasuredata.android.billing.internal.PurchaseConstants.SUBSCRIPTION;
 
-public class PurchaseEventManager {
+class PurchaseEventManager {
     private static final String TAG = PurchaseEventManager.class.getSimpleName();
 
     private static final String SKU_DETAILS_SHARED_PREF_NAME =
@@ -30,7 +30,6 @@ public class PurchaseEventManager {
             TreasureData.getApplicationContext().getSharedPreferences(PURCHASE_INAPP_SHARED_PREF_NAME, Context.MODE_PRIVATE);
     private static final SharedPreferences purchaseSubsSharedPrefs =
             TreasureData.getApplicationContext().getSharedPreferences(PURCHASE_SUBS_SHARED_PREF_NAME, Context.MODE_PRIVATE);
-
 
     private static final int PURCHASE_EXPIRE_DURATION_SEC = 24 * 60 * 60; // 24 h
 

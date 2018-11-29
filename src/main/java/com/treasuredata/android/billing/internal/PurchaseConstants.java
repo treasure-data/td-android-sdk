@@ -1,6 +1,6 @@
 package com.treasuredata.android.billing.internal;
 
-public class PurchaseConstants {
+class PurchaseConstants {
     // Purchase types
     public static final String SUBSCRIPTION = "subs";
     public static final String INAPP = "inapp";
