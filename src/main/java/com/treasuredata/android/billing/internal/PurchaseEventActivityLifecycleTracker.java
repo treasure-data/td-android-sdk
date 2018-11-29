@@ -1,4 +1,4 @@
-package com.treasuredata.android.internal;
+package com.treasuredata.android.billing.internal;
 
 import android.app.Activity;
 import android.app.Application;
@@ -20,9 +20,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.treasuredata.android.internal.PurchaseConstants.IAP_INTRO_PRICE_PERIOD;
-import static com.treasuredata.android.internal.PurchaseConstants.INAPP;
-import static com.treasuredata.android.internal.PurchaseConstants.SUBSCRIPTION;
+import static com.treasuredata.android.billing.internal.PurchaseConstants.IAP_INTRO_PRICE_PERIOD;
+import static com.treasuredata.android.billing.internal.PurchaseConstants.INAPP;
+import static com.treasuredata.android.billing.internal.PurchaseConstants.SUBSCRIPTION;
 
 public class PurchaseEventActivityLifecycleTracker {
     private static final String TAG = PurchaseEventActivityLifecycleTracker.class.getSimpleName();

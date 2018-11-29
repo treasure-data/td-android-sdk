@@ -1,4 +1,4 @@
-package com.treasuredata.android.internal;
+package com.treasuredata.android.billing.internal;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -12,8 +12,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.treasuredata.android.internal.PurchaseConstants.INAPP;
-import static com.treasuredata.android.internal.PurchaseConstants.SUBSCRIPTION;
+import static com.treasuredata.android.billing.internal.PurchaseConstants.INAPP;
+import static com.treasuredata.android.billing.internal.PurchaseConstants.SUBSCRIPTION;
 
 public class PurchaseEventManager {
     private static final String TAG = PurchaseEventManager.class.getSimpleName();

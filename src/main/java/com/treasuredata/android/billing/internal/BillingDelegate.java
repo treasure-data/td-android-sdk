@@ -1,4 +1,4 @@
-package com.treasuredata.android.internal;
+package com.treasuredata.android.billing.internal;
 
 import android.content.Context;
 import android.os.Bundle;
