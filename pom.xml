@@ -147,13 +147,6 @@
     </dependency>
   </dependencies>
 
-  <repositories>
-    <repository>
-      <id>Google Repository</id>
-      <url>https://maven.google.com/</url>
-    </repository>
-  </repositories>
-
   <distributionManagement>
     <snapshotRepository>
       <id>ossrh</id>

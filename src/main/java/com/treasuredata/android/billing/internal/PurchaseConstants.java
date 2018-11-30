@@ -24,6 +24,7 @@ class PurchaseConstants {
     public static final String IAP_PRODUCT_TITLE = "td_iap_product_title";
     public static final String IAP_PRODUCT_DESCRIPTION = "td_iap_product_description";
     public static final String IAP_PACKAGE_NAME = "td_iap_package_name";
+    public static final String IAP_SUBSCRIPTION_TYPE = "td_iap_subs_type";
     public static final String IAP_SUBSCRIPTION_AUTORENEWING = "td_iap_subs_auto_renewing";
     public static final String IAP_SUBSCRIPTION_PERIOD = "td_iap_subs_period";
     public static final String IAP_FREE_TRIAL_PERIOD = "td_iap_free_trial_period";

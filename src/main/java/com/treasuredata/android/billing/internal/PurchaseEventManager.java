@@ -9,8 +9,10 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static com.treasuredata.android.billing.internal.PurchaseConstants.INAPP;
 import static com.treasuredata.android.billing.internal.PurchaseConstants.SUBSCRIPTION;
@@ -54,7 +56,7 @@ class PurchaseEventManager {
 
     public static List<String> getPurchasesSubs(Context context, Object inAppBillingObj) {
 
-        return filterAndCachePurchasesSubs(BillingDelegate.getPurchases(context, inAppBillingObj, SUBSCRIPTION));
+        return resolveAndCachePurchasesSubs(BillingDelegate.getPurchases(context, inAppBillingObj, SUBSCRIPTION));
     }
 
     private static List<String> filterAndCachePurchasesInapp(List<String> purchases) {
@@ -90,8 +92,12 @@ class PurchaseEventManager {
         return filteredPurchases;
     }
 
-    private static List<String> filterAndCachePurchasesSubs(List<String> purchases) {
-        List<String> filteredPurchases = new ArrayList<>();
+    enum SubscriptionType {
+        New, Expire, Cancel, Restore
+    }
+
+    private static List<String> resolveAndCachePurchasesSubs(List<String> purchases) {
+        List<String> resolvedPurchases = new ArrayList<>();
         SharedPreferences.Editor editor = purchaseSubsSharedPrefs.edit();
         for (String purchase : purchases) {
             try {
@@ -99,15 +105,30 @@ class PurchaseEventManager {
                 String sku = purchaseJson.getString("productId");
                 String purchaseToken = purchaseJson.getString("purchaseToken");
 
-                String oldPurchaseToken = purchaseSubsSharedPrefs.getString(sku, "");
+                String oldPurchase = purchaseSubsSharedPrefs.getString(sku, "");
+                JSONObject oldPurchaseJson = oldPurchase.isEmpty()
+                        ? new JSONObject() : new JSONObject(oldPurchase);
+                String oldPurchaseToken = oldPurchaseJson.optString("purchaseToken");
 
-                if (oldPurchaseToken.equals(purchaseToken)) {
-                    continue;
+                if (!oldPurchaseToken.equals(purchaseToken)) {
+                    purchaseJson.put("subscriptionType", SubscriptionType.New);
+                }else if (!oldPurchase.isEmpty()) {
+                    boolean oldAutoRenewing = oldPurchaseJson.getBoolean("autoRenewing");
+                    boolean newAutoRenewing = purchaseJson.getBoolean("autoRenewing");
+
+                    if (!newAutoRenewing && oldAutoRenewing) {
+                        purchaseJson.put("subscriptionType", SubscriptionType.Cancel);
+                    } else if (!oldAutoRenewing && newAutoRenewing) {
+                        purchaseJson.put("subscriptionType", SubscriptionType.Restore);
+                    } else { // newAutoRenewing == oldAutoRenewing, tracked already
+                        continue;
+                    }
                 }
 
+                resolvedPurchases.add(purchaseJson.toString());
+
                 // Write new purchase into cache
-                editor.putString(sku, purchaseToken);
-                filteredPurchases.add(purchase);
+                editor.putString(sku, purchaseJson.toString());
             } catch (JSONException e) {
                 Log.e(TAG, "Unable to parse purchase, not a json object: ", e);
             }
@@ -115,7 +136,58 @@ class PurchaseEventManager {
 
         editor.apply();
 
-        return filteredPurchases;
+        // SubscriptionType.Expire
+        resolvedPurchases.addAll(getExpiredPurchaseSubs(purchases));
+        return resolvedPurchases;
+    }
+
+    private static List<String> getExpiredPurchaseSubs(List<String> currentPurchases) {
+        List<String> expiredPurchases = new ArrayList<>();
+        Map<String,?> keys = purchaseSubsSharedPrefs.getAll();
+
+        if (keys.isEmpty()) {
+            return expiredPurchases;
+        }
+
+        Set<String> currSkuSet = new HashSet<>();
+        for (String purchase : currentPurchases) {
+            try {
+                JSONObject purchaseJson = new JSONObject(purchase);
+                currSkuSet.add(purchaseJson.getString("productId"));
+            } catch (JSONException e) {
+                Log.e(TAG, "Unable to parse purchase, not a json object:", e);
+            }
+        }
+
+        Set<String> expiredSkus = new HashSet<>();
+        for (Map.Entry<String,?> entry : keys.entrySet()){
+            String sku = entry.getKey();
+            if (!currSkuSet.contains(sku)) {
+                expiredSkus.add(sku);
+            }
+        }
+
+        SharedPreferences.Editor editor = purchaseSubsSharedPrefs.edit();
+        for (String expiredSku : expiredSkus) {
+            String expiredPurchase = purchaseSubsSharedPrefs.getString(expiredSku, "");
+
+            // Do not need to cache expired purchase any more
+            editor.remove(expiredSku);
+
+            if (!expiredPurchase.isEmpty()) {
+                try {
+                    JSONObject purchaseJson = new JSONObject(expiredPurchase);
+                    purchaseJson.put("subscriptionType", SubscriptionType.Expire);
+                    purchaseJson.put("autoRenewing", false);
+                    expiredPurchases.add(purchaseJson.toString());
+                } catch (JSONException e) {
+                    Log.e(TAG, "Unable to parse purchase, not a json object:", e);
+                }
+            }
+        }
+        editor.apply();
+
+        return expiredPurchases;
     }
 
     public static Map<String, String> getAndCacheSkuDetails(
