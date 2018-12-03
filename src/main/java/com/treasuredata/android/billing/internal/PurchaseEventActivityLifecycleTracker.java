@@ -255,14 +255,14 @@ public class PurchaseEventActivityLifecycleTracker {
             record.put(PurchaseConstants.IAP_PACKAGE_NAME, packageName);
 
             if (type.equals(SUBSCRIPTION)) {
-                String subcriptionType = purchaseJSON.optString("subscriptionType");
+                String subscriptionStatus = purchaseJSON.optString("subscriptionStatus");
                 Boolean autoRenewing = purchaseJSON.optBoolean("autoRenewing",
                                 false);
                 String subscriptionPeriod = skuDetailsJSON.optString("subscriptionPeriod");
                 String freeTrialPeriod = skuDetailsJSON.optString("freeTrialPeriod");
                 String introductoryPricePeriod = skuDetailsJSON.optString("introductoryPricePeriod");
 
-                record.put(PurchaseConstants.IAP_SUBSCRIPTION_TYPE, subcriptionType);
+                record.put(PurchaseConstants.IAP_SUBSCRIPTION_STATUS, subscriptionStatus);
                 record.put(PurchaseConstants.IAP_SUBSCRIPTION_AUTORENEWING, autoRenewing);
                 record.put(PurchaseConstants.IAP_SUBSCRIPTION_PERIOD, subscriptionPeriod);
                 record.put(PurchaseConstants.IAP_FREE_TRIAL_PERIOD, freeTrialPeriod);

@@ -310,7 +310,7 @@ class BillingDelegate {
             classMap.put(className, classObj);
         } catch (ClassNotFoundException e) {
             Log.e(TAG, className + " is not available, please add "
-                    + className + " to the project.", e);
+                    + className + " to the project's dependencies.", e);
         }
 
         return classObj;

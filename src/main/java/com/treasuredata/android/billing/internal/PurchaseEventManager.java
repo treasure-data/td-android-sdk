@@ -92,8 +92,8 @@ class PurchaseEventManager {
         return filteredPurchases;
     }
 
-    enum SubscriptionType {
-        New, Expire, Cancel, Restore
+    enum SubscriptionStatus {
+        New, Expired, Cancelled, Restored
     }
 
     private static List<String> resolveAndCachePurchasesSubs(List<String> purchases) {
@@ -111,15 +111,15 @@ class PurchaseEventManager {
                 String oldPurchaseToken = oldPurchaseJson.optString("purchaseToken");
 
                 if (!oldPurchaseToken.equals(purchaseToken)) {
-                    purchaseJson.put("subscriptionType", SubscriptionType.New);
+                    purchaseJson.put("subscriptionStatus", SubscriptionStatus.New);
                 }else if (!oldPurchase.isEmpty()) {
                     boolean oldAutoRenewing = oldPurchaseJson.getBoolean("autoRenewing");
                     boolean newAutoRenewing = purchaseJson.getBoolean("autoRenewing");
 
                     if (!newAutoRenewing && oldAutoRenewing) {
-                        purchaseJson.put("subscriptionType", SubscriptionType.Cancel);
+                        purchaseJson.put("subscriptionStatus", SubscriptionStatus.Cancelled);
                     } else if (!oldAutoRenewing && newAutoRenewing) {
-                        purchaseJson.put("subscriptionType", SubscriptionType.Restore);
+                        purchaseJson.put("subscriptionStatus", SubscriptionStatus.Restored);
                     } else { // newAutoRenewing == oldAutoRenewing, tracked already
                         continue;
                     }
@@ -136,7 +136,7 @@ class PurchaseEventManager {
 
         editor.apply();
 
-        // SubscriptionType.Expire
+        // SubscriptionStatus.Expired
         resolvedPurchases.addAll(getExpiredPurchaseSubs(purchases));
         return resolvedPurchases;
     }
@@ -177,7 +177,7 @@ class PurchaseEventManager {
             if (!expiredPurchase.isEmpty()) {
                 try {
                     JSONObject purchaseJson = new JSONObject(expiredPurchase);
-                    purchaseJson.put("subscriptionType", SubscriptionType.Expire);
+                    purchaseJson.put("subscriptionStatus", SubscriptionStatus.Expired);
                     purchaseJson.put("autoRenewing", false);
                     expiredPurchases.add(purchaseJson.toString());
                 } catch (JSONException e) {
