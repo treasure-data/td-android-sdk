@@ -45,22 +45,22 @@ class PurchaseEventManager {
 
     }
 
-    public static List<String> getPurchasesInapp(Context context, Object inAppBillingObj) {
+    public static List<Purchase> getPurchasesInapp(Context context, Object inAppBillingObj) {
 
         return filterAndCachePurchasesInapp(BillingDelegate.getPurchases(context, inAppBillingObj, INAPP));
     }
 
-    public static List<String> getPurchaseHistoryInapp(Context context, Object inAppBillingObj) {
+    public static List<Purchase> getPurchaseHistoryInapp(Context context, Object inAppBillingObj) {
         return filterAndCachePurchasesInapp(BillingDelegate.getPurchaseHistory(context, inAppBillingObj, INAPP));
     }
 
-    public static List<String> getPurchasesSubs(Context context, Object inAppBillingObj) {
+    public static List<Purchase> getPurchasesSubs(Context context, Object inAppBillingObj) {
 
         return resolveAndCachePurchasesSubs(BillingDelegate.getPurchases(context, inAppBillingObj, SUBSCRIPTION));
     }
 
-    private static List<String> filterAndCachePurchasesInapp(List<String> purchases) {
-        List<String> filteredPurchases = new ArrayList<>();
+    private static List<Purchase> filterAndCachePurchasesInapp(List<String> purchases) {
+        List<Purchase> filteredPurchases = new ArrayList<>();
         SharedPreferences.Editor editor = purchaseInappSharedPrefs.edit();
         long nowSec = System.currentTimeMillis() / 1000L;
         for (String purchase : purchases) {
@@ -81,7 +81,7 @@ class PurchaseEventManager {
 
                 // Write new purchase into cache
                 editor.putString(sku, purchaseToken);
-                filteredPurchases.add(purchase);
+                filteredPurchases.add(new Purchase(purchase));
             } catch (JSONException e) {
                 Log.e(TAG, "Unable to parse purchase, not a json object: ", e);
             }
@@ -92,12 +92,8 @@ class PurchaseEventManager {
         return filteredPurchases;
     }
 
-    enum SubscriptionStatus {
-        New, Expired, Cancelled, Restored
-    }
-
-    private static List<String> resolveAndCachePurchasesSubs(List<String> purchases) {
-        List<String> resolvedPurchases = new ArrayList<>();
+    private static List<Purchase> resolveAndCachePurchasesSubs(List<String> purchases) {
+        List<Purchase> resolvedPurchases = new ArrayList<>();
         SharedPreferences.Editor editor = purchaseSubsSharedPrefs.edit();
         for (String purchase : purchases) {
             try {
@@ -110,25 +106,27 @@ class PurchaseEventManager {
                         ? new JSONObject() : new JSONObject(oldPurchase);
                 String oldPurchaseToken = oldPurchaseJson.optString("purchaseToken");
 
+                Purchase.SubscriptionStatus subscriptionStatus = null;
+
                 if (!oldPurchaseToken.equals(purchaseToken)) {
-                    purchaseJson.put("subscriptionStatus", SubscriptionStatus.New);
+                    subscriptionStatus = Purchase.SubscriptionStatus.New;
                 }else if (!oldPurchase.isEmpty()) {
                     boolean oldAutoRenewing = oldPurchaseJson.getBoolean("autoRenewing");
                     boolean newAutoRenewing = purchaseJson.getBoolean("autoRenewing");
 
                     if (!newAutoRenewing && oldAutoRenewing) {
-                        purchaseJson.put("subscriptionStatus", SubscriptionStatus.Cancelled);
+                        subscriptionStatus = Purchase.SubscriptionStatus.Cancelled;
                     } else if (!oldAutoRenewing && newAutoRenewing) {
-                        purchaseJson.put("subscriptionStatus", SubscriptionStatus.Restored);
+                        subscriptionStatus = Purchase.SubscriptionStatus.Restored;
                     } else { // newAutoRenewing == oldAutoRenewing, tracked already
                         continue;
                     }
                 }
 
-                resolvedPurchases.add(purchaseJson.toString());
+                resolvedPurchases.add(new Purchase(purchase, subscriptionStatus));
 
                 // Write new purchase into cache
-                editor.putString(sku, purchaseJson.toString());
+                editor.putString(sku, purchase);
             } catch (JSONException e) {
                 Log.e(TAG, "Unable to parse purchase, not a json object: ", e);
             }
@@ -141,8 +139,8 @@ class PurchaseEventManager {
         return resolvedPurchases;
     }
 
-    private static List<String> getExpiredPurchaseSubs(List<String> currentPurchases) {
-        List<String> expiredPurchases = new ArrayList<>();
+    private static List<Purchase> getExpiredPurchaseSubs(List<String> currentPurchases) {
+        List<Purchase> expiredPurchases = new ArrayList<>();
         Map<String,?> keys = purchaseSubsSharedPrefs.getAll();
 
         if (keys.isEmpty()) {
@@ -175,14 +173,7 @@ class PurchaseEventManager {
             editor.remove(expiredSku);
 
             if (!expiredPurchase.isEmpty()) {
-                try {
-                    JSONObject purchaseJson = new JSONObject(expiredPurchase);
-                    purchaseJson.put("subscriptionStatus", SubscriptionStatus.Expired);
-                    purchaseJson.put("autoRenewing", false);
-                    expiredPurchases.add(purchaseJson.toString());
-                } catch (JSONException e) {
-                    Log.e(TAG, "Unable to parse purchase, not a json object:", e);
-                }
+                expiredPurchases.add(new Purchase(expiredPurchase, Purchase.SubscriptionStatus.Expired));
             }
         }
         editor.apply();

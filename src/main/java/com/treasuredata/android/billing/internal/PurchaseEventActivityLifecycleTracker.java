@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.treasuredata.android.billing.internal.PurchaseConstants.IAP_INTRO_PRICE_PERIOD;
 import static com.treasuredata.android.billing.internal.PurchaseConstants.INAPP;
 import static com.treasuredata.android.billing.internal.PurchaseConstants.SUBSCRIPTION;
 
@@ -63,8 +62,7 @@ public class PurchaseEventActivityLifecycleTracker {
             if (intentServices != null && !intentServices.isEmpty()) {
                 // Service available to handle that Intent
                 context.bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE);
-            }
-            else {
+            } else {
                 Log.e(TAG, "Billing service is unavailable on device");
             }
         }
@@ -125,12 +123,12 @@ public class PurchaseEventActivityLifecycleTracker {
 
                         // Log Purchase In app type (One-time product) for the app using In-app Billing with AIDL
                         // (https://developer.android.com/google/play/billing/api)
-                        List<String> purchasesInapp = PurchaseEventManager
+                        List<Purchase> purchasesInapp = PurchaseEventManager
                                 .getPurchasesInapp(context, inAppBillingObj);
                         trackPurchases(context, purchasesInapp, INAPP);
 
                         // Log Purchase subscriptions type
-                        List<String> purchasesSubs = PurchaseEventManager
+                        List<Purchase> purchasesSubs = PurchaseEventManager
                                 .getPurchasesSubs(context, inAppBillingObj);
                         trackPurchases(context, purchasesSubs, SUBSCRIPTION);
                     }
@@ -154,7 +152,7 @@ public class PurchaseEventActivityLifecycleTracker {
                             final Context context = TreasureData.getApplicationContext();
 
                             // First, retrieve the One-time products which have not been consumed
-                            List<String> purchases = PurchaseEventManager
+                            List<Purchase> purchases = PurchaseEventManager
                                     .getPurchasesInapp(context, inAppBillingObj);
 
                             // Second, retrieve the One-time products which have been consumed
@@ -181,27 +179,25 @@ public class PurchaseEventActivityLifecycleTracker {
         };
     }
 
-    private static boolean isInitialized()
-    {
+    private static boolean isInitialized() {
         return hasBillingService != null;
     }
 
-    private static void trackPurchases(final Context context, List<String> purchases, String type) {
+    private static void trackPurchases(final Context context, List<Purchase> purchases, String type) {
         if (purchases.isEmpty()) {
             return;
         }
 
-        final Map<String, String> purchaseMap = new HashMap<>();
+        final Map<String, Purchase> purchaseMap = new HashMap<>();
         List<String> skuList = new ArrayList<>();
-        for (String purchase : purchases) {
+        for (Purchase purchase : purchases) {
             try {
-                JSONObject purchaseJson = new JSONObject(purchase);
+                JSONObject purchaseJson = new JSONObject(purchase.getOriginalJson());
                 String sku = purchaseJson.getString("productId");
                 purchaseMap.put(sku, purchase);
 
                 skuList.add(sku);
-            }
-            catch (JSONException e){
+            } catch (JSONException e) {
                 Log.e(TAG, "Unable to parse purchase, not a json object:.", e);
             }
         }
@@ -209,91 +205,38 @@ public class PurchaseEventActivityLifecycleTracker {
         final Map<String, String> skuDetailsMap = PurchaseEventManager.getAndCacheSkuDetails(
                 context, inAppBillingObj, skuList, type);
 
+        List<Purchase> purchaseList = new ArrayList<>();
         for (Map.Entry<String, String> entry : skuDetailsMap.entrySet()) {
-            String purchase = purchaseMap.get(entry.getKey());
-            String skuDetails = entry.getValue();
-            trackPurchases(purchase, skuDetails);
+            Purchase purchase = purchaseMap.get(entry.getKey());
+            purchase.setSkuDetail(entry.getValue());
+            purchaseList.add(purchase);
         }
+        trackPurchases(purchaseList);
     }
 
-    private static void trackPurchases(String purchase, String skuDetails) {
-        try {
-            JSONObject purchaseJSON = new JSONObject(purchase);
-            JSONObject skuDetailsJSON = new JSONObject(skuDetails);
+    private static void trackPurchases(List<Purchase> purchases) {
+        String targetDatabase = TreasureData.getTdDefaultDatabase();
+        if (treasureData.getDefaultDatabase() == null) {
+            Log.w(TAG, "Default database is not set, iap event will be uploaded to " + targetDatabase);
+        } else {
+            targetDatabase = treasureData.getDefaultDatabase();
+        }
+
+        String targetTable = TreasureData.getTdDefaultTable();
+        if (treasureData.getDefaultTable() == null) {
+            Log.w(TAG, "Default table is not set, iap event will be uploaded to " + targetTable);
+        } else {
+            targetTable = treasureData.getDefaultTable();
+        }
+
+        for (Purchase purchase: purchases) {
             Map<String, Object> record = new HashMap<>();
             record.put(PurchaseConstants.EVENT_KEY, PurchaseConstants.IAP_EVENT_NAME);
 
-            String productId = purchaseJSON.getString("productId");
-            String orderId = purchaseJSON.optString("orderId");
-            String title = skuDetailsJSON.optString("title");
-            String price = skuDetailsJSON.getString("price");
-            Long priceAmountMicros = skuDetailsJSON.getLong("price_amount_micros");
-            String currency = skuDetailsJSON.getString("price_currency_code");
-            String description = skuDetailsJSON.optString("description");
-            String type = skuDetailsJSON.optString("type");
-            Integer purchaseState = purchaseJSON.optInt("purchaseState");
-            String developerPayload = purchaseJSON.optString("developerPayload");
-            Long purchaseTime = purchaseJSON.getLong("purchaseTime");
-            String purchaseToken = purchaseJSON.getString("purchaseToken");
-            String packageName = purchaseJSON.optString("packageName");
-
-            record.put(PurchaseConstants.IAP_PRODUCT_ID, productId);
-            record.put(PurchaseConstants.IAP_ORDER_ID, orderId);
-            record.put(PurchaseConstants.IAP_PRODUCT_TITLE, title);
-            record.put(PurchaseConstants.IAP_PRODUCT_PRICE, price);
-            record.put(PurchaseConstants.IAP_PRODUCT_PRICE_AMOUNT_MICROS, priceAmountMicros);
-            record.put(PurchaseConstants.IAP_PRODUCT_CURRENCY, currency);
-
-            // Quantity is always 1 for Android IAP purchase
-            record.put(PurchaseConstants.IAP_QUANTITY, 1);
-            record.put(PurchaseConstants.IAP_PRODUCT_TYPE, type);
-            record.put(PurchaseConstants.IAP_PRODUCT_DESCRIPTION, description);
-            record.put(PurchaseConstants.IAP_PURCHASE_STATE, purchaseState);
-            record.put(PurchaseConstants.IAP_PURCHASE_DEVELOPER_PAYLOAD, developerPayload);
-            record.put(PurchaseConstants.IAP_PURCHASE_TIME, purchaseTime);
-            record.put(PurchaseConstants.IAP_PURCHASE_TOKEN, purchaseToken);
-            record.put(PurchaseConstants.IAP_PACKAGE_NAME, packageName);
-
-            if (type.equals(SUBSCRIPTION)) {
-                String subscriptionStatus = purchaseJSON.optString("subscriptionStatus");
-                Boolean autoRenewing = purchaseJSON.optBoolean("autoRenewing",
-                                false);
-                String subscriptionPeriod = skuDetailsJSON.optString("subscriptionPeriod");
-                String freeTrialPeriod = skuDetailsJSON.optString("freeTrialPeriod");
-                String introductoryPricePeriod = skuDetailsJSON.optString("introductoryPricePeriod");
-
-                record.put(PurchaseConstants.IAP_SUBSCRIPTION_STATUS, subscriptionStatus);
-                record.put(PurchaseConstants.IAP_SUBSCRIPTION_AUTORENEWING, autoRenewing);
-                record.put(PurchaseConstants.IAP_SUBSCRIPTION_PERIOD, subscriptionPeriod);
-                record.put(PurchaseConstants.IAP_FREE_TRIAL_PERIOD, freeTrialPeriod);
-
-                if (!introductoryPricePeriod.isEmpty()) {
-                    record.put(IAP_INTRO_PRICE_PERIOD, introductoryPricePeriod);
-                    Long introductoryPriceCycles = skuDetailsJSON.optLong("introductoryPriceCycles");
-                    record.put(PurchaseConstants.IAP_INTRO_PRICE_CYCLES, introductoryPriceCycles);
-                    Long introductoryPriceAmountMicros = skuDetailsJSON.getLong("introductoryPriceAmountMicros");
-                    record.put(PurchaseConstants.IAP_INTRO_PRICE_AMOUNT_MICROS, introductoryPriceAmountMicros);
-                }
-            }
-
             record.put(TreasureData.EVENT_KEY_IN_APP_PURCHASE_EVENT_PRIVATE, true);
 
-            String targetDatabase = TreasureData.getTdDefaultDatabase();
-            if (treasureData.getDefaultDatabase() == null) {
-                Log.w(TAG, "Default database is not set, iap event will be uploaded to " + targetDatabase);
-            } else {
-                targetDatabase = treasureData.getDefaultDatabase();
-            }
-
-            String targetTable = TreasureData.getTdDefaultTable();
-            if (treasureData.getDefaultTable() == null) {
-                Log.w(TAG, "Default table is not set, iap event will be uploaded to " + targetTable);
-            } else {
-                targetTable = treasureData.getDefaultTable();
-            }
+            record.putAll(purchase.toRecord());
             treasureData.addEvent(targetDatabase, targetTable, record);
-        } catch (JSONException e) {
-            Log.e(TAG, "Unable to parse purchase, not a json object:", e);
         }
     }
 }
