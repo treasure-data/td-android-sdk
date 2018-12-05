@@ -37,18 +37,24 @@ public class PurchaseEventActivityLifecycleTracker {
     private static Object inAppBillingObj;
 
     private static final AtomicBoolean isTracking = new AtomicBoolean(false);
-    private static TreasureData treasureData;
+    private static List<PurchaseEventListener> purchaseEventListeners = new ArrayList<>(1);
+
+    public interface PurchaseEventListener {
+        void onTrack(List<Purchase> purchases);
+    }
 
     private PurchaseEventActivityLifecycleTracker() {
 
     }
 
-    public static void update(TreasureData treasureData) {
-        PurchaseEventActivityLifecycleTracker.treasureData = treasureData;
+    public static void track(PurchaseEventListener purchaseEventListener) {
+
         initialize();
         if (!hasBillingService) {
             return;
         }
+
+        purchaseEventListeners.add(purchaseEventListener);
 
         if (!isTracking.compareAndSet(false, true)) {
             return;
@@ -211,32 +217,9 @@ public class PurchaseEventActivityLifecycleTracker {
             purchase.setSkuDetail(entry.getValue());
             purchaseList.add(purchase);
         }
-        trackPurchases(purchaseList);
-    }
 
-    private static void trackPurchases(List<Purchase> purchases) {
-        String targetDatabase = TreasureData.getTdDefaultDatabase();
-        if (treasureData.getDefaultDatabase() == null) {
-            Log.w(TAG, "Default database is not set, iap event will be uploaded to " + targetDatabase);
-        } else {
-            targetDatabase = treasureData.getDefaultDatabase();
-        }
-
-        String targetTable = TreasureData.getTdDefaultTable();
-        if (treasureData.getDefaultTable() == null) {
-            Log.w(TAG, "Default table is not set, iap event will be uploaded to " + targetTable);
-        } else {
-            targetTable = treasureData.getDefaultTable();
-        }
-
-        for (Purchase purchase: purchases) {
-            Map<String, Object> record = new HashMap<>();
-            record.put(PurchaseConstants.EVENT_KEY, PurchaseConstants.IAP_EVENT_NAME);
-
-            record.put(TreasureData.EVENT_KEY_IN_APP_PURCHASE_EVENT_PRIVATE, true);
-
-            record.putAll(purchase.toRecord());
-            treasureData.addEvent(targetDatabase, targetTable, record);
+        for (PurchaseEventListener purchaseEventListener : purchaseEventListeners) {
+            purchaseEventListener.onTrack(purchaseList);
         }
     }
 }

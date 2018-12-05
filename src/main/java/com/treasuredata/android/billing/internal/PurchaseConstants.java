@@ -5,10 +5,6 @@ class PurchaseConstants {
     public static final String SUBSCRIPTION = "subs";
     public static final String INAPP = "inapp";
 
-    // Event column and in app purchase event name
-    public static final String EVENT_KEY = "td_android_event";
-    public static final String IAP_EVENT_NAME = "TD_ANDROID_IN_APP_PURCHASE";
-
     // Purchase columns
     public static final String IAP_PRODUCT_ID = "td_iap_product_id";
     public static final String IAP_ORDER_ID = "td_iap_order_id";
