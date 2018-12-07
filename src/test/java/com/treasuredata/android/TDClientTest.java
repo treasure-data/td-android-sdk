@@ -14,6 +14,8 @@ import org.junit.rules.TemporaryFolder;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -75,6 +77,14 @@ public class TDClientTest
                         for (Map.Entry<String, List<Map<String, Object>>> exp : expected.entrySet()) {
                             List<Map<String, Object>> events = (List<Map<String, Object>>) requests.get(exp.getKey());
                             assertThat(events.size(), is(exp.getValue().size()));
+                            Collections.sort(events, new Comparator<Map<String, Object>>() {
+                                @Override
+                                public int compare(Map<String, Object> o1, Map<String, Object> o2) {
+                                    String name1 = (String) o1.get("name");
+                                    String name2 = (String) o2.get("name");
+                                    return name2.compareTo(name1);
+                                }
+                            });
                             int i = 0;
                             for (Map<String, Object> expectedEvent : exp.getValue()) {
                                 Map<String, Object> event = events.get(i);
