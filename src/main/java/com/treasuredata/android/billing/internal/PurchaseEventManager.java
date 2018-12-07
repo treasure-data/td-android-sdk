@@ -94,7 +94,6 @@ class PurchaseEventManager {
 
     private static List<Purchase> resolveAndCachePurchasesSubs(List<String> purchases) {
         List<Purchase> resolvedPurchases = new ArrayList<>();
-        SharedPreferences.Editor editor = purchaseSubsSharedPrefs.edit();
         for (String purchase : purchases) {
             try {
                 JSONObject purchaseJson = new JSONObject(purchase);
@@ -109,6 +108,10 @@ class PurchaseEventManager {
                 Purchase.SubscriptionStatus subscriptionStatus = null;
 
                 if (!oldPurchaseToken.equals(purchaseToken)) {
+                    // New purchase is always true for autoRenewing
+                    if (!purchaseJson.getBoolean("autoRenewing")) {
+                        continue;
+                    }
                     subscriptionStatus = Purchase.SubscriptionStatus.New;
                 }else if (!oldPurchase.isEmpty()) {
                     boolean oldAutoRenewing = oldPurchaseJson.getBoolean("autoRenewing");
@@ -125,14 +128,11 @@ class PurchaseEventManager {
 
                 resolvedPurchases.add(new Purchase(purchase, subscriptionStatus));
 
-                // Write new purchase into cache
-                editor.putString(sku, purchase);
+                purchaseSubsSharedPrefs.edit().putString(sku, purchase).apply();
             } catch (JSONException e) {
                 Log.e(TAG, "Unable to parse purchase, not a json object: ", e);
             }
         }
-
-        editor.apply();
 
         // SubscriptionStatus.Expired
         resolvedPurchases.addAll(getExpiredPurchaseSubs(purchases));

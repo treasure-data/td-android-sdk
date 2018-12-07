@@ -142,7 +142,7 @@ public class TreasureData {
             synchronized (TreasureData.class) {
                 if (executor == null) { //Check for the second time
                     //If there is no instance available. Create new one
-                    executor = AsyncTask.THREAD_POOL_EXECUTOR;
+                    executor = AsyncTask.SERIAL_EXECUTOR;
                 }
             }
         }

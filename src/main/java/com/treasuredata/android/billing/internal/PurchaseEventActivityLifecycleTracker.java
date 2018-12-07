@@ -133,7 +133,7 @@ public class PurchaseEventActivityLifecycleTracker {
                                 .getPurchasesInapp(context, inAppBillingObj);
                         trackPurchases(context, purchasesInapp, INAPP);
 
-                        // Log Purchase subscriptions type
+                        // Log Purchase subscriptions
                         List<Purchase> purchasesSubs = PurchaseEventManager
                                 .getPurchasesSubs(context, inAppBillingObj);
                         trackPurchases(context, purchasesSubs, SUBSCRIPTION);
