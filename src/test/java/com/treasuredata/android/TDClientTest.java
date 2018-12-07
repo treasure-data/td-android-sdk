@@ -86,7 +86,16 @@ public class TDClientTest
                                 }
                             });
                             int i = 0;
-                            for (Map<String, Object> expectedEvent : exp.getValue()) {
+                            List<Map<String, Object>> expList = exp.getValue();
+                            Collections.sort(expList, new Comparator<Map<String, Object>>() {
+                                @Override
+                                public int compare(Map<String, Object> o1, Map<String, Object> o2) {
+                                    String name1 = (String) o1.get("name");
+                                    String name2 = (String) o2.get("name");
+                                    return name1.compareTo(name2);
+                                }
+                            });
+                            for (Map<String, Object> expectedEvent : expList) {
                                 Map<String, Object> event = events.get(i);
                                 for (Map.Entry<String, Object> keyAndValue : expectedEvent.entrySet()) {
                                     assertThat(event.get(keyAndValue.getKey()), is(keyAndValue.getValue()));
