@@ -82,7 +82,7 @@ public class TDClientTest
                                 public int compare(Map<String, Object> o1, Map<String, Object> o2) {
                                     String name1 = (String) o1.get("name");
                                     String name2 = (String) o2.get("name");
-                                    return name2.compareTo(name1);
+                                    return name1.compareTo(name2);
                                 }
                             });
                             int i = 0;
