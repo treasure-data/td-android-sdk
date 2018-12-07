@@ -112,12 +112,12 @@ public class TDClientTest
         TDClient client = new TDClient(APIKEY, cacheDir);
 
         HashMap<String, Object> event0 = new HashMap<String, Object>();
-        event0.put("name", "Foo");
+        event0.put("name", "Bar");
         event0.put("age", 42);
         client.queueEvent("db0.tbl0", event0);
 
         HashMap<String, Object> event1 = new HashMap<String, Object>();
-        event1.put("name", "Bar");
+        event1.put("name", "Foo");
         event1.put("age", 99);
         client.queueEvent("db0.tbl0", event1);
 
@@ -139,12 +139,12 @@ public class TDClientTest
         TDClient client = new TDClient(APIKEY, cacheDir);
 
         HashMap<String, Object> event0 = new HashMap<String, Object>();
-        event0.put("name", "Foo");
+        event0.put("name", "Bar");
         event0.put("age", 42);
         client.queueEvent("db0.tbl0", event0);
 
         HashMap<String, Object> event1 = new HashMap<String, Object>();
-        event1.put("name", "Bar");
+        event1.put("name", "Foo");
         event1.put("age", 99);
         client.queueEvent("db1.tbl1", event1);
 
@@ -167,22 +167,22 @@ public class TDClientTest
         client.setMaxUploadEventsAtOnce(3);
 
         HashMap<String, Object> event0 = new HashMap<String, Object>();
-        event0.put("name", "Foo");
+        event0.put("name", "Bar");
         event0.put("age", 42);
         client.queueEvent("db0.tbl0", event0);
 
         HashMap<String, Object> event1 = new HashMap<String, Object>();
-        event1.put("name", "Bar");
+        event1.put("name", "Baz");
         event1.put("age", 99);
         client.queueEvent("db0.tbl0", event1);
 
         HashMap<String, Object> event2 = new HashMap<String, Object>();
-        event2.put("name", "Baz");
+        event2.put("name", "Foo");
         event2.put("age", 1);
         client.queueEvent("db0.tbl0", event2);
 
         HashMap<String, Object> event3 = new HashMap<String, Object>();
-        event3.put("name", "zzz");
+        event3.put("name", "Zzz");
         event3.put("age", 111);
         client.queueEvent("db0.tbl0", event3);
 
@@ -210,12 +210,12 @@ public class TDClientTest
         client.setMaxUploadEventsAtOnce(3);
 
         HashMap<String, Object> event0 = new HashMap<String, Object>();
-        event0.put("name", "Foo");
+        event0.put("name", "Bar");
         event0.put("age", 42);
         client.queueEvent("db0.tbl0", event0);
 
         HashMap<String, Object> event1 = new HashMap<String, Object>();
-        event1.put("name", "Bar");
+        event1.put("name", "Foo");
         event1.put("age", 99);
         client.queueEvent("db0.tbl0", event1);
 
