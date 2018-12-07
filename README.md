@@ -262,7 +262,7 @@ It outputs the following columns:
 - `td_iap_product_price` : price (SKU detail)
 - `td_iap_quantity` : 1
 - `td_iap_product_price_amount_micros` : price_amount_micros (SKU detail)
-- `td_iap_product_currency` : price_currency_code (SKU Detail)
+- `td_iap_product_currency` : price_currency_code (SKU detail)
 - `td_iap_purchase_time` : purchaseTime (Purchase)
 - `td_iap_purchase_token` : purchaseToken (Purchase)
 - `td_iap_purchase_state` : purchaseState (Purchase)
@@ -287,7 +287,7 @@ Depending on the countries where you sell your app (e.g. the EU), you may need t
 - To turn off auto tracking in app purchase events(when in app purchase event is enabled) : `TreasureData#disableInAppPurchaseEvent()`.
 - To turn off custom events (the events you are tracking by `TreasureData#addEvent`, `TreasureData#addEventWithCallback` ) : `TreasureData#disableCustomEvent`. To turn on it again :  `TreasureData#enableCustomEvent`
 
-You can query the state of tracking events by using : `TreasureData#isAppLifecycleEventEnabled()`, `TreasureData#isInAppPurchaseEventEnabled()` and `TreasureData#isCustomEventEnabled()`
+You can query the state of tracking events by using : `TreasureData#isAppLifecycleEventEnabled()`, `TreasureData#isInAppPurchaseEventEnabled()` and `TreasureData#isCustomEventEnabled()`.
 The states have effects across device reboots, app updates, so you can simply call this once during your application.
 
 ## About error codes
