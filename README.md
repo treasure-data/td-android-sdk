@@ -249,14 +249,45 @@ App lifecycle events include : Application Install, Application Open, Applicatio
 - Disable Application Open: `disableAppOpenEvent()`
 - Disable Application Update: `disableAppUpdatedEvent()`
 
+### Track in app purchase events automatically
+
+In app purchase event tracking is optional and not enable by default. To track in app purchase events automatically, you only need to add a line of code :
+`TreasureData#enableInAppPurchaseEvent()`
+
+It outputs the following columns: 
+
+- `td_android_event` : TD_ANDROID_IN_APP_PURCHASE
+- `td_iap_product_id` : productId (Purchase)
+- `td_iap_order_id` : orderId (Purchase)
+- `td_iap_product_price` : price (SKU detail)
+- `td_iap_quantity` : 1
+- `td_iap_product_price_amount_micros` : price_amount_micros (SKU detail)
+- `td_iap_product_currency` : price_currency_code (SKU Detail)
+- `td_iap_purchase_time` : purchaseTime (Purchase)
+- `td_iap_purchase_token` : purchaseToken (Purchase)
+- `td_iap_purchase_state` : purchaseState (Purchase)
+- `td_iap_purchase_developer_payload` : developerPayload (Purchase)
+- `td_iap_product_type` : type (SKU detail), inapp for one-time product and subs for subscription
+- `td_iap_product_title` : title (SKU detail)
+- `td_iap_product_description` : description (SKU detail)
+- `td_iap_package_name` : packageName (Purchase)
+- `td_iap_subs_auto_renewing` : autoRenewing (SKU detail for subscription)
+- `td_iap_subs_status` : Auto detection for subscription (New|Cancelled|Restored|Expired)
+- `td_iap_subs_period` : subscriptionPeriod (SKU detail for subscription)
+- `td_iap_free_trial_period` : freeTrialPeriod (SKU detail for subscription)
+- `td_iap_intro_price_period` : introductoryPricePeriod (SKU detail for subscription)
+- `td_iap_intro_price_cycless` : introductoryPriceCycles (SKU detail for subscription)
+- `td_iap_intro_price_amount_micros` : introductoryPriceAmountMicro (SKU detail for subscription)
+
 ### Opt out 
 
 Depending on the countries where you sell your app (e.g. the EU), you may need to offer the ability for users to opt-out of tracking data inside your app.
 
-- To turn off auto tracking events (when application lifecycle event tracking is enable) : `TreasureData#disableAppLifecycleEvent()`.
+- To turn off auto tracking application lifecycle events (when application lifecycle event tracking is enabled) : `TreasureData#disableAppLifecycleEvent()`.
+- To turn off auto tracking in app purchase events(when in app purchase event is enabled) : `TreasureData#disableInAppPurchaseEvent()`.
 - To turn off custom events (the events you are tracking by `TreasureData#addEvent`, `TreasureData#addEventWithCallback` ) : `TreasureData#disableCustomEvent`. To turn on it again :  `TreasureData#enableCustomEvent`
 
-You can query the state of tracking events by using : `TreasureData#isAppLifecycleEventEnabled()` and `TreasureData#isCustomEventEnabled()`
+You can query the state of tracking events by using : `TreasureData#isAppLifecycleEventEnabled()`, `TreasureData#isInAppPurchaseEventEnabled()` and `TreasureData#isCustomEventEnabled()`
 The states have effects across device reboots, app updates, so you can simply call this once during your application.
 
 ## About error codes
