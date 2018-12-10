@@ -229,19 +229,19 @@ public class TDClientTest
         client.setMaxUploadEventsAtOnce(3);
 
         HashMap<String, Object> event0 = new HashMap<String, Object>();
-        event0.put("name", "Bar");
-        event0.put("age", 42);
-        client.queueEvent("db0.tbl0", event0);
+        event0.put("name", "Baz");
+        event0.put("age", 1);
+        client.queueEvent("db1.tbl1", event0);
 
         HashMap<String, Object> event1 = new HashMap<String, Object>();
-        event1.put("name", "Foo");
-        event1.put("age", 99);
+        event1.put("name", "Bar");
+        event1.put("age", 42);
         client.queueEvent("db0.tbl0", event1);
 
         HashMap<String, Object> event2 = new HashMap<String, Object>();
-        event2.put("name", "Baz");
-        event2.put("age", 1);
-        client.queueEvent("db1.tbl1", event2);
+        event2.put("name", "Foo");
+        event2.put("age", 99);
+        client.queueEvent("db0.tbl0", event2);
 
         HashMap<String, Object> event3 = new HashMap<String, Object>();
         event3.put("name", "Zzz");
@@ -249,8 +249,8 @@ public class TDClientTest
         client.queueEvent("db1.tbl1", event3);
 
         Map<String, List<Map<String, Object>>> expected0 = new HashMap<String, List<Map<String, Object>>>();
-        expected0.put("db0.tbl0", Arrays.<Map<String, Object>>asList(event0, event1));
-        expected0.put("db1.tbl1", Arrays.<Map<String, Object>>asList(event2));
+        expected0.put("db0.tbl0", Arrays.<Map<String, Object>>asList(event1, event2));
+        expected0.put("db1.tbl1", Arrays.<Map<String, Object>>asList(event0));
 
         Map<String, List<Map<String, Object>>> expected1 = new HashMap<String, List<Map<String, Object>>>();
         expected1.put("db1.tbl1", Arrays.<Map<String, Object>>asList(event3));
