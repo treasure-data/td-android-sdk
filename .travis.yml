@@ -5,7 +5,7 @@ env:
     - _JAVA_OPTIONS="-Xmx2048m -Xms512m"
 
 jdk:
-  - openjdk7
+  - java-1.7.0-openjdk-amd64
 
 sudo: false
 
