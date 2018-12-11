@@ -57,64 +57,71 @@ public class TDClientTest
         server.shutdown();
     }
 
-    private void sendQueuedEventsAndAssert(TDClient client, final List<Map<String, List<Map<String, Object>>>> expects)
-            throws Exception
-    {
+    private void sendQueuedEventsAndAssert(final TDClient client, final List<Map<String, List<Map<String, Object>>>> expects)
+            throws Exception {
         final CountDownLatch latch = new CountDownLatch(1);
         client.sendQueuedEventsAsync(null, new KeenCallback() {
             @Override
-            public void onSuccess()
-            {
+            public void onSuccess() {
                 try {
-                    assertThat(server.getRequestCount(), is(expects.size()));
+                    Map<String, List<Map<String, Object>>> eventMap = new HashMap<>();
 
-                    for (Map<String, List<Map<String, Object>>> expected : expects) {
+                    for (int i = 0; i < server.getRequestCount(); i++) {
                         RecordedRequest recordedRequest = server.takeRequest();
                         assertThat(recordedRequest.getMethod(), is("POST"));
                         assertThat(recordedRequest.getHeader("X-TD-Write-Key"), is(APIKEY));
                         assertThat(recordedRequest.getHeader("X-TD-Data-Type"), is("k"));
                         Map<String, Object> requests = JSON.mapFrom(recordedRequest.getBody().inputStream());
-                        assertThat(requests.size(), is(expected.size()));
-                        for (Map.Entry<String, List<Map<String, Object>>> exp : expected.entrySet()) {
-                            List<Map<String, Object>> events = (List<Map<String, Object>>) requests.get(exp.getKey());
-                            assertThat(events.size(), is(exp.getValue().size()));
-                            Collections.sort(events, new Comparator<Map<String, Object>>() {
+                        for (String table : requests.keySet()) {
+                            List<Map<String, Object>> events = (List<Map<String, Object>>) requests.get(table);
+                            if (eventMap.get(table) == null) {
+                                eventMap.put(table, new ArrayList<Map<String, Object>>());
+                            }
+                            eventMap.get(table).addAll(events);
+                        }
+                    }
+
+                    int numOfEvents = 0;
+                    for (Map<String, List<Map<String, Object>>> expected : expects) {
+                        for (String table : expected.keySet()) {
+                            List<Map<String, Object>> expectedEvents = expected.get(table);
+                            numOfEvents += expectedEvents.size();
+                            Collections.sort(expectedEvents, new Comparator<Map<String, Object>>() {
                                 @Override
                                 public int compare(Map<String, Object> o1, Map<String, Object> o2) {
-                                    String name1 = (String) o1.get("name");
-                                    String name2 = (String) o2.get("name");
-                                    return name1.compareTo(name2);
+                                    return o1.get("name").toString().compareTo(o2.get("name").toString());
                                 }
                             });
+                            List<Map<String, Object>> actualEvents = eventMap.get(table);
+                            Collections.sort(actualEvents, new Comparator<Map<String, Object>>() {
+                                @Override
+                                public int compare(Map<String, Object> o1, Map<String, Object> o2) {
+                                    return o1.get("name").toString().compareTo(o2.get("name").toString());
+                                }
+                            });
+                            assertThat(actualEvents.size(), is(expectedEvents.size()));
                             int i = 0;
-                            List<Map<String, Object>> expList = exp.getValue();
-                            Collections.sort(expList, new Comparator<Map<String, Object>>() {
-                                @Override
-                                public int compare(Map<String, Object> o1, Map<String, Object> o2) {
-                                    String name1 = (String) o1.get("name");
-                                    String name2 = (String) o2.get("name");
-                                    return name1.compareTo(name2);
-                                }
-                            });
-                            for (Map<String, Object> expectedEvent : expList) {
-                                Map<String, Object> event = events.get(i);
+                            for (Map<String, Object> expectedEvent : expectedEvents) {
+                                Map<String, Object> actualEvent = actualEvents.get(i);
                                 for (Map.Entry<String, Object> keyAndValue : expectedEvent.entrySet()) {
-                                    assertThat(event.get(keyAndValue.getKey()), is(keyAndValue.getValue()));
+                                    assertThat(actualEvent.get(keyAndValue.getKey()), is(keyAndValue.getValue()));
                                 }
                                 i++;
                             }
                         }
                     }
+
+                    int expectedRequestCount = numOfEvents % client.getMaxUploadEventsAtOnce() == 0
+                            ? numOfEvents / client.getMaxUploadEventsAtOnce() : numOfEvents / client.getMaxUploadEventsAtOnce() + 1;
+                    assertThat("Number of request made", server.getRequestCount(), is(expectedRequestCount));
                     latch.countDown();
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
 
             @Override
-            public void onFailure(Exception e)
-            {
+            public void onFailure(Exception e) {
                 e.printStackTrace();
                 assertTrue(false);
             }
@@ -132,12 +139,12 @@ public class TDClientTest
         TDClient client = new TDClient(APIKEY, cacheDir);
 
         HashMap<String, Object> event0 = new HashMap<String, Object>();
-        event0.put("name", "Bar");
+        event0.put("name", "Foo");
         event0.put("age", 42);
         client.queueEvent("db0.tbl0", event0);
 
         HashMap<String, Object> event1 = new HashMap<String, Object>();
-        event1.put("name", "Foo");
+        event1.put("name", "Bar");
         event1.put("age", 99);
         client.queueEvent("db0.tbl0", event1);
 
@@ -159,12 +166,12 @@ public class TDClientTest
         TDClient client = new TDClient(APIKEY, cacheDir);
 
         HashMap<String, Object> event0 = new HashMap<String, Object>();
-        event0.put("name", "Bar");
+        event0.put("name", "Foo");
         event0.put("age", 42);
         client.queueEvent("db0.tbl0", event0);
 
         HashMap<String, Object> event1 = new HashMap<String, Object>();
-        event1.put("name", "Foo");
+        event1.put("name", "Bar");
         event1.put("age", 99);
         client.queueEvent("db1.tbl1", event1);
 
@@ -186,76 +193,30 @@ public class TDClientTest
         TDClient client = new TDClient(APIKEY, cacheDir);
         client.setMaxUploadEventsAtOnce(3);
 
-        final List<Map<String, Object>> list1 = new ArrayList<>();
-        final List<Map<String, Object>> list2 = new ArrayList<>();
-
-        final HashMap<String, Object> event0 = new HashMap<String, Object>();
-        event0.put("name", "Bar");
+        HashMap<String, Object> event0 = new HashMap<String, Object>();
+        event0.put("name", "Foo");
         event0.put("age", 42);
-        client.queueEvent(null, "db0.tbl0", event0, null, new KeenCallback() {
-            @Override
-            public void onSuccess() {
-                list1.add(event0);
-            }
+        client.queueEvent("db0.tbl0", event0);
 
-            @Override
-            public void onFailure(Exception e) {
-
-            }
-        });
-
-        final HashMap<String, Object> event1 = new HashMap<String, Object>();
-        event1.put("name", "Baz");
+        HashMap<String, Object> event1 = new HashMap<String, Object>();
+        event1.put("name", "Bar");
         event1.put("age", 99);
-        client.queueEvent(null,"db0.tbl0", event1, null, new KeenCallback() {
-            @Override
-            public void onSuccess() {
-                list1.add(event1);
-            }
+        client.queueEvent("db0.tbl0", event1);
 
-            @Override
-            public void onFailure(Exception e) {
-
-            }
-        });
-
-        final HashMap<String, Object> event2 = new HashMap<String, Object>();
-        event2.put("name", "Foo");
+        HashMap<String, Object> event2 = new HashMap<String, Object>();
+        event2.put("name", "Baz");
         event2.put("age", 1);
-        client.queueEvent(null, "db0.tbl0", event2, null, new KeenCallback() {
-            @Override
-            public void onSuccess() {
-                list1.add(event2);
-            }
+        client.queueEvent("db0.tbl0", event2);
 
-            @Override
-            public void onFailure(Exception e) {
-
-            }
-        });
-
-        final HashMap<String, Object> event3 = new HashMap<String, Object>();
-        event3.put("name", "Zzz");
+        HashMap<String, Object> event3 = new HashMap<String, Object>();
+        event3.put("name", "zzz");
         event3.put("age", 111);
-        client.queueEvent(null, "db0.tbl0", event3, null, new KeenCallback() {
-            @Override
-            public void onSuccess() {
-                list2.add(event3);
-            }
+        client.queueEvent("db0.tbl0", event3);
 
-            @Override
-            public void onFailure(Exception e) {
+        Map<String, List<Map<String, Object>>> expected = new HashMap<String, List<Map<String, Object>>>();
+        expected.put("db0.tbl0", Arrays.<Map<String, Object>>asList(event0, event1, event2, event3));
 
-            }
-        });
-
-        Map<String, List<Map<String, Object>>> expected0 = new HashMap<String, List<Map<String, Object>>>();
-        expected0.put("db0.tbl0", list1);
-
-        Map<String, List<Map<String, Object>>> expected1 = new HashMap<String, List<Map<String, Object>>>();
-        expected1.put("db0.tbl0", list2);
-
-        sendQueuedEventsAndAssert(client, Arrays.asList(expected0, expected1));
+        sendQueuedEventsAndAssert(client, Arrays.asList(expected));
     }
 
     @Test
@@ -272,76 +233,31 @@ public class TDClientTest
         TDClient client = new TDClient(APIKEY, cacheDir);
         client.setMaxUploadEventsAtOnce(3);
 
-        final List<Map<String, Object>> list1 = new ArrayList<>();
-        final List<Map<String, Object>> list2 = new ArrayList<>();
-        final List<Map<String, Object>> list3 = new ArrayList<>();
-
-        final HashMap<String, Object> event0 = new HashMap<String, Object>();
-        event0.put("name", "Bar");
+        HashMap<String, Object> event0 = new HashMap<String, Object>();
+        event0.put("name", "Foo");
         event0.put("age", 42);
-        client.queueEvent(null, "db0.tbl0", event0, null, new KeenCallback() {
-            @Override
-            public void onSuccess() {
-                list1.add(event0);
-            }
+        client.queueEvent("db0.tbl0", event0);
 
-            @Override
-            public void onFailure(Exception e) {
-
-            }
-        });
-
-        final HashMap<String, Object> event1 = new HashMap<String, Object>();
-        event1.put("name", "Foo");
+        HashMap<String, Object> event1 = new HashMap<String, Object>();
+        event1.put("name", "Bar");
         event1.put("age", 99);
-        client.queueEvent(null, "db0.tbl0", event1, null,  new KeenCallback() {
-            @Override
-            public void onSuccess() {
-                list1.add(event1);
-            }
+        client.queueEvent("db0.tbl0", event1);
 
-            @Override
-            public void onFailure(Exception e) {
-
-            }
-        });
-
-        final HashMap<String, Object> event2 = new HashMap<String, Object>();
+        HashMap<String, Object> event2 = new HashMap<String, Object>();
         event2.put("name", "Baz");
         event2.put("age", 1);
-        client.queueEvent(null,"db1.tbl1", event2, null, new KeenCallback() {
-            @Override
-            public void onSuccess() {
-                list2.add(event2);
-            }
+        client.queueEvent("db1.tbl1", event2);
 
-            @Override
-            public void onFailure(Exception e) {
-
-            }
-        });
-
-        final HashMap<String, Object> event3 = new HashMap<String, Object>();
+        HashMap<String, Object> event3 = new HashMap<String, Object>();
         event3.put("name", "Zzz");
         event3.put("age", 111);
-        client.queueEvent(null,"db1.tbl1", event3, null, new KeenCallback() {
-            @Override
-            public void onSuccess() {
-                list3.add(event3);
-            }
-
-            @Override
-            public void onFailure(Exception e) {
-
-            }
-        });
+        client.queueEvent("db1.tbl1", event3);
 
         Map<String, List<Map<String, Object>>> expected0 = new HashMap<String, List<Map<String, Object>>>();
-        expected0.put("db0.tbl0", list1);
-        expected0.put("db1.tbl1", list2);
+        expected0.put("db0.tbl0", Arrays.<Map<String, Object>>asList(event0, event1));
 
         Map<String, List<Map<String, Object>>> expected1 = new HashMap<String, List<Map<String, Object>>>();
-        expected1.put("db1.tbl1", list3);
+        expected1.put("db1.tbl1", Arrays.<Map<String, Object>>asList(event2, event3));
 
         sendQueuedEventsAndAssert(client, Arrays.asList(expected0, expected1));
     }
