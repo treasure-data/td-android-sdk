@@ -1,11 +1,7 @@
 language: java
 
-env:
-  global:
-    - _JAVA_OPTIONS="-Xmx2048m -Xms512m"
-
 jdk:
-  - java-1.7.0-openjdk-amd64
+  - openjdk7
 
 sudo: false
 
