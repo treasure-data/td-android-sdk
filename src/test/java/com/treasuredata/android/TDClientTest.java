@@ -186,8 +186,8 @@ public class TDClientTest
         TDClient client = new TDClient(APIKEY, cacheDir);
         client.setMaxUploadEventsAtOnce(3);
 
-        final List<Map<String, Object>> list1 = new ArrayList<>();
-        final List<Map<String, Object>> list2 = new ArrayList<>();
+        final List<Map<String, Object>> list1 = new ArrayList<Map<String, Object>>();
+        final List<Map<String, Object>> list2 = new ArrayList<Map<String, Object>>();
 
         final HashMap<String, Object> event0 = new HashMap<String, Object>();
         event0.put("name", "Bar");
@@ -272,9 +272,9 @@ public class TDClientTest
         TDClient client = new TDClient(APIKEY, cacheDir);
         client.setMaxUploadEventsAtOnce(3);
 
-        final List<Map<String, Object>> list1 = new ArrayList<>();
-        final List<Map<String, Object>> list2 = new ArrayList<>();
-        final List<Map<String, Object>> list3 = new ArrayList<>();
+        final List<Map<String, Object>> list1 = new ArrayList<Map<String, Object>>();
+        final List<Map<String, Object>> list2 = new ArrayList<Map<String, Object>>();
+        final List<Map<String, Object>> list3 = new ArrayList<Map<String, Object>>();
 
         final HashMap<String, Object> event0 = new HashMap<String, Object>();
         event0.put("name", "Bar");
