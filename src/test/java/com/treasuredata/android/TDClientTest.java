@@ -183,7 +183,7 @@ public class TDClientTest
         server.enqueue(new MockResponse().setBody("{\"db0.tbl0\":[{\"success\":true}]}"));
         server.start();
         TDClient.setApiEndpoint(String.format("http://127.0.0.1:%d", server.getPort()));
-        TDClient client = new TDClient(APIKEY, cacheDir);
+        final TDClient client = new TDClient(APIKEY, cacheDir);
         client.setMaxUploadEventsAtOnce(3);
 
         final List<Map<String, Object>> list1 = new ArrayList<Map<String, Object>>();
@@ -196,51 +196,49 @@ public class TDClientTest
             @Override
             public void onSuccess() {
                 list1.add(event0);
-            }
+                final HashMap<String, Object> event1 = new HashMap<String, Object>();
+                event1.put("name", "Baz");
+                event1.put("age", 99);
+                client.queueEvent(null,"db0.tbl0", event1, null, new KeenCallback() {
+                    @Override
+                    public void onSuccess() {
+                        list1.add(event1);
+                        final HashMap<String, Object> event2 = new HashMap<String, Object>();
+                        event2.put("name", "Foo");
+                        event2.put("age", 1);
+                        client.queueEvent(null, "db0.tbl0", event2, null, new KeenCallback() {
+                            @Override
+                            public void onSuccess() {
+                                list1.add(event2);
+                                final HashMap<String, Object> event3 = new HashMap<String, Object>();
+                                event3.put("name", "Zzz");
+                                event3.put("age", 111);
+                                client.queueEvent(null, "db0.tbl0", event3, null, new KeenCallback() {
+                                    @Override
+                                    public void onSuccess() {
+                                        list2.add(event3);
+                                    }
 
-            @Override
-            public void onFailure(Exception e) {
+                                    @Override
+                                    public void onFailure(Exception e) {
 
-            }
-        });
+                                    }
+                                });
+                            }
 
-        final HashMap<String, Object> event1 = new HashMap<String, Object>();
-        event1.put("name", "Baz");
-        event1.put("age", 99);
-        client.queueEvent(null,"db0.tbl0", event1, null, new KeenCallback() {
-            @Override
-            public void onSuccess() {
-                list1.add(event1);
-            }
+                            @Override
+                            public void onFailure(Exception e) {
 
-            @Override
-            public void onFailure(Exception e) {
+                            }
+                        });
 
-            }
-        });
+                    }
 
-        final HashMap<String, Object> event2 = new HashMap<String, Object>();
-        event2.put("name", "Foo");
-        event2.put("age", 1);
-        client.queueEvent(null, "db0.tbl0", event2, null, new KeenCallback() {
-            @Override
-            public void onSuccess() {
-                list1.add(event2);
-            }
+                    @Override
+                    public void onFailure(Exception e) {
 
-            @Override
-            public void onFailure(Exception e) {
-
-            }
-        });
-
-        final HashMap<String, Object> event3 = new HashMap<String, Object>();
-        event3.put("name", "Zzz");
-        event3.put("age", 111);
-        client.queueEvent(null, "db0.tbl0", event3, null, new KeenCallback() {
-            @Override
-            public void onSuccess() {
-                list2.add(event3);
+                    }
+                });
             }
 
             @Override
@@ -269,7 +267,7 @@ public class TDClientTest
                 "{\"db1.tbl1\":[{\"success\":true}]}"));
         server.start();
         TDClient.setApiEndpoint(String.format("http://127.0.0.1:%d", server.getPort()));
-        TDClient client = new TDClient(APIKEY, cacheDir);
+        final TDClient client = new TDClient(APIKEY, cacheDir);
         client.setMaxUploadEventsAtOnce(3);
 
         final List<Map<String, Object>> list1 = new ArrayList<Map<String, Object>>();
@@ -283,51 +281,48 @@ public class TDClientTest
             @Override
             public void onSuccess() {
                 list1.add(event0);
-            }
+                final HashMap<String, Object> event1 = new HashMap<String, Object>();
+                event1.put("name", "Foo");
+                event1.put("age", 99);
+                client.queueEvent(null, "db0.tbl0", event1, null,  new KeenCallback() {
+                    @Override
+                    public void onSuccess() {
+                        list1.add(event1);
+                        final HashMap<String, Object> event2 = new HashMap<String, Object>();
+                        event2.put("name", "Baz");
+                        event2.put("age", 1);
+                        client.queueEvent(null,"db1.tbl1", event2, null, new KeenCallback() {
+                            @Override
+                            public void onSuccess() {
+                                list2.add(event2);
+                                final HashMap<String, Object> event3 = new HashMap<String, Object>();
+                                event3.put("name", "Zzz");
+                                event3.put("age", 111);
+                                client.queueEvent(null,"db1.tbl1", event3, null, new KeenCallback() {
+                                    @Override
+                                    public void onSuccess() {
+                                        list3.add(event3);
+                                    }
 
-            @Override
-            public void onFailure(Exception e) {
+                                    @Override
+                                    public void onFailure(Exception e) {
 
-            }
-        });
+                                    }
+                                });
+                            }
 
-        final HashMap<String, Object> event1 = new HashMap<String, Object>();
-        event1.put("name", "Foo");
-        event1.put("age", 99);
-        client.queueEvent(null, "db0.tbl0", event1, null,  new KeenCallback() {
-            @Override
-            public void onSuccess() {
-                list1.add(event1);
-            }
+                            @Override
+                            public void onFailure(Exception e) {
 
-            @Override
-            public void onFailure(Exception e) {
+                            }
+                        });
+                    }
 
-            }
-        });
+                    @Override
+                    public void onFailure(Exception e) {
 
-        final HashMap<String, Object> event2 = new HashMap<String, Object>();
-        event2.put("name", "Baz");
-        event2.put("age", 1);
-        client.queueEvent(null,"db1.tbl1", event2, null, new KeenCallback() {
-            @Override
-            public void onSuccess() {
-                list2.add(event2);
-            }
-
-            @Override
-            public void onFailure(Exception e) {
-
-            }
-        });
-
-        final HashMap<String, Object> event3 = new HashMap<String, Object>();
-        event3.put("name", "Zzz");
-        event3.put("age", 111);
-        client.queueEvent(null,"db1.tbl1", event3, null, new KeenCallback() {
-            @Override
-            public void onSuccess() {
-                list3.add(event3);
+                    }
+                });
             }
 
             @Override
