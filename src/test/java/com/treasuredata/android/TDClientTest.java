@@ -52,7 +52,6 @@ public class TDClientTest
     public void tearDown()
             throws IOException
     {
-        cacheDir.delete();
         TDHttpHandler.enableEventCompression();
 
         server.shutdown();
@@ -76,6 +75,8 @@ public class TDClientTest
                         assertThat(recordedRequest.getHeader("X-TD-Data-Type"), is("k"));
                         Map<String, Object> requests = JSON.mapFrom(recordedRequest.getBody().inputStream());
                         assertThat(requests.size(), is(expected.size()));
+                        System.out.println("Request : " + requests);
+                        System.out.println("Expect :" + expected);
                         for (Map.Entry<String, List<Map<String, Object>>> exp : expected.entrySet()) {
                             List<Map<String, Object>> events = (List<Map<String, Object>>) requests.get(exp.getKey());
                             assertThat(events.size(), is(exp.getValue().size()));
