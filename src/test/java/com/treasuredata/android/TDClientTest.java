@@ -52,6 +52,7 @@ public class TDClientTest
     public void tearDown()
             throws IOException
     {
+        cacheDir.delete();
         TDHttpHandler.enableEventCompression();
 
         server.shutdown();
