@@ -279,6 +279,12 @@ It outputs the following columns:
 - `td_iap_intro_price_cycless` : introductoryPriceCycles (SKU detail for subscription)
 - `td_iap_intro_price_amount_micros` : introductoryPriceAmountMicro (SKU detail for subscription)
 
+This SDK can track in app purchase events for Android application using both Google Play Billing Library and In-app Billing with AIDL . You must add the following ProGuard rule to keep AIDL classes using by the SDK to your project if your application is developed using In-app Billing with AIDL api.
+
+```
+-keep class com.android.vending.billing.** { *; }
+```
+
 ### Opt out 
 
 Depending on the countries where you sell your app (e.g. the EU), you may need to offer the ability for users to opt-out of tracking data inside your app.
