@@ -271,7 +271,7 @@ It outputs the following columns:
 - `td_iap_product_title` : title (SKU detail)
 - `td_iap_product_description` : description (SKU detail)
 - `td_iap_package_name` : packageName (Purchase)
-- `td_iap_subs_auto_renewing` : autoRenewing (SKU detail for subscription)
+- `td_iap_subs_auto_renewing` : autoRenewing (Purchase)
 - `td_iap_subs_status` : Auto detection for subscription (New|Cancelled|Restored|Expired)
 - `td_iap_subs_period` : subscriptionPeriod (SKU detail for subscription)
 - `td_iap_free_trial_period` : freeTrialPeriod (SKU detail for subscription)
