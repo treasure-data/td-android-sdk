@@ -1,5 +1,10 @@
 # Change Log
 
+## Version 0.1.19
+_2018-12-20_
+
+* Add auto in-app purchase event tracking
+
 ## Version 0.1.18
 _2018-08-03_
 
