@@ -170,7 +170,7 @@ public class TreasureDataTest extends TestCase {
         assertEquals(0, client.addedEvent.size());
     }
 
-    public void testAddEventAndUploadAppLifecycleEventWhileCustomEventDisabled() throws IOException {
+    public void testEnableAddEventAndUploadAppLifecycleEventWhileCustomEventDisabled() throws IOException {
         Map<String, Object> records = new HashMap<String, Object>();
         records.put("key", "val");
         records.put("__is_app_lifecycle_event", "true");
@@ -181,6 +181,61 @@ public class TreasureDataTest extends TestCase {
         assertEquals(1, client.addedEvent.size());
     }
 
+    public void testDisableAddEventAndUploadAppLifecycleEventWhileCustomEventDisabled() throws IOException {
+        Map<String, Object> records = new HashMap<String, Object>();
+        records.put("key", "val");
+        records.put("__is_app_lifecycle_event", "true");
+        when(td.isAppLifecycleEventEnabled()).thenReturn(false);
+        when(td.isCustomEventEnabled()).thenReturn(false);
+        td.addEvent("db_", "tbl", records);
+        td.uploadEvents();
+        assertEquals(0, client.addedEvent.size());
+    }
+
+    public void testEnableAddEventAndUploadInAppPurchaseEventWhileCustomEventDisabled() throws IOException {
+        Map<String, Object> records = new HashMap<String, Object>();
+        records.put("key", "val");
+        records.put("__is_in_app_purchase_event", "true");
+        when(td.isInAppPurchaseEventEnabled()).thenReturn(true);
+        when(td.isCustomEventEnabled()).thenReturn(false);
+        td.addEvent("db_", "tbl", records);
+        td.uploadEvents();
+        assertEquals(1, client.addedEvent.size());
+    }
+    public void testDisableAddEventAndUploadInAppPurchaseEventWhileCustomEventDisabled() throws IOException {
+        Map<String, Object> records = new HashMap<String, Object>();
+        records.put("key", "val");
+        records.put("__is_in_app_purchase_event", "true");
+        when(td.isInAppPurchaseEventEnabled()).thenReturn(false);
+        when(td.isCustomEventEnabled()).thenReturn(false);
+        td.addEvent("db_", "tbl", records);
+        td.uploadEvents();
+        assertEquals(0, client.addedEvent.size());
+    }
+
+    public void testEnableAddEventAndUploadInAppPurchaseEventWhileOtherEventDisabled() throws IOException {
+        Map<String, Object> records = new HashMap<String, Object>();
+        records.put("key", "val");
+        records.put("__is_in_app_purchase_event", "true");
+        when(td.isInAppPurchaseEventEnabled()).thenReturn(true);
+        when(td.isCustomEventEnabled()).thenReturn(false);
+        when(td.isAppLifecycleEventEnabled()).thenReturn(false);
+        td.addEvent("db_", "tbl", records);
+        td.uploadEvents();
+        assertEquals(1, client.addedEvent.size());
+    }
+    public void testDisableAddEventAndUploadInAppPurchaseEventWhileOtherEventDisabled() throws IOException {
+        Map<String, Object> records = new HashMap<String, Object>();
+        records.put("key", "val");
+        records.put("__is_in_app_purchase_event", "true");
+        when(td.isInAppPurchaseEventEnabled()).thenReturn(false);
+        when(td.isCustomEventEnabled()).thenReturn(false);
+        when(td.isAppLifecycleEventEnabled()).thenReturn(false);
+        td.addEvent("db_", "tbl", records);
+        td.uploadEvents();
+        assertEquals(0, client.addedEvent.size());
+    }
+    
     public void testAddEventAndUploadCustomEventEnabled() throws IOException {
         Map<String, Object> records = new HashMap<String, Object>();
         records.put("key", "val");
