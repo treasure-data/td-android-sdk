@@ -29,6 +29,10 @@
             style="@style/NaviLabel"
         />
         <TextView
+            android:id="@+id/reset"
+            android:text="Reset UUID"
+            style="@style/NaviLabel"/>
+        <TextView
             android:id="@+id/upload"
             android:text="Upload"
             style="@style/NaviLabel"
@@ -91,12 +95,5 @@
                 android:layout_weight="1"
                 android:text="Enable Custom Events"
                 android:textColor="#999999" />
-
-        <Button
-                android:id="@+id/reset"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_marginRight="12dip"
-                android:text="Reset UUID" />
     </LinearLayout>
 </RelativeLayout>

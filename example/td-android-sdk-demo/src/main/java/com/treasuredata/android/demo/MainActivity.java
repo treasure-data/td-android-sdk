@@ -85,7 +85,7 @@ public class MainActivity extends Activity {
             }
         });
 
-        CheckBox checkBox = (CheckBox) findViewById(R.id.enable_auto_events);
+        CheckBox checkBox = findViewById(R.id.enable_auto_events);
         checkBox.setChecked(TreasureData.sharedInstance().isAppLifecycleEventEnabled());
 
         checkBox.setOnClickListener(new OnClickListener() {
@@ -96,7 +96,7 @@ public class MainActivity extends Activity {
             }
         });
 
-        checkBox = (CheckBox) findViewById(R.id.enable_custom_events);
+        checkBox = findViewById(R.id.enable_custom_events);
         checkBox.setChecked(TreasureData.sharedInstance().isCustomEventEnabled());
 
         checkBox.setOnClickListener(new OnClickListener() {
