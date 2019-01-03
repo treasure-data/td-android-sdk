@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 26
-    buildToolsVersion "26.0.2"
+    buildToolsVersion "28.0.3"
 
     defaultConfig {
         applicationId "com.treasuredata.android.demo"
@@ -26,5 +26,5 @@ repositories {
 }
 
 dependencies {
-    compile 'com.treasuredata:td-android-sdk:0.1.19'
+    api 'com.treasuredata:td-android-sdk:0.1.19'
 }
