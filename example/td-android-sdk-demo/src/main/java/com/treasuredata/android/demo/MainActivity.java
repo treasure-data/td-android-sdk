@@ -21,6 +21,7 @@ import java.util.Map;
 
 public class MainActivity extends Activity {
     private static final String TAG = MainActivity.class.getSimpleName();
+    private static final String EVENTS_TABLE = "demotbl";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,7 +53,7 @@ public class MainActivity extends Activity {
                     event.put("bottom", v.getBottom());
 
                     addEventCallback.eventName = label;
-                    TreasureData.sharedInstance().addEventWithCallback("demotbl", event, addEventCallback);
+                    TreasureData.sharedInstance().addEventWithCallback(EVENTS_TABLE, event, addEventCallback);
                 }
             });
         }
@@ -71,7 +72,7 @@ public class MainActivity extends Activity {
                 event.put("pressure", ev.getPressure());
                 event.put("size", ev.getSize());
                 // Use default callback
-                TreasureData.sharedInstance().addEvent("demotbl", event);
+                TreasureData.sharedInstance().addEvent(EVENTS_TABLE, event);
                 return false;
             }
         });
