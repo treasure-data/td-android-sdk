@@ -21,7 +21,7 @@ import java.util.Map;
 
 public class MainActivity extends Activity {
     private static final String TAG = MainActivity.class.getSimpleName();
-    private static final String EVENTS_TABLE = "demotbl";
+    private static final String EVENTS_TABLE = "demo_tbl";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
