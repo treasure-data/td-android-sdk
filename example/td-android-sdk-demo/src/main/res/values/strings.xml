@@ -2,8 +2,6 @@
 <resources>
 
     <string name="app_name">td-android-sdk-demo</string>
-    <string name="action_settings">Settings</string>
-    <string name="hello_world">Hello world!</string>
 
     <string name="nav_news_label">News</string>
     <string name="nav_play_label">Play</string>
@@ -11,6 +9,7 @@
     <string name="nav_reset_label">Reset UUID</string>
     <string name="nav_upload_label">Upload</string>
     <string name="app_title">TD Android SDK Demo</string>
+    
     <string name="settings_auto_events">Enable Auto Events</string>
     <string name="settings_custom_events">Enable Custom Events</string>
 
