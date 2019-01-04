@@ -15,26 +15,26 @@
 
         <TextView
             android:id="@+id/navi_news"
-            android:text="News"
+            android:text="@string/nav_help_label"
             style="@style/NaviLabel"
         />
         <TextView
             android:id="@+id/navi_play"
-            android:text="Play"
+            android:text="@string/nav_play_label"
             style="@style/NaviLabel"
         />
         <TextView
             android:id="@+id/navi_help"
-            android:text="Help"
+            android:text="@string/nav_help_label"
             style="@style/NaviLabel"
         />
         <TextView
             android:id="@+id/reset"
-            android:text="Reset UUID"
+            android:text="@string/nav_reset_label"
             style="@style/NaviLabel"/>
         <TextView
             android:id="@+id/upload"
-            android:text="Upload"
+            android:text="@string/nav_upload_label"
             style="@style/NaviLabel"
             android:background="#ffaacda0"/>
 
@@ -48,7 +48,7 @@
     />
     <TextView
         android:id="@+id/title"
-        android:text="TD Android SDK Demo"
+        android:text="@string/app_title"
         android:textSize="22sp"
         android:textStyle="bold"
         android:textColor="#999999"
@@ -85,7 +85,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="12dip"
                 android:layout_weight="1"
-                android:text="Enable Auto Events"
+                android:text="@string/settings_auto_events"
                 android:textColor="#999999" />
 
         <CheckBox
@@ -93,7 +93,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Enable Custom Events"
+                android:text="@string/settings_custom_events"
                 android:textColor="#999999" />
     </LinearLayout>
 </RelativeLayout>
