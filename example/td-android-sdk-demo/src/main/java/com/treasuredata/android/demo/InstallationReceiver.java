@@ -25,7 +25,7 @@ public class InstallationReceiver extends BroadcastReceiver {
                 referrer.put(kAndV[0], kAndV[1]);
             }
         }
-        TreasureData.sharedInstance().addEvent("testdb", "demotbl", referrer);
+        TreasureData.sharedInstance().addEvent("test_db", "demo_tbl", referrer);
         TreasureData.sharedInstance().uploadEvents();
     }
 }
