@@ -438,3 +438,23 @@ If you want to use server side upload timestamp not only client device time that
 ```
 	TreasureData.disableLogging();
 ```
+
+## Android version support
+
+Android SDK for Arm Treasure Data only supports any Android device running API 15 (Android 4.0) and higher
+
+|Codename          |Version | API| Tested?|
+|------------------|-------:|---:|:------:|
+|Oreo              |9.0     |28  |Yes     |
+|Oreo              |8.1     |27  |Yes     |
+|Oreo              |8.0     |26  |Yes     |
+|Nougat            |7.1     |25  |Yes     |
+|Nougat            |7.0     |24  |Yes     |
+|Marshmallow       |6.0     |23  |Yes     |
+|Lollipop          |5.1     |22  |Yes     |
+|Lollipop          |5.0     |21  |Yes     |
+|KitKat            |4.4     |19  |Yes     |
+|Jelly Bean        |4.3     |18  |Yes     |
+|Jelly Bean        |4.2     |17  |No     |
+|Jelly Bean        |4.1     |16  |No     |
+|Ice Cream Sandwich|4.0     |15  |No     |
