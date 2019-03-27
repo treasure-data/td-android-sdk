@@ -445,7 +445,7 @@ Android SDK for Arm Treasure Data only supports any Android device running API 1
 
 |Codename          |Version | API| Tested?|
 |------------------|-------:|---:|:------:|
-|Oreo              |9.0     |28  |Yes     |
+|Pie               |9.0     |28  |Yes     |
 |Oreo              |8.1     |27  |Yes     |
 |Oreo              |8.0     |26  |Yes     |
 |Nougat            |7.1     |25  |Yes     |
@@ -455,6 +455,6 @@ Android SDK for Arm Treasure Data only supports any Android device running API 1
 |Lollipop          |5.0     |21  |Yes     |
 |KitKat            |4.4     |19  |Yes     |
 |Jelly Bean        |4.3     |18  |Yes     |
-|Jelly Bean        |4.2     |17  |No     |
-|Jelly Bean        |4.1     |16  |No     |
-|Ice Cream Sandwich|4.0     |15  |No     |
+|Jelly Bean        |4.2     |17  |No      |
+|Jelly Bean        |4.1     |16  |No      |
+|Ice Cream Sandwich|4.0     |15  |No      |
