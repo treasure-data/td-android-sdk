@@ -7,6 +7,7 @@ import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -220,6 +221,7 @@ public class TDClientTest
     }
 
     @Test
+    @Ignore
     public void sendToTwoTablesWithLimitedUploadedEvents()
             throws Exception
     {
