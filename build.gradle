@@ -1,0 +1,98 @@
+//buildscript {
+//    repositories {
+//        google()
+//        jcenter()
+//
+//    }
+//    dependencies {
+//        classpath 'com.android.tools.builddl/test
+//        kk
+//
+//        // NOTE: Do not place your application dependencies here; they belong
+//        // in the individual module build.gradle files
+//    }
+//}
+
+plugins {
+    id 'java'
+    id 'maven'
+    id "com.github.johnrengelman.shadow" version "5.0.0"
+}
+
+// For test only
+//apply plugin: 'com.android.application'
+//android {
+//    compileSdkVersion 28
+//    defaultConfig {
+//        applicationId "com.example.myapplication"
+//        minSdkVersion 15
+//        targetSdkVersion 28
+//        versionCode 1
+//        versionName "1.0"
+//        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+//    }
+//    buildTypes {
+//        release {
+//            minifyEnabled false
+//            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+//        }
+//    }
+//}
+
+// allprojects {
+//     repositories {
+//         jcenter()
+//         google()
+//     }
+// }
+
+repositories {
+    mavenLocal()
+    // TODO: google()?
+    maven {
+        url = 'https://maven.google.com'
+    }
+
+      ivy {
+          url 'http://dl.bintray.com/content/johnrengelman/gradle-plugins'
+      }
+
+    maven {
+        url = 'https://oss.sonatype.org/content/repositories/snapshots'
+    }
+
+    maven {
+        url = 'http://repo.maven.apache.org/maven2'
+    }
+}
+
+dependencies {
+//    testCompile 'androidx.test:runner:1.1.0'
+    compile 'org.komamitsu:android-logger-bridge:0.0.2'
+    compile 'com.fasterxml.jackson.jr:jackson-jr-objects:2.6.3'
+    compile 'com.treasuredata:keen-client-java-core:2.0.0.4'
+    testCompile 'junit:junit:4.11'
+    testCompile 'org.mockito:mockito-core:1.8.5'
+    testCompile 'com.squareup.okhttp3:mockwebserver:3.6.0'
+
+    // FIXME: provide?
+    compileOnly 'com.google.android:android:4.1.1.4'
+    testCompile 'com.google.android:android:4.1.1.4'
+//    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+}
+
+group = 'com.treasuredata'
+version = '0.1.20-SNAPSHOT'
+description = 'Android SDK for Treasure Data Cloud'
+sourceCompatibility = '1.7'
+
+configurations.all {
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+task fatJar(type: Jar) {
+  from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+}
