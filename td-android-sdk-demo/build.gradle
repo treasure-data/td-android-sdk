@@ -1,3 +1,13 @@
+buildscript {
+    repositories {
+        jcenter()
+        google()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.4.1'
+    }
+}
+
 apply plugin: 'com.android.application'
 
 android {
@@ -10,6 +20,7 @@ android {
         targetSdkVersion 28
         versionCode 1
         versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -22,9 +33,13 @@ android {
 
 repositories {
     jcenter()
+    google()
     mavenCentral()
+    mavenLocal()  // FIXME: remove
 }
 
 dependencies {
-    api 'com.treasuredata:td-android-sdk:0.1.19'
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    api 'com.treasuredata:td-android-sdk:0.1.20-SNAPSHOT'
 }

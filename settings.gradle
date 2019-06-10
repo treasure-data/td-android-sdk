@@ -1,0 +1,3 @@
+rootProject.name = 'td-android-sdk'
+
+include ':test-host', ':td-android-sdk-demo'
