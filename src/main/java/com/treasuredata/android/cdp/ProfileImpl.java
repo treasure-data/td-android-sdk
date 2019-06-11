@@ -10,13 +10,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-class AudienceImpl implements Audience {
+class ProfileImpl implements Profile {
     private List<String> segments;
     private Map<String, Object> attributes;
-    private Key key;
+    private Map<String, Object> key;
     private String audienceId;
 
-    private AudienceImpl(List<String> segments, Map<String, Object> attributes, Key key, String audienceId) {
+    private ProfileImpl(List<String> segments, Map<String, Object> attributes, Map<String, Object> key, String audienceId) {
         this.segments = segments;
         this.attributes = attributes;
         this.key = key;
@@ -34,7 +34,7 @@ class AudienceImpl implements Audience {
     }
 
     @Override
-    public Key getKey() {
+    public Map<String, Object> getKey() {
         return key;
     }
 
@@ -43,7 +43,7 @@ class AudienceImpl implements Audience {
         return audienceId;
     }
 
-    static AudienceImpl fromJSONObject(JSONObject audienceJSON) throws JSONException {
+    static ProfileImpl fromJSONObject(JSONObject audienceJSON) throws JSONException {
 
         // On the API spec, it states the property name here is "segments",
         // but the actual name is "values" !?!
@@ -67,38 +67,20 @@ class AudienceImpl implements Audience {
         }
 
         JSONObject keyJson = audienceJSON.getJSONObject("key");
+
+        Map<String, Object> key = new HashMap<>();
         Iterator keys = keyJson.keys();
-        if (!(keys.hasNext())) {
-            throw new JSONException("At least one `key` pair is required!");
+        while (keys.hasNext()) {
+            Object keyName = keys.next();
+            if (!(keyName instanceof String)) {
+                throw new JSONException("Expect `key`'s name is a string!");
+            }
+            key.put((String) keyName, keyJson.get((String) keyName));
         }
-        Object keyProp = keys.next();
-        if (!(keyProp instanceof String)) {
-            throw new JSONException("Expect `key`'s name is a string!");
-        }
-        // TODO: settle the expected response key
-        Key key = new KeyImpl((String) keyProp, keyJson.get((String) keyProp));
 
         String audienceId = audienceJSON.getString("audienceId");
 
-        return new AudienceImpl(segments, attributes, key, audienceId);
-    }
-
-    public static final class KeyImpl implements Key {
-        private String name;
-        private Object value;
-
-        public KeyImpl(String name, Object value) {
-            this.name = name;
-            this.value = value;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public Object getValue() {
-            return value;
-        }
+        return new ProfileImpl(segments, attributes, key, audienceId);
     }
 
 }

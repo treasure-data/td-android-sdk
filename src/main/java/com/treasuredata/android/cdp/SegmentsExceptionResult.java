@@ -1,5 +1,6 @@
 package com.treasuredata.android.cdp;
 
+// TODO: remove
 public class SegmentsExceptionResult extends SegmentsResult {
 
     private final Exception exception;

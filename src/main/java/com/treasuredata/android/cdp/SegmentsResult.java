@@ -1,6 +1,7 @@
 package com.treasuredata.android.cdp;
 
-import java.io.IOException;
+import org.json.JSONException;
+
 import java.io.InputStream;
 
 import static io.keen.client.java.KeenUtils.convertStreamToString;
@@ -13,13 +14,15 @@ abstract class SegmentsResult {
         return new SegmentsExceptionResult(exception);
     }
 
+    // FIXME: stream or string?
     static SegmentsResult create(int status, InputStream bodyStream) {
         String body = convertStreamToString(bodyStream);
-        if (status != 200) {
-            return new SegmentsExceptionResult(
-                    new IOException("Unexpected response: " + status + "\n" + body));
+        try {
+            // Assume body is a JSON, if it gets throw then fallback into into (error) raw string body.
+            return SegmentsJSONResult.createJSONResult(status, body);
+        } catch (JSONException | IllegalArgumentException e) {
+            return SegmentsExceptionResult.create(CdpApiException.from(status, body));
         }
-        return SegmentsJSONResult.createJSONResult(status, body);
     }
 
 }

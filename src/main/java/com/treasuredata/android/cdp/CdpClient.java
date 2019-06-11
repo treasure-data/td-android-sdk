@@ -20,20 +20,20 @@ import static android.text.TextUtils.join;
 import static java.lang.Runtime.getRuntime;
 import static java.util.concurrent.Executors.newFixedThreadPool;
 
-class CDPClient {
+class CdpClient {
 
     private final String endpoint;
     private final ExecutorService executor;
 
-    public CDPClient() {
+    public CdpClient() {
         this("https://cdp.in.treasuredata.com");
     }
 
-    public CDPClient(String endpoint) {
+    public CdpClient(String endpoint) {
         this(endpoint, newFixedThreadPool(getRuntime().availableProcessors()));
     }
 
-    public CDPClient(String endpoint, ExecutorService executor) {
+    public CdpClient(String endpoint, ExecutorService executor) {
         this.endpoint = endpoint;
         this.executor = executor;
     }

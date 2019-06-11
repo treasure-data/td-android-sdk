@@ -8,34 +8,37 @@ import org.json.JSONTokener;
 import java.util.ArrayList;
 import java.util.List;
 
-import static java.lang.String.format;
-
 abstract class SegmentsJSONResult extends SegmentsResult {
-    final int httpStatusCode;
+    final int statusCode;
 
-    SegmentsJSONResult(int httpStatusCode) {
-        this.httpStatusCode = httpStatusCode;
+    SegmentsJSONResult(int statusCode) {
+        this.statusCode = statusCode;
     }
 
-    static SegmentsResult createJSONResult(int status, String body) {
-        Object json;
-        try {
-            json = new JSONTokener(body).nextValue();
-        } catch (JSONException e) {
-            return new SegmentsExceptionResult(e);
-        }
+    /**
+     * @throws JSONException            if the provided body is not json
+     * @throws IllegalArgumentException if the parsed json is neither object or array
+     */
+    static SegmentsResult createJSONResult(int status, String body) throws JSONException, IllegalArgumentException {
+        Object json = new JSONTokener(body).nextValue();
 
-        if (json instanceof JSONObject) {
+        if (status != 200) {
+            // Immediate consider this is an error for non-200 status code,
+            // try to extract for "error" and "message" in the response body
+            return new SegmentsJSONObjectResult(status, (JSONObject) json);
+        } else if (json instanceof JSONObject) {
             return new SegmentsJSONObjectResult(status, (JSONObject) json);
         } else if (json instanceof JSONArray) {
             return new SegmentsJSONArrayResult(status, (JSONArray) json);
         } else {
-            // FIXME: null.getClass()?
-            return new SegmentsExceptionResult(
-                    new IllegalArgumentException(format("Unexpected JSON format. %s is not a JSON type", json.getClass())));
+            // FIXME: what happens on null.getClass()?
+            throw new IllegalArgumentException("Expect either an JSON Object or Array while received: " + json.getClass());
         }
     }
 
+    /**
+     * JSON Array responses are considered success, expect to be an array of Profiles
+     */
     private static class SegmentsJSONArrayResult extends SegmentsJSONResult {
         private final JSONArray json;
 
@@ -46,19 +49,22 @@ abstract class SegmentsJSONResult extends SegmentsResult {
 
         @Override
         void invoke(FetchUserSegmentsCallback callback) {
-            List<Audience> audiences = new ArrayList<>();
+            List<Profile> profiles = new ArrayList<>();
             try {
                 for (int i = 0; i < json.length(); i++) {
-                    audiences.add(AudienceImpl.fromJSONObject(json.getJSONObject(i)));
+                    profiles.add(ProfileImpl.fromJSONObject(json.getJSONObject(i)));
                 }
             } catch (JSONException e) {
                 callback.onError(e);
                 return;
             }
-            callback.onSuccess(audiences);
+            callback.onSuccess(profiles);
         }
     }
 
+    /**
+     * Error response, expect to be in the form of <code>{"error":..., "message":... }</code>
+     */
     private static class SegmentsJSONObjectResult extends SegmentsJSONResult {
         private final JSONObject json;
 
@@ -69,16 +75,7 @@ abstract class SegmentsJSONResult extends SegmentsResult {
 
         @Override
         void invoke(FetchUserSegmentsCallback callback) {
-            String error = "";
-            String message = "";
-            try {
-                if (json.has("error")) error = json.getString("error");
-                if (json.has("message")) message = json.getString("message");
-            } catch (JSONException e) {
-                // Should not happen, even if it is, just silence
-            }
-            // TODO: Consider making a better semantic exception
-            callback.onError(new IllegalArgumentException(httpStatusCode + " - " + error + " - " + message));
+            callback.onError(CdpApiException.from(statusCode, json));
         }
     }
 }
