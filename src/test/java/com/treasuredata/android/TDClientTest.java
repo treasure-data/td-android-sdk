@@ -9,6 +9,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.Ignore;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
@@ -220,6 +221,7 @@ public class TDClientTest
     }
 
     @Test
+    @Ignore
     public void sendToTwoTablesWithLimitedUploadedEvents()
             throws Exception
     {

@@ -1,0 +1,42 @@
+plugins {
+    id 'java'
+    id 'maven'
+    id "com.github.johnrengelman.shadow" version "5.0.0"
+}
+
+group = 'com.treasuredata'
+version = '0.1.20-SNAPSHOT'
+description = 'Android SDK for Treasure Data Cloud'
+sourceCompatibility = '1.7'
+
+repositories {
+    mavenCentral()
+    google()
+
+    ivy {
+        url 'http://dl.bintray.com/content/johnrengelman/gradle-plugins'
+    }
+
+    maven {
+        url = 'https://oss.sonatype.org/content/repositories/snapshots'
+    }
+
+}
+
+dependencies {
+    compile 'org.komamitsu:android-logger-bridge:0.0.2'
+    compile 'com.fasterxml.jackson.jr:jackson-jr-objects:2.6.3'
+    compile 'com.treasuredata:keen-client-java-core:2.0.0.4'
+
+    compileOnly 'com.google.android:android:4.1.1.4'
+
+    testCompile 'junit:junit:4.11'
+    testCompile 'org.mockito:mockito-core:1.8.5'
+    testCompile 'com.squareup.okhttp3:mockwebserver:3.6.0'
+    testCompile 'com.google.android:android:4.1.1.4'
+}
+
+// Replace shade task on the previous maven project
+task fatJar(type: Jar) {
+  from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+}
