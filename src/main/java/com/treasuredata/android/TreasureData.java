@@ -770,7 +770,7 @@ public class TreasureData implements CDPClient {
      * not related to the API endpoint setup from {@link TreasureData#initializeApiEndpoint(String)}
      *
      * @param cdpEndpoint Known endpoints are:
-     *                    AWS East  https://cdp.in.treasuredata.com
+     *                    AWS US    https://cdp.in.treasuredata.com
      *                    AWS Tokyo https://cdp-tokyo.in.treasuredata.com
      *                    AWS EU    https://cdp-eu01.in.treasuredata.com
      */
@@ -784,7 +784,7 @@ public class TreasureData implements CDPClient {
      * not related to the API endpoint setup from {@link TreasureData#initializeApiEndpoint(String)}
      *
      * @param cdpEndpoint Known endpoints are:
-     *                    AWS East  https://cdp.in.treasuredata.com
+     *                    AWS US    https://cdp.in.treasuredata.com
      *                    AWS Tokyo https://cdp-tokyo.in.treasuredata.com
      *                    AWS EU    https://cdp-eu01.in.treasuredata.com
      * @throws URISyntaxException when the provided cdpEndpoint is not a valid URI
