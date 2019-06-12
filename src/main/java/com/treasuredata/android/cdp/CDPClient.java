@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 
 import static android.os.Looper.getMainLooper;
@@ -86,7 +85,7 @@ public class CDPClient {
         executor.execute(new Runnable() {
             @Override
             public void run() {
-                final SegmentsResult result = fetchUserSegmentResultSynchronously(profileTokensSafeCopy, keysSafeCopy);
+                final LookupResult result = fetchUserSegmentResultSynchronously(profileTokensSafeCopy, keysSafeCopy);
 
                 if (callbackLooper != null) {
                     new Handler(callbackLooper).post(new Runnable() {
@@ -105,7 +104,7 @@ public class CDPClient {
     }
 
     // Visible for testing
-    SegmentsResult fetchUserSegmentResultSynchronously(final List<String> profileTokens, final Map<String, String> keys) {
+    LookupResult fetchUserSegmentResultSynchronously(final List<String> profileTokens, final Map<String, String> keys) {
         HttpURLConnection connection = null;
         try {
             connection = (HttpURLConnection) apiURI
@@ -118,10 +117,10 @@ public class CDPClient {
 
             int responseCode = connection.getResponseCode();
             try (InputStream is = connection.getInputStream()) {
-                return SegmentsResult.create(responseCode, convertStreamToString(is));
+                return LookupResult.create(responseCode, convertStreamToString(is));
             }
         } catch (IOException e) {
-            return SegmentsResult.create(e);
+            return LookupResult.create(e);
         } finally {
             if (connection != null) connection.disconnect();
         }

@@ -8,10 +8,10 @@ import org.json.JSONTokener;
 import java.util.ArrayList;
 import java.util.List;
 
-abstract class SegmentsResultOfJSON extends SegmentsResult {
+abstract class JSONLookupResult extends LookupResult {
     final int statusCode;
 
-    SegmentsResultOfJSON(int statusCode) {
+    JSONLookupResult(int statusCode) {
         this.statusCode = statusCode;
     }
 
@@ -19,20 +19,20 @@ abstract class SegmentsResultOfJSON extends SegmentsResult {
      * @throws JSONException            if the provided body is not json
      * @throws IllegalArgumentException if the parsed json is neither object or array, or has unexpected scheme
      */
-    static SegmentsResult createJSONResult(int status, String body) throws JSONException, IllegalArgumentException {
+    static LookupResult createJSONResult(int status, String body) throws JSONException, IllegalArgumentException {
         Object json = new JSONTokener(body).nextValue();
         if (status != 200) {
             // Immediate consider this is an error for non-200 status code,
             // try to extract for "error" and "message" in the response body
             try {
-                return new SegmentsResultOfJSONObject(status, (JSONObject) json);
+                return new JSONLookupResultObject(status, (JSONObject) json);
             } catch (ClassCastException e) {
                 throw new IllegalArgumentException(e);
             }
         } else if (json instanceof JSONObject) {
-            return new SegmentsResultOfJSONObject(status, (JSONObject) json);
+            return new JSONLookupResultObject(status, (JSONObject) json);
         } else if (json instanceof JSONArray) {
-            return new SegmentsResultOfJSONArray(status, (JSONArray) json);
+            return new JSONLookupResultArray(status, (JSONArray) json);
         } else {
             throw new IllegalArgumentException(
                     "Expect either an JSON Object or Array while received: " +
@@ -43,10 +43,10 @@ abstract class SegmentsResultOfJSON extends SegmentsResult {
     /**
      * JSON Array responses are considered success, expect to be an array of Profiles
      */
-    private static class SegmentsResultOfJSONArray extends SegmentsResultOfJSON {
+    private static class JSONLookupResultArray extends JSONLookupResult {
         private final JSONArray json;
 
-        SegmentsResultOfJSONArray(int responseCode, JSONArray json) {
+        JSONLookupResultArray(int responseCode, JSONArray json) {
             super(responseCode);
             this.json = json;
         }
@@ -70,10 +70,10 @@ abstract class SegmentsResultOfJSON extends SegmentsResult {
     /**
      * Error response, expect to be in the form of <code>{"error":..., "message":... }</code>
      */
-    private static class SegmentsResultOfJSONObject extends SegmentsResultOfJSON {
+    private static class JSONLookupResultObject extends JSONLookupResult {
         private final JSONObject json;
 
-        SegmentsResultOfJSONObject(int httpStatusCode, JSONObject json) {
+        JSONLookupResultObject(int httpStatusCode, JSONObject json) {
             super(httpStatusCode);
             this.json = json;
         }

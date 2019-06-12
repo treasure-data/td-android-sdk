@@ -12,7 +12,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-public class SegmentsResultTest {
+public class LookupResultTest {
 
     private CountDownLatch latch;
 
@@ -28,7 +28,7 @@ public class SegmentsResultTest {
 
     @Test
     public void should_success_with_a_json_array() throws Exception {
-        SegmentsResult
+        LookupResult
                 .create(200, "[" +
                         "  {" +
                         "    \"values\": [" +
@@ -49,13 +49,13 @@ public class SegmentsResultTest {
 
     @Test
     public void should_success_with_an_empty_json_array() throws Exception {
-        SegmentsResult.create(200, "[]").invoke(shouldSuccess);
+        LookupResult.create(200, "[]").invoke(shouldSuccess);
         await();
     }
 
     @Test
     public void should_fail_with_an_json_object() throws Exception {
-        SegmentsResult
+        LookupResult
                 .create(400, "{" +
                         "    \"error\": \"Bad Request\"," +
                         "    \"message\": \"Some elaboration\"" +
@@ -66,7 +66,7 @@ public class SegmentsResultTest {
 
     @Test
     public void should_fail_on_a_json_object_even_without_error_and_message() throws Exception {
-        SegmentsResult
+        LookupResult
                 .create(401, "{}")
                 .invoke(shouldFailedWith(new CDPAPIException(401, null, "{}")));
         await();
@@ -74,7 +74,7 @@ public class SegmentsResultTest {
 
     @Test
     public void should_fail_on_a_non_200_with_arbitrary_body() throws Exception {
-        SegmentsResult
+        LookupResult
                 .create(400, "<body>")
                 .invoke(shouldFailedWith(new CDPAPIException(400, null, "<body>")));
         await();
@@ -96,7 +96,7 @@ public class SegmentsResultTest {
                 "    \"audienceId\": \"234\"" +
                 "  }" +
                 "]";
-        SegmentsResult
+        LookupResult
                 .create(400, body)
                 .invoke(shouldFailedWith(new CDPAPIException(400, null, body)));
         await();
@@ -104,7 +104,7 @@ public class SegmentsResultTest {
 
     @Test
     public void should_fail_on_200_but_non_json_body() throws Exception {
-        SegmentsResult
+        LookupResult
                 .create(200, "<body>")
                 .invoke(shouldFailedWith(new CDPAPIException(200, null, "<body>")));
         await();
@@ -112,7 +112,7 @@ public class SegmentsResultTest {
 
     @Test
     public void should_fail_on_200_but_empty_body() throws Exception {
-        SegmentsResult
+        LookupResult
                 .create(200, "")
                 .invoke(shouldFailedWith(new CDPAPIException(200, null, "")));
         await();
@@ -121,7 +121,7 @@ public class SegmentsResultTest {
     @Test
     public void should_fail_on_200_json_but_not_segment_schema_body() throws Exception {
         String body = "{\"some_random\": \"json\"}";
-        SegmentsResult
+        LookupResult
                 .create(200, body)
                 // Because we do parse then re-format internally,
                 // the JSON format of exception's message will not stay same as the
@@ -132,7 +132,7 @@ public class SegmentsResultTest {
 
     @Test
     public void should_fail_and_parse_error_and_message_on_200_with_json_error_schema() throws Exception {
-        SegmentsResult
+        LookupResult
                 .create(200, "{" +
                         "    \"error\": \"Bad Request\"," +
                         "    \"message\": \"Some elaboration\"" +

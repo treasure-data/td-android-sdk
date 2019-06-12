@@ -1,10 +1,10 @@
 package com.treasuredata.android.cdp;
 
-public class SegmentResultsOfException extends SegmentsResult {
+class ErrorLookupResult extends LookupResult {
 
     private final Exception exception;
 
-    public SegmentResultsOfException(Exception e) {
+    ErrorLookupResult(Exception e) {
         exception = e;
     }
 

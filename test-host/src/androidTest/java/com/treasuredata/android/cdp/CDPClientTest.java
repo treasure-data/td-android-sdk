@@ -29,7 +29,7 @@ public class CDPClientTest {
         final CountDownLatch latch = new CountDownLatch(2);
 
         final CDPClient cdpClient = Mockito.spy(new CDPClient("https://cdp.in.treasuredata.com"));
-        doReturn(SegmentsResult.create(200, "[]"))
+        doReturn(LookupResult.create(200, "[]"))
                 .when(cdpClient)
                 .fetchUserSegmentResultSynchronously(Mockito.<List<String>>any(), Mockito.<Map<String, String>>any());
 
@@ -51,7 +51,7 @@ public class CDPClientTest {
                 });
 
         final CDPClient failureCdpClient = Mockito.spy(new CDPClient("https://cdp.in.treasuredata.com"));
-        doReturn(SegmentsResult.create(400, "an_error"))
+        doReturn(LookupResult.create(400, "an_error"))
                 .when(failureCdpClient)
                 .fetchUserSegmentResultSynchronously(Mockito.<List<String>>any(), Mockito.<Map<String, String>>any());
 
@@ -80,7 +80,7 @@ public class CDPClientTest {
         final CountDownLatch latch = new CountDownLatch(2);
 
         final CDPClient cdpClient = Mockito.spy(new CDPClient("https://cdp.in.treasuredata.com"));
-        doReturn(SegmentsResult.create(200, "[]"))
+        doReturn(LookupResult.create(200, "[]"))
                 .when(cdpClient)
                 .fetchUserSegmentResultSynchronously(Mockito.<List<String>>any(), Mockito.<Map<String, String>>any());
 
@@ -112,7 +112,7 @@ public class CDPClientTest {
         }).start();
 
         final CDPClient failureCdpClient = Mockito.spy(new CDPClient("https://cdp.in.treasuredata.com"));
-        doReturn(SegmentsResult.create(400, "an_error"))
+        doReturn(LookupResult.create(400, "an_error"))
                 .when(failureCdpClient)
                 .fetchUserSegmentResultSynchronously(Mockito.<List<String>>any(), Mockito.<Map<String, String>>any());
 
@@ -151,7 +151,7 @@ public class CDPClientTest {
         final CountDownLatch latch = new CountDownLatch(1);
 
         final CDPClient cdpClient = Mockito.spy(new CDPClient("https://cdp.in.treasuredata.com"));
-        doReturn(SegmentsResult.create(200, "[]"))
+        doReturn(LookupResult.create(200, "[]"))
                 .when(cdpClient)
                 .fetchUserSegmentResultSynchronously(Mockito.<List<String>>any(), Mockito.<Map<String, String>>any());
 
@@ -178,7 +178,7 @@ public class CDPClientTest {
         });
 
         final CDPClient failureCdpClient = Mockito.spy(new CDPClient("https://cdp.in.treasuredata.com"));
-        doReturn(SegmentsResult.create(400, "an_error"))
+        doReturn(LookupResult.create(400, "an_error"))
                 .when(failureCdpClient)
                 .fetchUserSegmentResultSynchronously(Mockito.<List<String>>any(), Mockito.<Map<String, String>>any());
 
