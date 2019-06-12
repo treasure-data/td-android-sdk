@@ -14,19 +14,25 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 
 import static android.os.Looper.getMainLooper;
 import static android.os.Looper.myLooper;
 import static android.text.TextUtils.join;
 import static io.keen.client.java.KeenUtils.convertStreamToString;
+import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.Executors.newFixedThreadPool;
 
-public final class CDPClient {
+/**
+ * A single-purpose client, to lookup for CDP's Profiles
+ */
+public class CDPClient {
     private static final int CONNECT_TIMEOUT = 15000;
     private static final int READ_TIMEOUT = 60000;
 
     private static final URI DEFAULT_ENDPOINT;
+
     static {
         try {
             DEFAULT_ENDPOINT = new URI("https://cdp.in.treasuredata.com");
@@ -59,12 +65,16 @@ public final class CDPClient {
 
     /**
      * @param profileAPITokens that are defined on TreasureData
-     * @param keys look up keyColumn values
-     * @param callback to receive the looked up result
+     * @param keys             lookup keyColumn values
+     * @param callback         to receive the looked up result
      */
     public void fetchUserSegments(final List<String> profileAPITokens,
                                   final Map<String, String> keys,
                                   final FetchUserSegmentsCallback callback) {
+        if (profileAPITokens == null) throw new NullPointerException("`profileAPITokens` is required!");
+        if (keys == null) throw new NullPointerException("`keys` is required!");
+        if (callback == null) throw new NullPointerException("`callback` is required");
+
         // Copy parameters to avoid concurrent modifications from upstream
         final ArrayList<String> profileTokensSafeCopy = new ArrayList<>(profileAPITokens);
         final HashMap<String, String> keysSafeCopy = new HashMap<>(keys);
@@ -78,17 +88,24 @@ public final class CDPClient {
             public void run() {
                 final SegmentsResult result = fetchUserSegmentResultSynchronously(profileTokensSafeCopy, keysSafeCopy);
 
-                new Handler(callbackLooper).post(new Runnable() {
-                    @Override
-                    public void run() {
-                        result.invoke(callback);
-                    }
-                });
+                if (callbackLooper != null) {
+                    new Handler(callbackLooper).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            result.invoke(callback);
+                        }
+                    });
+                } else {
+                    // In any case where even mainLooper is null (using on an non-Android runtime?),
+                    // just do the callback on this thread.
+                    result.invoke(callback);
+                }
             }
         });
     }
 
-    private SegmentsResult fetchUserSegmentResultSynchronously(final List<String> profileTokens, final Map<String, String> keys) {
+    // Visible for testing
+    SegmentsResult fetchUserSegmentResultSynchronously(final List<String> profileTokens, final Map<String, String> keys) {
         HttpURLConnection connection = null;
         try {
             connection = (HttpURLConnection) apiURI
