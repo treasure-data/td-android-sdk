@@ -10,10 +10,15 @@ import android.os.Build;
 import android.os.Bundle;
 import com.treasuredata.android.billing.internal.Purchase;
 import com.treasuredata.android.billing.internal.PurchaseEventActivityLifecycleTracker;
+import com.treasuredata.android.cdp.CDPClient;
+import com.treasuredata.android.cdp.CDPClientImpl;
+import com.treasuredata.android.cdp.FetchUserSegmentsCallback;
 import io.keen.client.java.KeenClient;
 import org.komamitsu.android.util.Log;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -24,7 +29,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
-public class TreasureData {
+public class TreasureData implements CDPClient {
     private static final String TAG = TreasureData.class.getSimpleName();
     private static final String VERSION = "0.1.19";
     private static final String LABEL_ADD_EVENT = "addEvent";
@@ -107,6 +112,7 @@ public class TreasureData {
     private volatile String autoAppendRecordUUIDColumn;
 
     private final AtomicBoolean isInAppPurchaseEventTracking = new AtomicBoolean(false);
+    private CDPClientImpl cdpClientDelegate;
 
     public static TreasureData initializeSharedInstance(Context context, String apiKey) {
         synchronized (TreasureData.class) {
@@ -755,6 +761,49 @@ public class TreasureData {
         SharedPreferences sharedPreferences = getSharedPreference(context);
         synchronized (this) {
             sharedPreferences.edit().putBoolean(SHARED_PREF_CUSTOM_EVENT_ENABLED,  this.customEventEnabled).commit();
+        }
+    }
+
+    /**
+     * This is required before calling {@link TreasureData#fetchUserSegments},
+     * Note that this CDP Endpoint is independent and
+     * not related to the API endpoint setup from {@link TreasureData#initializeApiEndpoint(String)}
+     *
+     * @param cdpEndpoint Known endpoints are:
+     *                    AWS East  https://cdp.in.treasuredata.com
+     *                    AWS Tokyo https://cdp-tokyo.in.treasuredata.com
+     *                    AWS EU    https://cdp-eu01.in.treasuredata.com
+     */
+    public void setCDPEndpoint(URI cdpEndpoint) {
+        this.cdpClientDelegate = new CDPClientImpl(cdpEndpoint);
+    }
+
+    /**
+     * This is required before calling {@link TreasureData#fetchUserSegments},
+     * Note that this CDP Endpoint is independent and
+     * not related to the API endpoint setup from {@link TreasureData#initializeApiEndpoint(String)}
+     *
+     * @param cdpEndpoint Known endpoints are:
+     *                    AWS East  https://cdp.in.treasuredata.com
+     *                    AWS Tokyo https://cdp-tokyo.in.treasuredata.com
+     *                    AWS EU    https://cdp-eu01.in.treasuredata.com
+     * @throws URISyntaxException when the provided cdpEndpoint is not a valid URI
+     */
+    public void setCDPEndpoint(String cdpEndpoint) throws URISyntaxException {
+        this.cdpClientDelegate = new CDPClientImpl(cdpEndpoint);
+    }
+
+    /**
+     * @param profilesTokens list of Profile API Token that are defined on TreasureData
+     * @param keys           lookup keyColumn values
+     * @param callback       to receive the looked-up result
+     */
+    @Override
+    public void fetchUserSegments(List<String> profilesTokens, Map<String, String> keys, FetchUserSegmentsCallback callback) {
+        if (cdpClientDelegate != null) {
+            cdpClientDelegate.fetchUserSegments(profilesTokens, keys, callback);
+        } else {
+            throw new IllegalStateException("`setCDPEndpoint()` is required before using `fetchUserSegments()`");
         }
     }
 

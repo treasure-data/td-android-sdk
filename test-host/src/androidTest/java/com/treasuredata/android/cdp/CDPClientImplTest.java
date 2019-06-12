@@ -21,14 +21,14 @@ import static org.junit.Assert.fail;
 import static org.mockito.Mockito.doReturn;
 
 @RunWith(AndroidJUnit4.class)
-public class CDPClientTest {
+public class CDPClientImplTest {
 
     @Test
     public void call_fetchUserSegments_from_a_thread_WITHOUT_a_looper_associated_should_be_called_back_into_main_loop() throws Exception {
         assertNull("VERIFICATION: This thread should not be associated with any looper.", myLooper());
         final CountDownLatch latch = new CountDownLatch(2);
 
-        final CDPClient cdpClient = Mockito.spy(new CDPClient("https://cdp.in.treasuredata.com"));
+        final CDPClientImpl cdpClient = Mockito.spy(new CDPClientImpl("https://cdp.in.treasuredata.com"));
         doReturn(LookupResult.create(200, "[]"))
                 .when(cdpClient)
                 .fetchUserSegmentResultSynchronously(Mockito.<List<String>>any(), Mockito.<Map<String, String>>any());
@@ -50,7 +50,7 @@ public class CDPClientTest {
                     }
                 });
 
-        final CDPClient failureCdpClient = Mockito.spy(new CDPClient("https://cdp.in.treasuredata.com"));
+        final CDPClientImpl failureCdpClient = Mockito.spy(new CDPClientImpl("https://cdp.in.treasuredata.com"));
         doReturn(LookupResult.create(400, "an_error"))
                 .when(failureCdpClient)
                 .fetchUserSegmentResultSynchronously(Mockito.<List<String>>any(), Mockito.<Map<String, String>>any());
@@ -79,7 +79,7 @@ public class CDPClientTest {
     public void call_fetchUserSegments_from_a_thread_WITH_a_looper_associated_should_be_called_back_in_that_looper() throws Exception {
         final CountDownLatch latch = new CountDownLatch(2);
 
-        final CDPClient cdpClient = Mockito.spy(new CDPClient("https://cdp.in.treasuredata.com"));
+        final CDPClientImpl cdpClient = Mockito.spy(new CDPClientImpl("https://cdp.in.treasuredata.com"));
         doReturn(LookupResult.create(200, "[]"))
                 .when(cdpClient)
                 .fetchUserSegmentResultSynchronously(Mockito.<List<String>>any(), Mockito.<Map<String, String>>any());
@@ -111,7 +111,7 @@ public class CDPClientTest {
             }
         }).start();
 
-        final CDPClient failureCdpClient = Mockito.spy(new CDPClient("https://cdp.in.treasuredata.com"));
+        final CDPClientImpl failureCdpClient = Mockito.spy(new CDPClientImpl("https://cdp.in.treasuredata.com"));
         doReturn(LookupResult.create(400, "an_error"))
                 .when(failureCdpClient)
                 .fetchUserSegmentResultSynchronously(Mockito.<List<String>>any(), Mockito.<Map<String, String>>any());
@@ -150,7 +150,7 @@ public class CDPClientTest {
     public void call_fetchUserSegments_from_the_main_loop_apparently_should_be_called_back_in_the_main_loop() throws Exception {
         final CountDownLatch latch = new CountDownLatch(1);
 
-        final CDPClient cdpClient = Mockito.spy(new CDPClient("https://cdp.in.treasuredata.com"));
+        final CDPClientImpl cdpClient = Mockito.spy(new CDPClientImpl("https://cdp.in.treasuredata.com"));
         doReturn(LookupResult.create(200, "[]"))
                 .when(cdpClient)
                 .fetchUserSegmentResultSynchronously(Mockito.<List<String>>any(), Mockito.<Map<String, String>>any());
@@ -177,7 +177,7 @@ public class CDPClientTest {
             }
         });
 
-        final CDPClient failureCdpClient = Mockito.spy(new CDPClient("https://cdp.in.treasuredata.com"));
+        final CDPClientImpl failureCdpClient = Mockito.spy(new CDPClientImpl("https://cdp.in.treasuredata.com"));
         doReturn(LookupResult.create(400, "an_error"))
                 .when(failureCdpClient)
                 .fetchUserSegmentResultSynchronously(Mockito.<List<String>>any(), Mockito.<Map<String, String>>any());
