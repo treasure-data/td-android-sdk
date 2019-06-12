@@ -63,19 +63,19 @@ public class CDPClient {
     }
 
     /**
-     * @param profileAPITokens that are defined on TreasureData
-     * @param keys             lookup keyColumn values
-     * @param callback         to receive the looked up result
+     * @param profilesTokens list of Profile API Token that are defined on TreasureData
+     * @param keys           lookup keyColumn values
+     * @param callback       to receive the looked up result
      */
-    public void fetchUserSegments(final List<String> profileAPITokens,
+    public void fetchUserSegments(final List<String> profilesTokens,
                                   final Map<String, String> keys,
                                   final FetchUserSegmentsCallback callback) {
-        if (profileAPITokens == null) throw new NullPointerException("`profileAPITokens` is required!");
+        if (profilesTokens == null) throw new NullPointerException("`profileAPITokens` is required!");
         if (keys == null) throw new NullPointerException("`keys` is required!");
         if (callback == null) throw new NullPointerException("`callback` is required");
 
         // Copy parameters to avoid concurrent modifications from upstream
-        final ArrayList<String> profileTokensSafeCopy = new ArrayList<>(profileAPITokens);
+        final ArrayList<String> profileTokensSafeCopy = new ArrayList<>(profilesTokens);
         final HashMap<String, String> keysSafeCopy = new HashMap<>(keys);
 
         // If current thread is associated with a looper,
@@ -104,11 +104,11 @@ public class CDPClient {
     }
 
     // Visible for testing
-    LookupResult fetchUserSegmentResultSynchronously(final List<String> profileTokens, final Map<String, String> keys) {
+    LookupResult fetchUserSegmentResultSynchronously(final List<String> profilesTokens, final Map<String, String> keys) {
         HttpURLConnection connection = null;
         try {
             connection = (HttpURLConnection) apiURI
-                    .resolve(makeQueryString(profileTokens, keys))
+                    .resolve(makeQueryString(profilesTokens, keys))
                     .toURL().openConnection();
             connection.setRequestMethod("GET");
 
