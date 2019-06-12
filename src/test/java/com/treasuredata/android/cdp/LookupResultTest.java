@@ -56,9 +56,10 @@ public class LookupResultTest {
     @Test
     public void should_fail_with_an_json_object() throws Exception {
         LookupResult
-                .create(400, "{" +
+                .create(200, "{" +
                         "    \"error\": \"Bad Request\"," +
                         "    \"message\": \"Some elaboration\"" +
+                        "    \"status\": 400" +
                         "  }")
                 .invoke(shouldFailedWith(new CDPAPIException(400, "Bad Request", "Some elaboration")));
         await();
@@ -200,7 +201,7 @@ public class LookupResultTest {
                 CDPAPIException CDPAPIException = (CDPAPIException) exception;
                 assertEquals(expected.getMessage(), CDPAPIException.getMessage());
                 assertEquals(expected.getError(), CDPAPIException.getError());
-                assertEquals(expected.getStatusCode(), CDPAPIException.getStatusCode());
+                assertEquals(expected.getStatus(), CDPAPIException.getStatus());
                 latch.countDown();
             }
         };

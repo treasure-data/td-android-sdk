@@ -25,14 +25,14 @@ abstract class JSONLookupResult extends LookupResult {
             // Immediate consider this is an error for non-200 status code,
             // try to extract for "error" and "message" in the response body
             try {
-                return new JSONLookupResultObject(status, (JSONObject) json);
+                return new JSONObjectLookupResult(status, (JSONObject) json);
             } catch (ClassCastException e) {
                 throw new IllegalArgumentException(e);
             }
         } else if (json instanceof JSONObject) {
-            return new JSONLookupResultObject(status, (JSONObject) json);
+            return new JSONObjectLookupResult(status, (JSONObject) json);
         } else if (json instanceof JSONArray) {
-            return new JSONLookupResultArray(status, (JSONArray) json);
+            return new JSONArrayLookupResult(status, (JSONArray) json);
         } else {
             throw new IllegalArgumentException(
                     "Expect either an JSON Object or Array while received: " +
@@ -43,10 +43,10 @@ abstract class JSONLookupResult extends LookupResult {
     /**
      * JSON Array responses are considered success, expect to be an array of Profiles
      */
-    private static class JSONLookupResultArray extends JSONLookupResult {
+    private static class JSONArrayLookupResult extends JSONLookupResult {
         private final JSONArray json;
 
-        JSONLookupResultArray(int responseCode, JSONArray json) {
+        JSONArrayLookupResult(int responseCode, JSONArray json) {
             super(responseCode);
             this.json = json;
         }
@@ -68,12 +68,12 @@ abstract class JSONLookupResult extends LookupResult {
     }
 
     /**
-     * Error response, expect to be in the form of <code>{"error":..., "message":... }</code>
+     * Error response, expect to be in the form of <code>{"error":..., "message":..., "status":...}</code>
      */
-    private static class JSONLookupResultObject extends JSONLookupResult {
+    private static class JSONObjectLookupResult extends JSONLookupResult {
         private final JSONObject json;
 
-        JSONLookupResultObject(int httpStatusCode, JSONObject json) {
+        JSONObjectLookupResult(int httpStatusCode, JSONObject json) {
             super(httpStatusCode);
             this.json = json;
         }

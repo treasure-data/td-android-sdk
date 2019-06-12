@@ -5,24 +5,25 @@ import org.json.JSONObject;
 
 public class CDPAPIException extends Exception {
 
-    private int statusCode;
+    private int status;
     private String error;
 
     /**
-     * @param statusCode HTTP status code
+     * @param status Error JSON response's status property or HTTP status code
+     *               (the earlier should be preferred if exists)
      * @param error is nullable, in case the HTTP response body is not a JSON
      * @param message, either the `message` property in response JSON, or the entire body
      */
-    CDPAPIException(int statusCode, String error, String message) {
+    CDPAPIException(int status, String error, String message) {
         super(message);
-        this.statusCode = statusCode;
+        this.status = status;
         this.error = error;
     }
 
     /**
      * Original "error" property from the responded error JSON from server
      * Will be null if the response body is not a JSON
-     * */
+     **/
     public String getError() {
         return error;
     }
@@ -30,35 +31,43 @@ public class CDPAPIException extends Exception {
     /**
      * HTTP Status Code responded from server
      */
-    public int getStatusCode() {
-        return statusCode;
+    public int getStatus() {
+        return status;
     }
 
+    /** Will attempt to parse the body as a JSON first */
     static CDPAPIException from(int statusCode, String body) {
+        try {
+            return CDPAPIException.from(statusCode, new JSONObject(body));
+        } catch (JSONException e) {
+            // Ignore
+        }
         return new CDPAPIException(statusCode, null, body);
     }
 
     /**
-     * @param json Error body response from CDP API
+     * @param statusCode responded HTTP status code,
+     *                   but only be used of json doesn't contain a
+     *                   "status" property.
+     * @param json Error body response from CDP API,
+     *             the return exception wil prefer "status" property
+     *             inside this result if it exists, otherwise use
+     *             the provided status parameter.
      */
     static CDPAPIException from(int statusCode, JSONObject json) {
         if (json == null) {
             return new CDPAPIException(statusCode, null, null);
         }
-        String error = "";
-        String message = "";
-        try {
-            if (json.has("error")) error = json.getString("error");
-            if (json.has("message")) message = json.getString("message");
-        } catch (JSONException e) {
-            // Just silence
-        }
-        if (error.isEmpty() && message.isEmpty()) {
+        String error = json.optString("error", null);
+        String message = json.optString("message", null);
+        int status = json.optInt("status", statusCode);
+
+        if (error == null && message == null) {
             // Hopefully doesn't happen, but if the received JSON Object contains unexpected schema,
             // then use the entire JSON as the exception message.
-            return new CDPAPIException(statusCode, null, json.toString());
+            return new CDPAPIException(status, null, json.toString());
         } else {
-            return new CDPAPIException(statusCode, error, message);
+            return new CDPAPIException(status, error, message);
         }
     }
 
