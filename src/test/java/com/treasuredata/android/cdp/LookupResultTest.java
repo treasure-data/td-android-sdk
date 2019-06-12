@@ -27,7 +27,7 @@ public class LookupResultTest {
     }
 
     @Test
-    public void should_success_with_a_json_array() throws Exception {
+    public void should_success_upon_a_json_array() throws Exception {
         LookupResult
                 .create(200, "[" +
                         "  {" +
@@ -48,17 +48,17 @@ public class LookupResultTest {
     }
 
     @Test
-    public void should_success_with_an_empty_json_array() throws Exception {
+    public void should_success_upon_an_empty_json_array() throws Exception {
         LookupResult.create(200, "[]").invoke(shouldSuccess);
         await();
     }
 
     @Test
-    public void should_fail_with_an_json_object() throws Exception {
+    public void should_fail_upon_an_json_object() throws Exception {
         LookupResult
                 .create(200, "{" +
                         "    \"error\": \"Bad Request\"," +
-                        "    \"message\": \"Some elaboration\"" +
+                        "    \"message\": \"Some elaboration\"," +
                         "    \"status\": 400" +
                         "  }")
                 .invoke(shouldFailedWith(new CDPAPIException(400, "Bad Request", "Some elaboration")));
@@ -74,7 +74,7 @@ public class LookupResultTest {
     }
 
     @Test
-    public void should_fail_on_a_non_200_with_arbitrary_body() throws Exception {
+    public void should_fail_on_a_non_200_upon_arbitrary_body() throws Exception {
         LookupResult
                 .create(400, "<body>")
                 .invoke(shouldFailedWith(new CDPAPIException(400, null, "<body>")));
@@ -82,7 +82,7 @@ public class LookupResultTest {
     }
 
     @Test
-    public void should_fail_on_a_non_200_even_with_valid_json_array_body() throws Exception {
+    public void should_fail_on_a_non_200_even_upon_valid_json_array_body() throws Exception {
         String body = "[" +
                 "  {" +
                 "    \"values\": [" +
@@ -132,7 +132,7 @@ public class LookupResultTest {
     }
 
     @Test
-    public void should_fail_and_parse_error_and_message_on_200_with_json_error_schema() throws Exception {
+    public void should_fail_and_parse_error_and_message_on_200_upon_json_error_schema() throws Exception {
         LookupResult
                 .create(200, "{" +
                         "    \"error\": \"Bad Request\"," +

@@ -35,7 +35,10 @@ public class CDPAPIException extends Exception {
         return status;
     }
 
-    /** Will attempt to parse the body as a JSON first */
+    /**
+     * Will attempt to treat body as a JSON first,
+     * if it's not then use the entire body as the message.
+     **/
     static CDPAPIException from(int statusCode, String body) {
         try {
             return CDPAPIException.from(statusCode, new JSONObject(body));

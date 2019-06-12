@@ -27,6 +27,7 @@ abstract class JSONLookupResult extends LookupResult {
             try {
                 return new JSONObjectLookupResult(status, (JSONObject) json);
             } catch (ClassCastException e) {
+                // If this is not a JSON object then just throw for the caller to handle
                 throw new IllegalArgumentException(e);
             }
         } else if (json instanceof JSONObject) {
