@@ -51,7 +51,7 @@ public class CDPAPIException extends Exception {
             if (json.has("error")) error = json.getString("error");
             if (json.has("message")) message = json.getString("message");
         } catch (JSONException e) {
-            // Since we checked,
+            // Just silence
         }
         if (error.isEmpty() && message.isEmpty()) {
             // Hopefully doesn't happen, but if the received JSON Object contains unexpected schema,
