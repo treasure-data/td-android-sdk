@@ -1,5 +1,10 @@
 # Change Log
 
+## Version 0.2.0
+_2019-06-13_
+
+* Add support for ProfileAPI (`TreasureData#fetchUserSegments()`)
+
 ## Version 0.1.19
 _2018-12-20_
 
