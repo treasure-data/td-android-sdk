@@ -4,15 +4,19 @@ import java.util.List;
 
 public interface FetchUserSegmentsCallback {
     /**
-     * Receive looked up segments result
+     * Handle success looked up segments result
+     *
+     * @param profiles that matches with the specified query
      */
     void onSuccess(List<Profile> profiles);
 
     /**
-     * Could receive:
+     * Handle failure
+     *
+     * @param e the exception could be:
      * - {@link CDPAPIException},
      * - {@link org.json.JSONException},
-     * or potentially an unexpected exception upstream.
+     * or any unexpected upstream exception (IOException for example).
      */
     void onError(Exception e);
 

@@ -3,6 +3,7 @@ package com.treasuredata.android.cdp;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+@SuppressWarnings("WeakerAccess")
 public class CDPAPIException extends Exception {
 
     private int status;
@@ -21,15 +22,16 @@ public class CDPAPIException extends Exception {
     }
 
     /**
-     * Original "error" property from the responded error JSON from server
-     * Will be null if the response body is not a JSON
+     * @return Original "error" property from the responded error JSON from server,
+     * or null be null if the response body is not a JSON
      **/
     public String getError() {
         return error;
     }
 
     /**
-     * HTTP Status Code responded from server
+     * @return "status" property from the error JSON response,
+     * or the actual HTTP Status Code responded from server if response body is not a JSON
      */
     public int getStatus() {
         return status;

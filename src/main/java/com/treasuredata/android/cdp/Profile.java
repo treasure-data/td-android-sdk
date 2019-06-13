@@ -8,34 +8,34 @@ import java.util.Map;
  */
 public interface Profile {
     /**
-     * Segment IDs where this profile belongs
+     * @return Segment IDs where this profile belongs
      */
     List<String> getSegments();
 
     /**
-     * This profile's attributes
+     * @return This profile's attributes
      */
     Map<String, Object> getAttributes();
 
     /**
-     * Key columns : values of segments
+     * @return Key columns : values of segments
      */
     Key getKey();
 
     /**
-     * ID of the Master Segment
+     * @return ID of the Master Segment
      */
     String getAudienceId();
 
     interface Key {
 
         /**
-         * Name of key column
+         * @return Name of key column
          */
         String getName();
 
         /**
-         * Key value of the looked up profile
+         * @return Key value of the looked up profile
          */
         Object getValue();
 
