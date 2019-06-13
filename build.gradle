@@ -1,7 +1,8 @@
 plugins {
     id 'java'
     id 'maven'
-    id "com.github.johnrengelman.shadow" version "5.0.0"
+    id 'maven-publish'
+    id 'signing'
 }
 
 group = 'com.treasuredata'
@@ -12,15 +13,6 @@ sourceCompatibility = '1.7'
 repositories {
     mavenCentral()
     google()
-
-    ivy {
-        url 'http://dl.bintray.com/content/johnrengelman/gradle-plugins'
-    }
-
-    maven {
-        url = 'https://oss.sonatype.org/content/repositories/snapshots'
-    }
-
 }
 
 dependencies {
@@ -36,7 +28,87 @@ dependencies {
     testCompile 'com.google.android:android:4.1.1.4'
 }
 
-// Replace shade task on the previous maven project
 task fatJar(type: Jar) {
-  from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    dependsOn configurations.runtime
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+    // The name "shaded" here is just to be consistent with old packaged
+    // when we were still maven-shade-plugin to make the fat JAR, no classes are actually get shaded or shadowed.
+    // We could this into "-all" classifier, which is less misleading
+    archiveClassifier = 'shaded'
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allJava
+    archiveClassifier = 'sources'
+}
+
+task javadocJar(type: Jar) {
+    from javadoc
+    archiveClassifier = 'javadoc'
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            artifact fatJar
+            artifact sourcesJar
+            artifact javadocJar
+            pom {
+                name = 'Android SDK for Treasure Data Cloud'
+                description = 'Android SDK for Treasure Data Cloud'
+                url = 'https://github.com/treasure-data/td-android-sdk'
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        distribution = 'repo'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'komamitsu'
+                        name = 'Mitsunori Komatsu'
+                        email = 'komamitsu@gmail.com'
+                    }
+                    developer {
+                        id = 'mcaramello'
+                        name = 'Michele Caramello'
+                        email = 'michele.caramello@gmail.com'
+                    }
+                    developer {
+                        id = 'huylenq'
+                        name = 'Huy Le'
+                        email = 'huy.lenq@gmail.com'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:https://github.com/treasure-data/td-android-sdk.git'
+                    developerConnection = 'scm:git:git@github.com:treasure-data/td-android-sdk.git'
+                    url = 'https://github.com/treasure-data/td-android-sdk'
+                }
+
+                issueManagement {
+                    system = 'GitHub'
+                    url = 'https://github.com/treasure-data/td-android-sdk/issues'
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            def releasesRepoUrl = 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
+            def snapshotsRepoUrl = 'https://oss.sonatype.org/content/repositories/snapshots'
+            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+            credentials {
+                username findProperty('sonatypeUsername')
+                password findProperty('sonatypePassword')
+            }
+        }
+    }
+}
+
+signing {
+    sign publishing.publications.mavenJava
 }

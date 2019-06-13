@@ -429,6 +429,31 @@ If you want to use server side upload timestamp not only client device time that
 	td.enableServerSideUploadTimestamp("server_upload_time");
 ```
 
+### Profile API
+
+Lookup for profiles via [Profile API](https://support.treasuredata.com/hc/en-us/sections/360000271688-Profiles-API)
+
+```
+// Set your CDP endpoint to either:
+//   https://cdp.in.treasuredata.com        (US)
+//   https://cdp-tokyo.in.treasuredata.com  (Tokyo)
+//   https://cdp-eu01.in.treasuredata.com   (EU)
+TreasureData.sharedInstance().setCDPEndpoint("<your_cdp_endpoint>");
+
+TreasureData.sharedInstance().fetchUserSegments(Arrays.asList("<your_profile_api_tokens>"),
+                                                Collections.singletonMap("<your_key_column>", "<value>"),
+                                                new FetchUserSegmentsCallback() {
+                                                    @Override
+                                                    public void onSuccess(List<Profile> profiles) {
+                                                        System.out.println(profiles);
+                                                    }
+                                                    @Override
+                                                    public void onError(Exception e) {
+                                                        System.err.println(e);
+                                                    }
+                                                });
+```
+
 ### Enable/Disable debug log
 
 ```
