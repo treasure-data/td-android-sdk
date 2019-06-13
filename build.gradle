@@ -33,8 +33,8 @@ task fatJar(type: Jar) {
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
     with jar
     // The name "shaded" here is just to be consistent with old packaged
-    // when we were still maven-shade-plugin to make the fat JAR,
-    // No classes are actually get shaded or shadowed.
+    // when we were still maven-shade-plugin to make the fat JAR, no classes are actually get shaded or shadowed.
+    // We could this into "-all" classifier, which is less misleading
     archiveClassifier = 'shaded'
 }
 
@@ -102,8 +102,8 @@ publishing {
             def snapshotsRepoUrl = 'https://oss.sonatype.org/content/repositories/snapshots'
             url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
             credentials {
-                username sonatypeUsername
-                password sonatypePassword
+                username findProperty('sonatypeUsername')
+                password findProperty('sonatypePassword')
             }
         }
     }
