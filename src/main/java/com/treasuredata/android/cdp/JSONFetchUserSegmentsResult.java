@@ -8,10 +8,10 @@ import org.json.JSONTokener;
 import java.util.ArrayList;
 import java.util.List;
 
-abstract class JSONLookupResult extends LookupResult {
+abstract class JSONFetchUserSegmentsResult extends FetchUserSegmentsResult {
     final int statusCode;
 
-    JSONLookupResult(int statusCode) {
+    JSONFetchUserSegmentsResult(int statusCode) {
         this.statusCode = statusCode;
     }
 
@@ -19,21 +19,21 @@ abstract class JSONLookupResult extends LookupResult {
      * @throws JSONException            if the provided body is not json
      * @throws IllegalArgumentException if the parsed json is neither object or array, or has unexpected scheme
      */
-    static LookupResult createJSONResult(int status, String body) throws JSONException, IllegalArgumentException {
+    static FetchUserSegmentsResult createJSONResult(int status, String body) throws JSONException, IllegalArgumentException {
         Object json = new JSONTokener(body).nextValue();
         if (status != 200) {
             // Immediate consider this is an error for non-200 status code,
             // try to extract for "error" and "message" in the response body
             try {
-                return new JSONObjectLookupResult(status, (JSONObject) json);
+                return new JSONObjectFetchUserSegmentsResult(status, (JSONObject) json);
             } catch (ClassCastException e) {
                 // If this is not a JSON object then just throw for the caller to handle
                 throw new IllegalArgumentException(e);
             }
         } else if (json instanceof JSONObject) {
-            return new JSONObjectLookupResult(status, (JSONObject) json);
+            return new JSONObjectFetchUserSegmentsResult(status, (JSONObject) json);
         } else if (json instanceof JSONArray) {
-            return new JSONArrayLookupResult(status, (JSONArray) json);
+            return new JSONArrayFetchUserSegmentsResult(status, (JSONArray) json);
         } else {
             throw new IllegalArgumentException(
                     "Expect either an JSON Object or Array while received: " +
@@ -44,10 +44,10 @@ abstract class JSONLookupResult extends LookupResult {
     /**
      * JSON Array responses are considered success, expect to be an array of Profiles
      */
-    private static class JSONArrayLookupResult extends JSONLookupResult {
+    private static class JSONArrayFetchUserSegmentsResult extends JSONFetchUserSegmentsResult {
         private final JSONArray json;
 
-        JSONArrayLookupResult(int responseCode, JSONArray json) {
+        JSONArrayFetchUserSegmentsResult(int responseCode, JSONArray json) {
             super(responseCode);
             this.json = json;
         }
@@ -71,10 +71,10 @@ abstract class JSONLookupResult extends LookupResult {
     /**
      * Error response, expect to be in the form of <code>{"error":..., "message":..., "status":...}</code>
      */
-    private static class JSONObjectLookupResult extends JSONLookupResult {
+    private static class JSONObjectFetchUserSegmentsResult extends JSONFetchUserSegmentsResult {
         private final JSONObject json;
 
-        JSONObjectLookupResult(int httpStatusCode, JSONObject json) {
+        JSONObjectFetchUserSegmentsResult(int httpStatusCode, JSONObject json) {
             super(httpStatusCode);
             this.json = json;
         }

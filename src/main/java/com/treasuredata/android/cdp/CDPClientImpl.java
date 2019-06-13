@@ -76,7 +76,7 @@ public class CDPClientImpl implements CDPClient {
         executor.execute(new Runnable() {
             @Override
             public void run() {
-                final LookupResult result = fetchUserSegmentResultSynchronously(profileTokensSafeCopy, keysSafeCopy);
+                final FetchUserSegmentsResult result = fetchUserSegmentResultSynchronously(profileTokensSafeCopy, keysSafeCopy);
 
                 if (callbackLooper != null) {
                     new Handler(callbackLooper).post(new Runnable() {
@@ -95,7 +95,7 @@ public class CDPClientImpl implements CDPClient {
     }
 
     // Visible for testing
-    LookupResult fetchUserSegmentResultSynchronously(final List<String> profilesTokens, final Map<String, String> keys) {
+    FetchUserSegmentsResult fetchUserSegmentResultSynchronously(final List<String> profilesTokens, final Map<String, String> keys) {
         HttpURLConnection connection = null;
         try {
             connection = (HttpURLConnection) apiURI
@@ -108,10 +108,10 @@ public class CDPClientImpl implements CDPClient {
 
             int responseCode = connection.getResponseCode();
             try (InputStream is = connection.getInputStream()) {
-                return LookupResult.create(responseCode, convertStreamToString(is));
+                return FetchUserSegmentsResult.create(responseCode, convertStreamToString(is));
             }
         } catch (IOException e) {
-            return LookupResult.create(e);
+            return FetchUserSegmentsResult.create(e);
         } finally {
             if (connection != null) connection.disconnect();
         }
