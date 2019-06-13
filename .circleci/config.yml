@@ -1,0 +1,17 @@
+# Very minimal setup, just for the sake of automated testing
+
+version: 2
+
+jobs:
+  build:
+
+    docker:
+      - image: circleci/android:api-28
+
+    steps:
+      - checkout
+
+      # TODO: Should cache the Gradle dependencies
+      # TODO: Export tasks report
+
+      - run: ./gradlew test

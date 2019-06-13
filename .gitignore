@@ -1,5 +1,7 @@
-.idea
-example/td-android-sdk-demo/bin/
-example/td-android-sdk-demo/target/
-target/
+.gradle
+/build/
+local.properties
+
 *.iml
+.idea
+.DS_Store
