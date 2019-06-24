@@ -11,7 +11,7 @@
         android:theme="@android:style/Theme.Black.NoTitleBar"
         android:name=".DemoApp">
         <activity
-            android:name="com.treasuredata.android.test.MainActivity"
+            android:name="com.treasuredata.android.demo.MainActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
