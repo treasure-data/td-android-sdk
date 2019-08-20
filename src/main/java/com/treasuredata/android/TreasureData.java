@@ -61,6 +61,7 @@ public class TreasureData implements CDPClient {
     private static final String EVENT_KEY_PREV_APP_VER_NUM = "td_prev_app_ver_num";
     private static final String EVENT_KEY_LOCALE_COUNTRY = "td_locale_country";
     private static final String EVENT_KEY_LOCALE_LANG = "td_locale_lang";
+    private static final String EVENT_KEY_ADVERTISING_IDENTIFIER = "td_maid";
     private static final String EVENT_KEY_EVENT = "td_android_event";
     private static final String EVENT_KEY_UNITY_EVENT = "td_unity_event";
     private static final String EVENT_KEY_APP_LIFECYCLE_EVENT_PRIVATE = "__is_app_lifecycle_event";
@@ -103,6 +104,7 @@ public class TreasureData implements CDPClient {
     private volatile boolean customEventEnabled = true;
     private volatile boolean appLifecycleEventEnabled;
     private volatile boolean inAppPurchaseEventEnabled;
+    private volatile boolean autoAppendAdvertisingIdentifier;
     private static volatile long sessionTimeoutMilli = Session.DEFAULT_SESSION_PENDING_MILLIS;
     private final String appVersion;
     private final int appVersionNumber;
@@ -110,6 +112,7 @@ public class TreasureData implements CDPClient {
     private volatile String serverSideUploadTimestampColumn;
     private Session session = new Session();
     private volatile String autoAppendRecordUUIDColumn;
+    private volatile String advertisingId;
 
     private final AtomicBoolean isInAppPurchaseEventTracking = new AtomicBoolean(false);
     private CDPClientImpl cdpClientDelegate;
@@ -527,6 +530,10 @@ public class TreasureData implements CDPClient {
             appendRecordUUID(record);
         }
 
+        if (autoAppendAdvertisingIdentifier) {
+            appendAdvertisingIdentifier(record);
+        }
+
         if (!(DATABASE_NAME_PATTERN.matcher(database).find() && TABLE_NAME_PATTERN.matcher(table).find())) {
             String errMsg = String.format("database and table need to be consist of lower letters, numbers or '_': database=%s, table=%s", database, table);
             handleParamError(callback, errMsg);
@@ -655,6 +662,13 @@ public class TreasureData implements CDPClient {
 
     public void appendRecordUUID(Map<String, Object> record) {
         record.put(autoAppendRecordUUIDColumn, UUID.randomUUID().toString());
+    }
+
+    public void appendAdvertisingIdentifier(Map<String, Object> record) {
+        updateAdvertisingId();
+        if (advertisingId != null) {
+            record.put(EVENT_KEY_ADVERTISING_IDENTIFIER, advertisingId);
+        }
     }
 
     /**
@@ -871,6 +885,29 @@ public class TreasureData implements CDPClient {
 
     public void enableAutoAppendLocaleInformation() {
         this.autoAppendLocaleInformation = true;
+    }
+
+    public void enableAutoAppendAdvertisingIdentifier() {
+        this.autoAppendAdvertisingIdentifier = true;
+        updateAdvertisingId();
+    }
+
+    private void updateAdvertisingId() {
+        try {
+            new GetAdvertisingIdAsyncTask(new GetAdvertisingIdAsyncTaskCallback() {
+                @Override
+                public void onGetAdvertisingIdAsyncTaskCompleted(String aid) {
+                    advertisingId = aid;
+                }
+            }).execute(context);
+        } catch (Exception e) {
+            Log.w(TAG, e.getMessage());
+        }
+    }
+
+    public void disableAutoAppendAdvertisingIdentifier() {
+        this.autoAppendAdvertisingIdentifier = false;
+        advertisingId = null;
     }
 
     public void disableAutoRetryUploading() {
