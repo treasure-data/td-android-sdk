@@ -888,8 +888,7 @@ public class TreasureData implements CDPClient {
     }
 
     public void enableAutoAppendAdvertisingIdentifier() {
-        this.autoAppendAdvertisingIdColumn = EVENT_KEY_ADVERTISING_IDENTIFIER;
-        updateAdvertisingId();
+        enableAutoAppendAdvertisingIdentifier(EVENT_KEY_ADVERTISING_IDENTIFIER);
     }
 
     public void enableAutoAppendAdvertisingIdentifier(String columnName) {
