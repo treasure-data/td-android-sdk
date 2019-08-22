@@ -104,7 +104,6 @@ public class TreasureData implements CDPClient {
     private volatile boolean customEventEnabled = true;
     private volatile boolean appLifecycleEventEnabled;
     private volatile boolean inAppPurchaseEventEnabled;
-    private volatile boolean autoAppendAdvertisingIdentifier;
     private static volatile long sessionTimeoutMilli = Session.DEFAULT_SESSION_PENDING_MILLIS;
     private final String appVersion;
     private final int appVersionNumber;
@@ -112,6 +111,7 @@ public class TreasureData implements CDPClient {
     private volatile String serverSideUploadTimestampColumn;
     private Session session = new Session();
     private volatile String autoAppendRecordUUIDColumn;
+    private volatile String autoAppendAdvertisingIdColumn;
     private volatile String advertisingId;
 
     private final AtomicBoolean isInAppPurchaseEventTracking = new AtomicBoolean(false);
@@ -530,7 +530,7 @@ public class TreasureData implements CDPClient {
             appendRecordUUID(record);
         }
 
-        if (autoAppendAdvertisingIdentifier) {
+        if (autoAppendAdvertisingIdColumn != null) {
             appendAdvertisingIdentifier(record);
         }
 
@@ -667,7 +667,7 @@ public class TreasureData implements CDPClient {
     public void appendAdvertisingIdentifier(Map<String, Object> record) {
         updateAdvertisingId();
         if (advertisingId != null) {
-            record.put(EVENT_KEY_ADVERTISING_IDENTIFIER, advertisingId);
+            record.put(autoAppendAdvertisingIdColumn, advertisingId);
         }
     }
 
@@ -888,7 +888,16 @@ public class TreasureData implements CDPClient {
     }
 
     public void enableAutoAppendAdvertisingIdentifier() {
-        this.autoAppendAdvertisingIdentifier = true;
+        this.autoAppendAdvertisingIdColumn = EVENT_KEY_ADVERTISING_IDENTIFIER;
+        updateAdvertisingId();
+    }
+
+    public void enableAutoAppendAdvertisingIdentifier(String columnName) {
+        if (columnName != null) {
+            Log.w(TAG, "columnName must not be null");
+            return;
+        }
+        this.autoAppendAdvertisingIdColumn = columnName;
         updateAdvertisingId();
     }
 
@@ -906,7 +915,7 @@ public class TreasureData implements CDPClient {
     }
 
     public void disableAutoAppendAdvertisingIdentifier() {
-        this.autoAppendAdvertisingIdentifier = false;
+        this.autoAppendAdvertisingIdColumn = null;
         advertisingId = null;
     }
 
