@@ -2,6 +2,7 @@ package com.treasuredata.android;
 
 import android.app.Application;
 import android.content.Context;
+
 import io.keen.client.java.KeenCallback;
 import io.keen.client.java.KeenClient;
 import io.keen.client.java.KeenProject;
@@ -346,6 +347,41 @@ public class TreasureDataTest extends TestCase {
         td.enableAutoAppendRecordUUID();
         td.disableAutoAppendRecordUUID();
         Map<String, Object> records = new HashMap<String, Object>();
+        records.put("key", "val");
+        td.addEvent("db_", "tbl", records);
+        td.uploadEvents();
+        assertEquals(1, client.addedEvent.size());
+        assertEquals("db_.tbl", client.addedEvent.get(0).tag);
+        assertEquals(1, client.addedEvent.get(0).event.size());
+        assertTrue(client.addedEvent.get(0).event.containsKey("key"));
+        assertTrue(client.addedEvent.get(0).event.containsValue("val"));
+    }
+
+    public void testEnableAutoAppendAdvertisingId() throws IOException {
+        when(td.getAdvertisingId()).thenReturn("1234-5678-1234-5678");
+
+        td.enableAutoAppendAdvertisingIdentifier();
+
+        Map<String, Object>records = new HashMap<String, Object>();
+        records.put("key", "val");
+        td.addEvent("db_", "tbl", records);
+        td.uploadEvents();
+        assertEquals(1, client.addedEvent.size());
+        assertEquals("db_.tbl", client.addedEvent.get(0).tag);
+        assertEquals(2, client.addedEvent.get(0).event.size());
+        assertTrue(client.addedEvent.get(0).event.containsKey("key"));
+        assertTrue(client.addedEvent.get(0).event.containsValue("val"));
+        assertTrue(client.addedEvent.get(0).event.containsKey("td_maid"));
+        assertTrue(client.addedEvent.get(0).event.containsValue("1234-5678-1234-5678"));
+    }
+
+    public void testDisableAutoAppendAdvertisingId() throws IOException {
+        when(td.getAdvertisingId()).thenReturn("1234-5678-1234-5678");
+
+        td.enableAutoAppendAdvertisingIdentifier();
+        td.disableAutoAppendAdvertisingIdentifier();
+
+        Map<String, Object>records = new HashMap<String, Object>();
         records.put("key", "val");
         td.addEvent("db_", "tbl", records);
         td.uploadEvents();

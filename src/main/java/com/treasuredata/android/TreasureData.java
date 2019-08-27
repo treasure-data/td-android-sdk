@@ -208,6 +208,10 @@ public class TreasureData implements CDPClient {
         }
     }
 
+    public String getAdvertisingId() {
+        return advertisingId;
+    }
+
     public boolean isFirstRun(Context context) {
         SharedPreferences sharedPreferences = getSharedPreference(context);
         synchronized (this) {
@@ -666,8 +670,9 @@ public class TreasureData implements CDPClient {
 
     public void appendAdvertisingIdentifier(Map<String, Object> record) {
         updateAdvertisingId();
-        if (advertisingId != null) {
-            record.put(autoAppendAdvertisingIdColumn, advertisingId);
+
+        if (getAdvertisingId() != null) {
+            record.put(autoAppendAdvertisingIdColumn, getAdvertisingId());
         }
     }
 
@@ -892,7 +897,7 @@ public class TreasureData implements CDPClient {
     }
 
     public void enableAutoAppendAdvertisingIdentifier(String columnName) {
-        if (columnName != null) {
+        if (columnName == null) {
             Log.w(TAG, "columnName must not be null");
             return;
         }
