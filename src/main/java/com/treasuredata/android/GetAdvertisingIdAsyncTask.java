@@ -5,7 +5,7 @@ import android.content.Context;
 
 import org.komamitsu.android.util.Log;
 
-class GetAdvertisingIdAsyncTask extends AsyncTask<Context, Void, Void> {
+class GetAdvertisingIdAsyncTask extends AsyncTask<Context, Void, String> {
     private static final String TAG = GetAdvertisingIdAsyncTask.class.getSimpleName();
     private final GetAdvertisingIdAsyncTaskCallback callback;
 
@@ -14,7 +14,7 @@ class GetAdvertisingIdAsyncTask extends AsyncTask<Context, Void, Void> {
     }
 
     @Override
-    protected Void doInBackground(Context... params) {
+    protected String doInBackground(Context... params) {
         Context context = params[0];
         try {
             Object advertisingInfo = Class.forName("com.google.android.gms.ads.identifier.AdvertisingIdClient")
@@ -27,15 +27,19 @@ class GetAdvertisingIdAsyncTask extends AsyncTask<Context, Void, Void> {
                 String advertisingId = (String) advertisingInfo.getClass()
                         .getMethod("getId")
                         .invoke(advertisingInfo);
-                callback.onGetAdvertisingIdAsyncTaskCompleted(advertisingId);
+                return advertisingId;
             } else {
-                callback.onGetAdvertisingIdAsyncTaskCompleted(null);
+                return null;
             }
         } catch (Exception e) {
             // Customer does not include google services ad library, indicate not wanting to track Advertising Id
             Log.w(TAG, "Exception getting advertising id: " + e.getMessage(), e);
-            callback.onGetAdvertisingIdAsyncTaskCompleted(null);
+            return null;
         }
-        return null;
+    }
+
+    @Override
+    protected void onPostExecute(String advertisingId) {
+        callback.onGetAdvertisingIdAsyncTaskCompleted(advertisingId);
     }
 }
