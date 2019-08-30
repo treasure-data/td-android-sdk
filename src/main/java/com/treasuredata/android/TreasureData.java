@@ -208,7 +208,7 @@ public class TreasureData implements CDPClient {
         }
     }
 
-    public String getAdvertisingId() {
+    String getAdvertisingId() {
         return advertisingId;
     }
 

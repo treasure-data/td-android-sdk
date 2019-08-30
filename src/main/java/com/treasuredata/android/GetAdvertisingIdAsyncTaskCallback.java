@@ -1,5 +1,5 @@
 package com.treasuredata.android;
 
-public interface GetAdvertisingIdAsyncTaskCallback {
+interface GetAdvertisingIdAsyncTaskCallback {
     void onGetAdvertisingIdAsyncTaskCompleted(String advertisingId);
 }
