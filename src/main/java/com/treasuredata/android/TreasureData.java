@@ -113,6 +113,7 @@ public class TreasureData implements CDPClient {
     private volatile String autoAppendRecordUUIDColumn;
     private volatile String autoAppendAdvertisingIdColumn;
     private volatile String advertisingId;
+    private volatile GetAdvertisingIdAsyncTask getAdvertisingIdTask;
 
     private final AtomicBoolean isInAppPurchaseEventTracking = new AtomicBoolean(false);
     private CDPClientImpl cdpClientDelegate;
@@ -901,26 +902,33 @@ public class TreasureData implements CDPClient {
             Log.w(TAG, "columnName must not be null");
             return;
         }
-        this.autoAppendAdvertisingIdColumn = columnName;
+        autoAppendAdvertisingIdColumn = columnName;
         updateAdvertisingId();
     }
 
-    private void updateAdvertisingId() {
-        try {
-            new GetAdvertisingIdAsyncTask(new GetAdvertisingIdAsyncTaskCallback() {
-                @Override
-                public void onGetAdvertisingIdAsyncTaskCompleted(String aid) {
-                    advertisingId = aid;
-                }
-            }).execute(context);
-        } catch (Exception e) {
-            Log.w(TAG, e.getMessage());
+    public void disableAutoAppendAdvertisingIdentifier() {
+        autoAppendAdvertisingIdColumn = null;
+        advertisingId = null;
+        if (getAdvertisingIdTask != null) {
+            getAdvertisingIdTask.cancel(true);
+            getAdvertisingIdTask = null;
         }
     }
 
-    public void disableAutoAppendAdvertisingIdentifier() {
-        this.autoAppendAdvertisingIdColumn = null;
-        advertisingId = null;
+    private void updateAdvertisingId() {
+        if (getAdvertisingIdTask != null) return;
+        try {
+            getAdvertisingIdTask = new GetAdvertisingIdAsyncTask(new GetAdvertisingIdAsyncTaskCallback() {
+                @Override
+                public void onGetAdvertisingIdAsyncTaskCompleted(String aid) {
+                    getAdvertisingIdTask = null;
+                    advertisingId = aid;
+                }
+            });
+            getAdvertisingIdTask.execute(context);
+        } catch (Exception e) {
+            Log.w(TAG, e.getMessage());
+        }
     }
 
     public void disableAutoRetryUploading() {
