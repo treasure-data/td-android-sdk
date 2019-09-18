@@ -1,17 +1,26 @@
 # Very minimal setup, just for the sake of automated testing
+# TODO: Should cache the Gradle dependencies
+# TODO: Export tasks report
 
 version: 2
 
 jobs:
-  build:
-
+  test_api_level_29:
     docker:
-      - image: circleci/android:api-28
-
+      - image: circleci/android:api-29
     steps:
       - checkout
-
-      # TODO: Should cache the Gradle dependencies
-      # TODO: Export tasks report
-
       - run: ./gradlew test
+  test_api_level_28:
+    docker:
+      - image: circleci/android:api-28
+    steps:
+      - checkout
+      - run: ./gradlew test
+
+workflows:
+  version: 2
+  test:
+    jobs:
+      - test_api_level_29
+      - test_api_level_28
