@@ -1,8 +1,28 @@
 # Very minimal setup, just for the sake of automated testing
-# TODO: Should cache the Gradle dependencies
-# TODO: Export tasks report
 
 version: 2
+
+_defaults:
+  - &restore_gradle_cache:
+    restore_cache:
+      name: Restore Gradle Cache
+      key: jars-{{ checksum "build.gradle" }}-{{ checksum  "app/build.gradle" }}
+  - &download_dependencies:
+    run:
+      name: Download Dependencies
+      command: ./gradlew androidDependencies
+  - &save_gradle_cache:
+    save_cache:
+      paths:
+        - ~/.gradle
+      key: jars-{{ checksum "build.gradle" }}-{{ checksum  "app/build.gradle" }}
+  - &run_tests:
+    run:
+      name: Run Tests
+      command: ./gradlew test
+  - &store_tests_report:
+    store_artifacts:
+      - path: ./build/reports/tests/test
 
 jobs:
   test_api_level_29:
@@ -10,13 +30,22 @@ jobs:
       - image: circleci/android:api-29
     steps:
       - checkout
-      - run: ./gradlew test
+      - *restore_gradle_cache
+      - *download_dependencies
+      - *save_gradle_cache
+      - *run_tests
+      - *store_tests_report
+
   test_api_level_28:
     docker:
       - image: circleci/android:api-28
     steps:
       - checkout
-      - run: ./gradlew test
+      - *restore_gradle_cache
+      - *download_dependencies
+      - *save_gradle_cache
+      - *run_tests
+      - *store_tests_report
 
 workflows:
   version: 2
