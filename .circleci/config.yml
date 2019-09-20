@@ -22,7 +22,7 @@ _defaults:
       command: ./gradlew test
   - &store_tests_report
     store_artifacts:
-      - path: ./build/reports/tests/test
+      path: ./build/reports/tests/test
 
 jobs:
   test_api_level_29:
