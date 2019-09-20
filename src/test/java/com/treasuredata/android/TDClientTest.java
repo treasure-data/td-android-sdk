@@ -5,6 +5,8 @@ import io.keen.client.java.KeenCallback;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
+
+import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -221,16 +223,10 @@ public class TDClientTest
     }
 
     @Test
-    @Ignore
     public void sendToTwoTablesWithLimitedUploadedEvents()
-            throws Exception
-    {
-        server.enqueue(new MockResponse().setBody(
-                "{\"db0.tbl0\":[{\"success\":true},{\"success\":true}]," +
-                 "\"db1.tbl1\":[{\"success\":true}]}"));
-        server.enqueue(new MockResponse().setBody(
-                "{\"db1.tbl1\":[{\"success\":true}]}"));
+            throws Exception {
         server.start();
+
         TDClient.setApiEndpoint(String.format("http://127.0.0.1:%d", server.getPort()));
         TDClient client = new TDClient(APIKEY, cacheDir);
         client.setMaxUploadEventsAtOnce(3);
@@ -260,6 +256,26 @@ public class TDClientTest
 
         Map<String, List<Map<String, Object>>> expected1 = new HashMap<String, List<Map<String, Object>>>();
         expected1.put("db1.tbl1", Arrays.<Map<String, Object>>asList(event2, event3));
+
+        // We must get db0.tbl0 handle and get the number of handles from there
+        // to mock the correct number of success responses for each db
+        List<Object> db0Tbl0Handles = client.getEventStore()
+                .getHandles(client.getDefaultProject().getProjectId(), 3)
+                .get("db0.tbl0");
+
+        if (db0Tbl0Handles.size() == 2) {
+            server.enqueue(new MockResponse().setBody(
+                    "{\"db0.tbl0\":[{\"success\":true},{\"success\":true}]," +
+                            "\"db1.tbl1\":[{\"success\":true}]}"));
+            server.enqueue(new MockResponse().setBody(
+                    "{\"db1.tbl1\":[{\"success\":true}]}"));
+        } else {
+            server.enqueue(new MockResponse().setBody(
+                    "{\"db0.tbl0\":[{\"success\":true}]," +
+                            "\"db1.tbl1\":[{\"success\":true},{\"success\":true}]}"));
+            server.enqueue(new MockResponse().setBody(
+                    "{\"db0.tbl0\":[{\"success\":true}]}"));
+        }
 
         sendQueuedEventsAndAssert(client, Arrays.asList(expected0, expected1));
     }
