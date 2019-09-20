@@ -28,7 +28,7 @@ _defaults:
     store_artifacts:
       path: report.tar
       destination: report.tar
-  - &store_test_results:
+  - &store_test_results
       path: build/test-results
 
 jobs:
