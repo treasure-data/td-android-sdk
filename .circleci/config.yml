@@ -2,16 +2,66 @@
 
 version: 2
 
+_defaults:
+  - &restore_gradle_cache
+    restore_cache:
+      name: Restore Gradle Cache
+      key: jars-{{ checksum "build.gradle" }}
+  - &download_dependencies
+    run:
+      name: Download Dependencies
+      command: ./gradlew androidDependencies
+  - &save_gradle_cache
+    save_cache:
+      paths:
+        - ~/.gradle
+      key: jars-{{ checksum "build.gradle" }}
+  - &run_tests
+    run:
+      name: Run Tests
+      command: ./gradlew test
+  - &compress_report
+    run:
+      name: Compress Report
+      command: tar -cvf report.tar -C ./build/reports .
+  - &store_report
+    store_artifacts:
+      path: report.tar
+      destination: report.tar
+  - &store_test_results
+    store_test_results:
+      path: build/test-results
+
 jobs:
-  build:
-
+  test_api_level_29:
     docker:
-      - image: circleci/android:api-28
-
+      - image: circleci/android:api-29
     steps:
       - checkout
+      - *restore_gradle_cache
+      - *download_dependencies
+      - *save_gradle_cache
+      - *run_tests
+      - *compress_report
+      - *store_report
+      - *store_test_results
 
-      # TODO: Should cache the Gradle dependencies
-      # TODO: Export tasks report
+  test_api_level_28:
+    docker:
+      - image: circleci/android:api-28
+    steps:
+      - checkout
+      - *restore_gradle_cache
+      - *download_dependencies
+      - *save_gradle_cache
+      - *run_tests
+      - *compress_report
+      - *store_report
+      - *store_test_results
 
-      - run: ./gradlew test
+workflows:
+  version: 2
+  test:
+    jobs:
+      - test_api_level_29
+      - test_api_level_28
