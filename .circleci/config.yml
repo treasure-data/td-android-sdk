@@ -20,9 +20,14 @@ _defaults:
     run:
       name: Run Tests
       command: ./gradlew test
+  - &compress_tests_report
+    run:
+      name: Compress Tests Report
+      command: tar -cvf tests_report.tar ./build/reports/tests/test
   - &store_tests_report
     store_artifacts:
-      path: ./build/reports/tests/test
+      path: tests_report.tar
+      destination: tests_report.tar
 
 jobs:
   test_api_level_29:
@@ -34,6 +39,7 @@ jobs:
       - *download_dependencies
       - *save_gradle_cache
       - *run_tests
+      - *compress_tests_report
       - *store_tests_report
 
   test_api_level_28:
@@ -45,6 +51,7 @@ jobs:
       - *download_dependencies
       - *save_gradle_cache
       - *run_tests
+      - *compress_tests_report
       - *store_tests_report
 
 workflows:
