@@ -669,7 +669,7 @@ public class TreasureData implements CDPClient {
         record.put(autoAppendRecordUUIDColumn, UUID.randomUUID().toString());
     }
 
-    public void appendAdvertisingIdentifier(Map<String, Object> record) {
+    private void appendAdvertisingIdentifier(Map<String, Object> record) {
         updateAdvertisingId();
 
         if (getAdvertisingId() != null) {
