@@ -5,6 +5,7 @@ import android.content.Context;
 
 import org.komamitsu.android.util.Log;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 class GetAdvertisingIdAsyncTask extends AsyncTask<Context, Void, String> {
@@ -18,9 +19,7 @@ class GetAdvertisingIdAsyncTask extends AsyncTask<Context, Void, String> {
         this.callback = callback;
     }
 
-    @Override
-    protected String doInBackground(Context... params) {
-        Context context = params[0];
+    synchronized private static void cacheAdvertisingInfoClass(Context context) throws Exception {
         try {
             if (advertisingInfo == null) {
                 advertisingInfo = Class.forName("com.google.android.gms.ads.identifier.AdvertisingIdClient")
@@ -30,16 +29,25 @@ class GetAdvertisingIdAsyncTask extends AsyncTask<Context, Void, String> {
                         .getMethod("isLimitAdTrackingEnabled");
                 getIdMethod = advertisingInfo.getClass().getMethod("getId");
             }
-            if (!(Boolean) isLimitAdTrackingEnabledMethod.invoke(advertisingInfo)) {
-                return (String) getIdMethod.invoke(advertisingInfo);
-            } else {
-                return null;
-            }
         } catch (ClassNotFoundException e) {
             // Customer does not include google services ad library, indicate not wanting to track Advertising Id
             Log.w(TAG, "Exception getting advertising id: " + e.getMessage(), e);
             Log.w(TAG, "You are attempting to enable auto append Advertising Identifer but AdvertisingIdClient class is not detected. To use this feature, you must use Google Mobile Ads library");
-            return null;
+        }  catch (Exception e) {
+            throw e;
+        }
+    }
+
+    @Override
+    protected String doInBackground(Context... params) {
+        Context context = params[0];
+        try {
+            cacheAdvertisingInfoClass(context);
+            if (advertisingInfo != null && !(Boolean) isLimitAdTrackingEnabledMethod.invoke(advertisingInfo)) {
+                return (String) getIdMethod.invoke(advertisingInfo);
+            } else {
+                return null;
+            }
         } catch (Exception e) {
             Log.w(TAG, "Exception getting advertising id: " + e.getMessage(), e);
             return null;
