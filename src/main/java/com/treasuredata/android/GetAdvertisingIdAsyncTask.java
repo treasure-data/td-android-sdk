@@ -32,7 +32,7 @@ class GetAdvertisingIdAsyncTask extends AsyncTask<Context, Void, String> {
         } catch (ClassNotFoundException e) {
             // Customer does not include google services ad library, indicate not wanting to track Advertising Id
             Log.w(TAG, "Exception getting advertising id: " + e.getMessage(), e);
-            Log.w(TAG, "You are attempting to enable auto append Advertising Identifer but AdvertisingIdClient class is not detected. To use this feature, you must use Google Mobile Ads library");
+            Log.w(TAG, "You are attempting to enable auto append Advertising Identifier but AdvertisingIdClient class is not detected. To use this feature, you must use Google Mobile Ads library");
         }  catch (Exception e) {
             throw e;
         }
