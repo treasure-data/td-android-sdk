@@ -368,6 +368,7 @@ It outputs the value as a column name `record_uuid` by default.
 
 ### Adding Advertising Id to each event record automatically
 Advertising Id will be added to each event record automatically if you call `enableAutoAppendAdvertisingIdentifier`. You must install Google Play Service Ads (Gradle `com.google.android.gms:play-services-ads`) as a dependency for this feature to work. User must also not turn on Limit Ad Tracking feature in their device, otherwise, Treasure Data will not attach Advertising Id to the record.
+Due to asynchronous nature of getting Advertising Id, after enableAutoAppendAdvertisingIdentifier method called, it may take some time for Advertising Id to be available to be added to the record. However, Treasure Data does cache the Advertising Id in order to add to the next event without having to wait for the fetch Advertising Id task to complete.
 
 ```
 td.enableAutoAppendAdvertisingIdentifier();

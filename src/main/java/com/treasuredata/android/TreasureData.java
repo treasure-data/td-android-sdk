@@ -45,6 +45,7 @@ public class TreasureData implements CDPClient {
     private static final String SHARED_PREF_IAP_EVENT_ENABLED = "iap_event_enabled";
     private static final String SHARED_PREF_CUSTOM_EVENT_ENABLED = "custom_event_enabled";
     private static final String SHARED_PREF_KEY_IS_UNITY = "TDIsUnity";
+    private static final String SHARED_PREF_KEY_ADVERTISING_ID = "advertising_id";
     private static final String EVENT_KEY_UUID = "td_uuid";
     private static final String EVENT_KEY_SESSION_ID = "td_session_id";
     private static final String EVENT_KEY_SESSION_EVENT = "td_session_event";
@@ -209,8 +210,23 @@ public class TreasureData implements CDPClient {
         }
     }
 
-    String getAdvertisingId() {
-        return advertisingId;
+    private String getAdvertisingIdFromSharedPreferences() {
+        SharedPreferences sharedPreferences = getSharedPreference(context);
+        synchronized (this) {
+            return sharedPreferences.getString(SHARED_PREF_KEY_ADVERTISING_ID, null);
+        }
+    }
+
+    private void setAdvertisingId(String advertisingId) {
+        SharedPreferences sharedPreferences = getSharedPreference(context);
+        synchronized (this) {
+            this.advertisingId = advertisingId;
+            if (advertisingId == null) {
+                sharedPreferences.edit().remove(SHARED_PREF_KEY_ADVERTISING_ID).commit();
+            } else {
+                sharedPreferences.edit().putString(SHARED_PREF_KEY_ADVERTISING_ID, advertisingId).commit();
+            }
+        }
     }
 
     public boolean isFirstRun(Context context) {
@@ -234,6 +250,7 @@ public class TreasureData implements CDPClient {
         this.appLifecycleEventEnabled = getAppLifecycleEventEnabled();
         this.customEventEnabled = getCustomEventEnabled();
         this.inAppPurchaseEventEnabled = getInAppPurchaseEventEventEnabled();
+        this.advertisingId = getAdvertisingIdFromSharedPreferences();
 
         TDClient client = null;
         if (apiKey == null && TDClient.getDefaultApiKey() == null) {
@@ -672,8 +689,8 @@ public class TreasureData implements CDPClient {
     private void appendAdvertisingIdentifier(Map<String, Object> record) {
         updateAdvertisingId();
 
-        if (getAdvertisingId() != null) {
-            record.put(autoAppendAdvertisingIdColumn, getAdvertisingId());
+        if (advertisingId != null) {
+            record.put(autoAppendAdvertisingIdColumn, advertisingId);
         }
     }
 
@@ -908,7 +925,7 @@ public class TreasureData implements CDPClient {
 
     public void disableAutoAppendAdvertisingIdentifier() {
         autoAppendAdvertisingIdColumn = null;
-        advertisingId = null;
+        setAdvertisingId(null);
         if (getAdvertisingIdTask != null) {
             getAdvertisingIdTask.cancel(true);
             getAdvertisingIdTask = null;
@@ -922,7 +939,7 @@ public class TreasureData implements CDPClient {
                 @Override
                 public void onGetAdvertisingIdAsyncTaskCompleted(String aid) {
                     getAdvertisingIdTask = null;
-                    advertisingId = aid;
+                    setAdvertisingId(aid);
                 }
             });
             getAdvertisingIdTask.execute(context);
