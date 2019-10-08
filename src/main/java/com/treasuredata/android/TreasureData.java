@@ -45,6 +45,7 @@ public class TreasureData implements CDPClient {
     private static final String SHARED_PREF_IAP_EVENT_ENABLED = "iap_event_enabled";
     private static final String SHARED_PREF_CUSTOM_EVENT_ENABLED = "custom_event_enabled";
     private static final String SHARED_PREF_KEY_IS_UNITY = "TDIsUnity";
+    private static final String SHARED_PREF_KEY_ADVERTISING_ID = "advertising_id";
     private static final String EVENT_KEY_UUID = "td_uuid";
     private static final String EVENT_KEY_SESSION_ID = "td_session_id";
     private static final String EVENT_KEY_SESSION_EVENT = "td_session_event";
@@ -61,6 +62,7 @@ public class TreasureData implements CDPClient {
     private static final String EVENT_KEY_PREV_APP_VER_NUM = "td_prev_app_ver_num";
     private static final String EVENT_KEY_LOCALE_COUNTRY = "td_locale_country";
     private static final String EVENT_KEY_LOCALE_LANG = "td_locale_lang";
+    private static final String EVENT_KEY_ADVERTISING_IDENTIFIER = "td_maid";
     private static final String EVENT_KEY_EVENT = "td_android_event";
     private static final String EVENT_KEY_UNITY_EVENT = "td_unity_event";
     private static final String EVENT_KEY_APP_LIFECYCLE_EVENT_PRIVATE = "__is_app_lifecycle_event";
@@ -110,6 +112,9 @@ public class TreasureData implements CDPClient {
     private volatile String serverSideUploadTimestampColumn;
     private Session session = new Session();
     private volatile String autoAppendRecordUUIDColumn;
+    private volatile String autoAppendAdvertisingIdColumn;
+    private volatile String advertisingId;
+    private volatile GetAdvertisingIdAsyncTask getAdvertisingIdTask;
 
     private final AtomicBoolean isInAppPurchaseEventTracking = new AtomicBoolean(false);
     private CDPClientImpl cdpClientDelegate;
@@ -205,6 +210,25 @@ public class TreasureData implements CDPClient {
         }
     }
 
+    private String getAdvertisingIdFromSharedPreferences() {
+        SharedPreferences sharedPreferences = getSharedPreference(context);
+        synchronized (this) {
+            return sharedPreferences.getString(SHARED_PREF_KEY_ADVERTISING_ID, null);
+        }
+    }
+
+    private void setAdvertisingId(String advertisingId) {
+        SharedPreferences sharedPreferences = getSharedPreference(context);
+        synchronized (this) {
+            this.advertisingId = advertisingId;
+            if (advertisingId == null) {
+                sharedPreferences.edit().remove(SHARED_PREF_KEY_ADVERTISING_ID).commit();
+            } else {
+                sharedPreferences.edit().putString(SHARED_PREF_KEY_ADVERTISING_ID, advertisingId).commit();
+            }
+        }
+    }
+
     public boolean isFirstRun(Context context) {
         SharedPreferences sharedPreferences = getSharedPreference(context);
         synchronized (this) {
@@ -226,6 +250,7 @@ public class TreasureData implements CDPClient {
         this.appLifecycleEventEnabled = getAppLifecycleEventEnabled();
         this.customEventEnabled = getCustomEventEnabled();
         this.inAppPurchaseEventEnabled = getInAppPurchaseEventEventEnabled();
+        this.advertisingId = getAdvertisingIdFromSharedPreferences();
 
         TDClient client = null;
         if (apiKey == null && TDClient.getDefaultApiKey() == null) {
@@ -527,6 +552,10 @@ public class TreasureData implements CDPClient {
             appendRecordUUID(record);
         }
 
+        if (autoAppendAdvertisingIdColumn != null) {
+            appendAdvertisingIdentifier(record);
+        }
+
         if (!(DATABASE_NAME_PATTERN.matcher(database).find() && TABLE_NAME_PATTERN.matcher(table).find())) {
             String errMsg = String.format("database and table need to be consist of lower letters, numbers or '_': database=%s, table=%s", database, table);
             handleParamError(callback, errMsg);
@@ -655,6 +684,14 @@ public class TreasureData implements CDPClient {
 
     public void appendRecordUUID(Map<String, Object> record) {
         record.put(autoAppendRecordUUIDColumn, UUID.randomUUID().toString());
+    }
+
+    private void appendAdvertisingIdentifier(Map<String, Object> record) {
+        updateAdvertisingId();
+
+        if (advertisingId != null) {
+            record.put(autoAppendAdvertisingIdColumn, advertisingId);
+        }
     }
 
     /**
@@ -871,6 +908,44 @@ public class TreasureData implements CDPClient {
 
     public void enableAutoAppendLocaleInformation() {
         this.autoAppendLocaleInformation = true;
+    }
+
+    public void enableAutoAppendAdvertisingIdentifier() {
+        enableAutoAppendAdvertisingIdentifier(EVENT_KEY_ADVERTISING_IDENTIFIER);
+    }
+
+    public void enableAutoAppendAdvertisingIdentifier(String columnName) {
+        if (columnName == null) {
+            Log.w(TAG, "columnName must not be null");
+            return;
+        }
+        autoAppendAdvertisingIdColumn = columnName;
+        updateAdvertisingId();
+    }
+
+    public void disableAutoAppendAdvertisingIdentifier() {
+        autoAppendAdvertisingIdColumn = null;
+        setAdvertisingId(null);
+        if (getAdvertisingIdTask != null) {
+            getAdvertisingIdTask.cancel(true);
+            getAdvertisingIdTask = null;
+        }
+    }
+
+    private void updateAdvertisingId() {
+        if (getAdvertisingIdTask != null) return;
+        try {
+            getAdvertisingIdTask = new GetAdvertisingIdAsyncTask(new GetAdvertisingIdAsyncTaskCallback() {
+                @Override
+                public void onGetAdvertisingIdAsyncTaskCompleted(String aid) {
+                    getAdvertisingIdTask = null;
+                    setAdvertisingId(aid);
+                }
+            });
+            getAdvertisingIdTask.execute(context);
+        } catch (Exception e) {
+            Log.w(TAG, e.getMessage());
+        }
     }
 
     public void disableAutoRetryUploading() {

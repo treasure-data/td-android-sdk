@@ -2,6 +2,7 @@ package com.treasuredata.android;
 
 import android.app.Application;
 import android.content.Context;
+
 import io.keen.client.java.KeenCallback;
 import io.keen.client.java.KeenClient;
 import io.keen.client.java.KeenProject;

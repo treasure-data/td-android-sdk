@@ -22,6 +22,7 @@ dependencies {
 
     compileOnly 'com.google.android:android:4.1.1.4'
 
+    testCompile 'com.google.android.gms:play-services-ads:17.1.1'
     testCompile 'junit:junit:4.11'
     testCompile 'org.mockito:mockito-core:1.8.5'
     testCompile 'com.squareup.okhttp3:mockwebserver:3.6.0'
