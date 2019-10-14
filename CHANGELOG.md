@@ -1,5 +1,10 @@
 # Change Log
 
+## Version 0.3.0
+_2019_10_14_
+
+* Add feature auto tracking Advertising Id (`TreasureData#enableAutoAppendAdvertisingIdentifier()`)
+
 ## Version 0.2.0
 _2019-06-13_
 
