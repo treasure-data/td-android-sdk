@@ -452,6 +452,7 @@ Lookup for profiles via [Profile API](https://support.treasuredata.com/hc/en-us/
 //   https://cdp.in.treasuredata.com        (US)
 //   https://cdp-tokyo.in.treasuredata.com  (Tokyo)
 //   https://cdp-eu01.in.treasuredata.com   (EU)
+//   https://cdp-ap02.in.treasuredata.com   (Seoul)
 TreasureData.sharedInstance().setCDPEndpoint("<your_cdp_endpoint>");
 
 TreasureData.sharedInstance().fetchUserSegments(Arrays.asList("<your_profile_api_tokens>"),
