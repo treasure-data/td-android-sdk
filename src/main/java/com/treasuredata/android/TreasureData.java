@@ -115,6 +115,7 @@ public class TreasureData implements CDPClient {
     private volatile String autoAppendAdvertisingIdColumn;
     private volatile String advertisingId;
     private volatile GetAdvertisingIdAsyncTask getAdvertisingIdTask;
+    private volatile Map<String, Map<String, Object>> defaultValues;
 
     private final AtomicBoolean isInAppPurchaseEventTracking = new AtomicBoolean(false);
     private CDPClientImpl cdpClientDelegate;
@@ -526,6 +527,9 @@ public class TreasureData implements CDPClient {
         }
 
         Map<String, Object> record = new HashMap<String, Object>();
+
+        appendDefaultValues(record, database, table);
+
         if (origRecord != null) {
             record.putAll(origRecord);
         }
@@ -633,6 +637,19 @@ public class TreasureData implements CDPClient {
                return this.currentErrorCode;
            }
         };
+    }
+
+    private void appendDefaultValues(Map<String, Object> record, String database, String table) {
+        if (defaultValues == null) return;
+
+        String anyTableOrDatabaseKey = ".";
+        if (defaultValues.containsKey(anyTableOrDatabaseKey)) record.putAll(defaultValues.get(anyTableOrDatabaseKey));
+        String anyTableKey = String.format("%s.", database);
+        if (defaultValues.containsKey(anyTableKey)) record.putAll(defaultValues.get(anyTableKey));
+        String anyDatabaseKey = String.format(".%s", table);
+        if (defaultValues.containsKey(anyDatabaseKey)) record.putAll(defaultValues.get(anyDatabaseKey));
+        String tableKey = String.format("%s.%s", database, table);
+        if (defaultValues.containsKey(tableKey)) record.putAll(defaultValues.get(tableKey));
     }
 
     public void appendSessionId(Map<String, Object> record) {
@@ -844,6 +861,34 @@ public class TreasureData implements CDPClient {
         } else {
             throw new IllegalStateException("`setCDPEndpoint()` is required before using `fetchUserSegments()`");
         }
+    }
+
+    private String defaultValueTableKey(String database, String table) {
+        String _database = database == null ? "" : database;
+        String _table = table == null ? "" : table;
+        return String.format("%s.%s", _database, _table);
+    }
+
+    public void setDefaultValue(Object value, String key, String database, String table) {
+        if (defaultValues == null) defaultValues = new HashMap();
+        String tableKey = this.defaultValueTableKey(database, table);
+        if (!defaultValues.containsKey(tableKey)) defaultValues.put(tableKey, new HashMap());
+        Map tableMap = defaultValues.get(tableKey);
+        tableMap.put(key, value);
+    }
+
+    public Object defaultValue(String key, String database, String table) {
+        if (defaultValues == null) return null;
+        String tableKey = this.defaultValueTableKey(database, table);
+        if (!defaultValues.containsKey(tableKey)) return null;
+        return defaultValues.get(tableKey).get(key);
+    }
+
+    public void removeDefaultValue(String key, String database, String table) {
+        if (defaultValues == null) return;
+        String tableKey = this.defaultValueTableKey(database, table);
+        if (!defaultValues.containsKey(tableKey)) return;
+        defaultValues.get(tableKey).remove(key);
     }
 
     private boolean getCustomEventEnabled() {

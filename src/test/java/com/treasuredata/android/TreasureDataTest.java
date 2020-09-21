@@ -813,4 +813,131 @@ public class TreasureDataTest extends TestCase {
         assertEquals(KeenClient.ERROR_CODE_NETWORK_ERROR, errorCodeForUploadEvents);
         assertEquals(0, client.addedEvent.size());
     }
+
+    public void testAddDefaultValuesSuccesfully() throws IOException {
+        Map<String, Object> records = new HashMap<String, Object>();
+        records.put("key", "value");
+        td.setDefaultValue("String", "string", null, null);
+        td.setDefaultValue(1, "number", null, null);
+        td.setDefaultValue("Only 1", "only_1", "test_db_1", "test_table_1");
+        td.setDefaultValue("Only 2", "only_2", "test_db_2", "test_table_2");
+        td.setDefaultValue("Any table 1", "any_table_1", "test_db_1", null);
+        td.setDefaultValue("Any table 2", "any_table_2", "test_db_2", null);
+        td.setDefaultValue("Any database 1", "any_db_1", null, "test_table_1");
+        td.setDefaultValue("Any database 2", "any_db_2", null, "test_table_2");
+
+        td.addEvent("test_db_1", "test_table_1", records);
+        td.addEvent("test_db_2", "test_table_2", records);
+        assertEquals(2, client.addedEvent.size());
+
+        assertEquals("test_db_1.test_table_1", client.addedEvent.get(0).tag);
+        Map event1 = client.addedEvent.get(0).event;
+        assertEquals(event1.get("key"), "value");
+        assertEquals(event1.get("string"), "String");
+        assertEquals(event1.get("number"), 1);
+        assertEquals(event1.get("only_1"), "Only 1");
+        assertNull(event1.get("only_2"));
+        assertEquals(event1.get("any_table_1"), "Any table 1");
+        assertNull(event1.get("any_table_2"));
+        assertEquals(event1.get("any_db_1"), "Any database 1");
+        assertNull(event1.get("any_db_2"));
+
+        assertEquals("test_db_2.test_table_2", client.addedEvent.get(1).tag);
+        Map event2 = client.addedEvent.get(1).event;
+        assertEquals(event2.get("key"), "value");
+        assertEquals(event2.get("string"), "String");
+        assertEquals(event2.get("number"), 1);
+        assertEquals(event2.get("only_2"), "Only 2");
+        assertNull(event2.get("only_1"));
+        assertEquals(event2.get("any_table_2"), "Any table 2");
+        assertNull(event2.get("any_table_1"));
+        assertEquals(event2.get("any_db_2"), "Any database 2");
+        assertNull(event2.get("any_db_1"));
+    }
+
+    public void testAddDefaultValuesOverrideSuccesfully() {
+        Map<String, Object> records = new HashMap<String, Object>();
+
+        td.setDefaultValue("Any table & db", "key", null, null);
+        td.addEvent("test_db", "test_table", records);
+
+        td.setDefaultValue("Any table", "key", "test_db", null);
+        td.addEvent("test_db", "test_table", records);
+
+        td.setDefaultValue("Any database", "key", null, "test_table");
+        td.addEvent("test_db", "test_table", records);
+
+        td.setDefaultValue("Specific database & table", "key", "test_db", "test_table");
+        td.addEvent("test_db", "test_table", records);
+
+        records.put("key", "Event value");
+        td.addEvent("test_db", "test_table", records);
+
+        assertEquals(5, client.addedEvent.size());
+        assertEquals(client.addedEvent.get(0).event.get("key"), "Any table & db");
+        assertEquals(client.addedEvent.get(1).event.get("key"), "Any table");
+        assertEquals(client.addedEvent.get(2).event.get("key"), "Any database");
+        assertEquals(client.addedEvent.get(3).event.get("key"), "Specific database & table");
+        assertEquals(client.addedEvent.get(4).event.get("key"), "Event value");
+    }
+
+    public void testGetDefaultValueForKey() {
+        td.setDefaultValue("Value", "key", null, null);
+        td.setDefaultValue("Value", "key_table", null, "test_table");
+        td.setDefaultValue("Value", "key_database", "test_db", null);
+        td.setDefaultValue("Value", "key_table_database", "test_db", "test_table");
+
+        String nullKeyValue = (String) td.defaultValue("nullKey", null, null);
+        String keyValue = (String) td.defaultValue("key", null, null);
+        String keyTableValue = (String) td.defaultValue("key_table", null, "test_table");
+        String keyDBValue = (String) td.defaultValue("key_database", "test_db", null);
+        String keyTableDBValue = (String) td.defaultValue("key_table_database", "test_db", "test_table");
+
+        assertNull(nullKeyValue);
+        assertEquals(keyValue, "Value");
+        assertEquals(keyTableValue, "Value");
+        assertEquals(keyDBValue, "Value");
+        assertEquals(keyTableDBValue, "Value");
+    }
+
+    public void testRemoveDefaultValuesSuccessfully() {
+        td.setDefaultValue("Value", "key", null, null);
+        td.setDefaultValue("Value", "key_table", null, "test_table");
+        td.setDefaultValue("Value", "key_database", "test_db", null);
+        td.setDefaultValue("Value", "key_table_database", "test_db", "test_table");
+        td.addEvent("test_db", "test_table", new HashMap<String, Object>());
+
+        td.removeDefaultValue("key", null, null);
+        td.removeDefaultValue("key_table", null, "test_table");
+        td.removeDefaultValue("key_database", "test_db", null);
+        td.removeDefaultValue("key_table_database", "test_db", "test_table");
+        td.addEvent("test_db", "test_table", new HashMap<String, Object>());
+
+        assertEquals(2, client.addedEvent.size());
+        Map event1 = client.addedEvent.get(0).event;
+        assertEquals(event1.get("key"), "Value");
+        assertEquals(event1.get("key_table"), "Value");
+        assertEquals(event1.get("key_database"), "Value");
+        assertEquals(event1.get("key_table_database"), "Value");
+
+        Map event2 = client.addedEvent.get(1).event;
+        assertNull(event2.get("key"));
+        assertNull(event2.get("key_table"));
+        assertNull(event2.get("key_database"));
+        assertNull(event2.get("key_table_database"));
+    }
+
+    public void testRemoveDefaultValuesNoop() {
+        td.setDefaultValue("Value", "key", null, null);
+        td.removeDefaultValue("key", null, "test_table");
+        td.removeDefaultValue("key", "test_db", null);
+        td.removeDefaultValue("key", "test_db", "test_table");
+        td.removeDefaultValue("key2", null, null);
+
+        td.addEvent("test_db", "test_table", new HashMap<String, Object>());
+        assertEquals(1, client.addedEvent.size());
+        Map event1 = client.addedEvent.get(0).event;
+        assertEquals(event1.get("key"), "Value");
+        assertNull(event1.get("key2"));
+    }
 }

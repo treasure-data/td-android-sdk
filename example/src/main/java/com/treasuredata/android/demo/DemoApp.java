@@ -40,6 +40,8 @@ public class DemoApp extends Application {
         TreasureData.sharedInstance().enableAutoAppendAdvertisingIdentifier("custom_td_maid");
         TreasureData.sharedInstance().setDefaultDatabase("test_db");
         TreasureData.sharedInstance().setDefaultTable("test_tbl");
+
+        TreasureData.sharedInstance().setDefaultValue("Test default value", "default_value", null, null);
     }
 
     private void setupInstallReferrer() {
