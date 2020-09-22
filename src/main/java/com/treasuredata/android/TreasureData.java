@@ -1067,6 +1067,13 @@ public class TreasureData implements CDPClient {
         return session.getId();
     }
 
+    public static void resetSessionId(Context context) {
+        Session session = getSession(context);
+        if (session != null) {
+            session.resetId();
+        }
+    }
+
     public void enableServerSideUploadTimestamp() {
         serverSideUploadTimestamp = true;
         serverSideUploadTimestampColumn = null;

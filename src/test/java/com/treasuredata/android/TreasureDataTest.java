@@ -656,6 +656,29 @@ public class TreasureDataTest extends TestCase {
         assertTrue(TreasureData.getSessionId(context).length() > 0);
     }
 
+    public void testResetSessionId() throws IOException, InterruptedException {
+        enableCallbackForAddEvent();
+        enableCallbackForUploadEvents();
+
+        assertNull(TreasureData.getSessionId(context));
+
+        TreasureData.setSessionTimeoutMilli(200);
+
+        TreasureData.resetSessionId(context); // noop
+        assertNull(TreasureData.getSessionId(context));
+
+        TreasureData.startSession(context);
+
+        String originalSessionId = TreasureData.getSessionId(context);
+        TreasureData.resetSessionId(context);
+        String resetSessionId = TreasureData.getSessionId(context);
+        assertFalse(resetSessionId.equals(originalSessionId));
+
+        TreasureData.endSession(context);
+        TreasureData.resetSessionId(context); // noop
+        assertNull(TreasureData.getSessionId(context));
+    }
+
     public void testAddEventWithSuccessWithDefaultDatabase() throws IOException {
         td.setDefaultDatabase("db_");
 
