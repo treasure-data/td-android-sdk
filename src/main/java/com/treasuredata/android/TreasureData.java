@@ -869,7 +869,16 @@ public class TreasureData implements CDPClient {
         return String.format("%s.%s", _database, _table);
     }
 
-    public void setDefaultValue(Object value, String key, String database, String table) {
+    /**
+     * Set default `value` for `key` in all new events targeting `database` and `table`.
+     * When `database` and/or `table` parameters are null, the null parameter acts like a wild card that allows to set specified key value pair to new events added to any database (if `database` is null) and/or to any table (if `table` is null).
+     * For example, if you pass null to both `database` and `table` parameters, all new events will have specified default value.
+     * @param database the database to set default value to. If null, specified table of any database will have new events with the added default value.
+     * @param table the table to set default value to. If null, any table of specified database will have new events with the added default value.
+     * @param key the event's key that default value is set to, corresponding to column in table.
+     * @param value default value for `key`
+     */
+    public void setDefaultValue(String database, String table, String key, Object value) {
         if (defaultValues == null) defaultValues = new HashMap();
         String tableKey = this.defaultValueTableKey(database, table);
         if (!defaultValues.containsKey(tableKey)) defaultValues.put(tableKey, new HashMap());
@@ -877,14 +886,29 @@ public class TreasureData implements CDPClient {
         tableMap.put(key, value);
     }
 
-    public Object defaultValue(String key, String database, String table) {
+    /**
+     * Get default value of `key` in all new events targeting `database` and `table`.
+     * See setDefaultValue() for logic setting database and table.
+     * @param database the database to get default value from. If null, get default value of specified table of any database.
+     * @param table the table to get default value from. If null, get default value of any table of specified database.
+     * @param key the event's key that default value is set to, corresponding to column in table.
+     * @return default value for `key` for events targeting `database` and `table`.
+     */
+    public Object getDefaultValue(String database, String table, String key) {
         if (defaultValues == null) return null;
         String tableKey = this.defaultValueTableKey(database, table);
         if (!defaultValues.containsKey(tableKey)) return null;
         return defaultValues.get(tableKey).get(key);
     }
 
-    public void removeDefaultValue(String key, String database, String table) {
+    /**
+     * Remove default value of `key` in all new events targeting `database` and `table`.
+     * See setDefaultValue() for logic setting database and table.
+     * @param database the database to remove default value from. If null, specified table of any database will have new events without the default value.
+     * @param table the table to remove default value from. If null, any table of specified database will have new events without the default value.
+     * @param key the event's key that default value is set to, corresponding to column in table.
+     */
+    public void removeDefaultValue(String database, String table, String key) {
         if (defaultValues == null) return;
         String tableKey = this.defaultValueTableKey(database, table);
         if (!defaultValues.containsKey(tableKey)) return;

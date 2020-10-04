@@ -41,7 +41,7 @@ public class DemoApp extends Application {
         TreasureData.sharedInstance().setDefaultDatabase("test_db");
         TreasureData.sharedInstance().setDefaultTable("test_tbl");
 
-        TreasureData.sharedInstance().setDefaultValue("Test default value", "default_value", null, null);
+        TreasureData.sharedInstance().setDefaultValue(null, null, "default_value", "Test default value");
     }
 
     private void setupInstallReferrer() {

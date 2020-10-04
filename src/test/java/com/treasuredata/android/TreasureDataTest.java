@@ -840,14 +840,14 @@ public class TreasureDataTest extends TestCase {
     public void testAddDefaultValuesSuccesfully() throws IOException {
         Map<String, Object> records = new HashMap<String, Object>();
         records.put("key", "value");
-        td.setDefaultValue("String", "string", null, null);
-        td.setDefaultValue(1, "number", null, null);
-        td.setDefaultValue("Only 1", "only_1", "test_db_1", "test_table_1");
-        td.setDefaultValue("Only 2", "only_2", "test_db_2", "test_table_2");
-        td.setDefaultValue("Any table 1", "any_table_1", "test_db_1", null);
-        td.setDefaultValue("Any table 2", "any_table_2", "test_db_2", null);
-        td.setDefaultValue("Any database 1", "any_db_1", null, "test_table_1");
-        td.setDefaultValue("Any database 2", "any_db_2", null, "test_table_2");
+        td.setDefaultValue(null, null, "string", "String");
+        td.setDefaultValue(null, null, "number", 1);
+        td.setDefaultValue("test_db_1", "test_table_1", "only_1", "Only 1");
+        td.setDefaultValue("test_db_2", "test_table_2", "only_2", "Only 2");
+        td.setDefaultValue("test_db_1", null, "any_table_1", "Any table 1");
+        td.setDefaultValue("test_db_2", null, "any_table_2", "Any table 2");
+        td.setDefaultValue(null, "test_table_1", "any_db_1", "Any database 1");
+        td.setDefaultValue(null, "test_table_2", "any_db_2", "Any database 2");
 
         td.addEvent("test_db_1", "test_table_1", records);
         td.addEvent("test_db_2", "test_table_2", records);
@@ -881,16 +881,16 @@ public class TreasureDataTest extends TestCase {
     public void testAddDefaultValuesOverrideSuccesfully() {
         Map<String, Object> records = new HashMap<String, Object>();
 
-        td.setDefaultValue("Any table & db", "key", null, null);
+        td.setDefaultValue(null, null, "key", "Any table & db");
         td.addEvent("test_db", "test_table", records);
 
-        td.setDefaultValue("Any table", "key", "test_db", null);
+        td.setDefaultValue("test_db", null, "key", "Any table");
         td.addEvent("test_db", "test_table", records);
 
-        td.setDefaultValue("Any database", "key", null, "test_table");
+        td.setDefaultValue(null, "test_table", "key", "Any database");
         td.addEvent("test_db", "test_table", records);
 
-        td.setDefaultValue("Specific database & table", "key", "test_db", "test_table");
+        td.setDefaultValue("test_db", "test_table", "key", "Specific database & table");
         td.addEvent("test_db", "test_table", records);
 
         records.put("key", "Event value");
@@ -905,16 +905,16 @@ public class TreasureDataTest extends TestCase {
     }
 
     public void testGetDefaultValueForKey() {
-        td.setDefaultValue("Value", "key", null, null);
-        td.setDefaultValue("Value", "key_table", null, "test_table");
-        td.setDefaultValue("Value", "key_database", "test_db", null);
-        td.setDefaultValue("Value", "key_table_database", "test_db", "test_table");
+        td.setDefaultValue(null, null, "key", "Value");
+        td.setDefaultValue(null, "test_table", "key_table", "Value");
+        td.setDefaultValue("test_db", null, "key_database", "Value");
+        td.setDefaultValue("test_db", "test_table", "key_table_database", "Value");
 
-        String nullKeyValue = (String) td.defaultValue("nullKey", null, null);
-        String keyValue = (String) td.defaultValue("key", null, null);
-        String keyTableValue = (String) td.defaultValue("key_table", null, "test_table");
-        String keyDBValue = (String) td.defaultValue("key_database", "test_db", null);
-        String keyTableDBValue = (String) td.defaultValue("key_table_database", "test_db", "test_table");
+        String nullKeyValue = (String) td.getDefaultValue(null, null, "nullKey");
+        String keyValue = (String) td.getDefaultValue(null, null, "key");
+        String keyTableValue = (String) td.getDefaultValue(null, "test_table", "key_table");
+        String keyDBValue = (String) td.getDefaultValue("test_db", null, "key_database");
+        String keyTableDBValue = (String) td.getDefaultValue("test_db", "test_table", "key_table_database");
 
         assertNull(nullKeyValue);
         assertEquals(keyValue, "Value");
@@ -924,16 +924,16 @@ public class TreasureDataTest extends TestCase {
     }
 
     public void testRemoveDefaultValuesSuccessfully() {
-        td.setDefaultValue("Value", "key", null, null);
-        td.setDefaultValue("Value", "key_table", null, "test_table");
-        td.setDefaultValue("Value", "key_database", "test_db", null);
-        td.setDefaultValue("Value", "key_table_database", "test_db", "test_table");
+        td.setDefaultValue(null, null, "key", "Value");
+        td.setDefaultValue(null, "test_table", "key_table", "Value");
+        td.setDefaultValue("test_db", null, "key_database", "Value");
+        td.setDefaultValue("test_db", "test_table", "key_table_database", "Value");
         td.addEvent("test_db", "test_table", new HashMap<String, Object>());
 
-        td.removeDefaultValue("key", null, null);
-        td.removeDefaultValue("key_table", null, "test_table");
-        td.removeDefaultValue("key_database", "test_db", null);
-        td.removeDefaultValue("key_table_database", "test_db", "test_table");
+        td.removeDefaultValue(null, null, "key");
+        td.removeDefaultValue(null, "test_table", "key_table");
+        td.removeDefaultValue("test_db", null, "key_database");
+        td.removeDefaultValue("test_db", "test_table", "key_table_database");
         td.addEvent("test_db", "test_table", new HashMap<String, Object>());
 
         assertEquals(2, client.addedEvent.size());
@@ -951,11 +951,11 @@ public class TreasureDataTest extends TestCase {
     }
 
     public void testRemoveDefaultValuesNoop() {
-        td.setDefaultValue("Value", "key", null, null);
-        td.removeDefaultValue("key", null, "test_table");
-        td.removeDefaultValue("key", "test_db", null);
-        td.removeDefaultValue("key", "test_db", "test_table");
-        td.removeDefaultValue("key2", null, null);
+        td.setDefaultValue(null, null, "key", "Value");
+        td.removeDefaultValue(null, "test_table", "key");
+        td.removeDefaultValue("test_db", null, "key");
+        td.removeDefaultValue("test_db", "test_table", "key");
+        td.removeDefaultValue(null, null, "key2");
 
         td.addEvent("test_db", "test_table", new HashMap<String, Object>());
         assertEquals(1, client.addedEvent.size());
