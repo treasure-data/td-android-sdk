@@ -528,7 +528,7 @@ public class TreasureData implements CDPClient {
 
         Map<String, Object> record = new HashMap<String, Object>();
 
-        appendDefaultValues(record, database, table);
+        appendDefaultValues(database, table, record);
 
         if (origRecord != null) {
             record.putAll(origRecord);
@@ -639,7 +639,7 @@ public class TreasureData implements CDPClient {
         };
     }
 
-    private void appendDefaultValues(Map<String, Object> record, String database, String table) {
+    private void appendDefaultValues(String database, String table, Map<String, Object> record) {
         if (defaultValues == null) return;
 
         String anyTableOrDatabaseKey = ".";
