@@ -513,6 +513,7 @@ Android SDK for Arm Treasure Data only supports any Android device running API 1
 
 |Codename          |Version | API| Tested?|
 |------------------|-------:|---:|:------:|
+|Android 11        |11.0    |30  |Yes     |
 |Android 10        |10.0    |29  |Yes     |
 |Pie               |9.0     |28  |Yes     |
 |Oreo              |8.1     |27  |Yes     |
