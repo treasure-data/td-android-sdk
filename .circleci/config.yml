@@ -33,6 +33,19 @@ _defaults:
       path: build/test-results
 
 jobs:
+  test_api_level_30:
+    docker:
+      - image: circleci/android:api-30
+    steps:
+      - checkout
+      - *restore_gradle_cache
+      - *download_dependencies
+      - *save_gradle_cache
+      - *run_tests
+      - *compress_report
+      - *store_report
+      - *store_test_results
+
   test_api_level_29:
     docker:
       - image: circleci/android:api-29
@@ -63,5 +76,6 @@ workflows:
   version: 2
   test:
     jobs:
+      - test_api_level_30
       - test_api_level_29
       - test_api_level_28
