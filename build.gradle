@@ -18,7 +18,7 @@ repositories {
 dependencies {
     compile 'org.komamitsu:android-logger-bridge:0.0.2'
     compile 'com.fasterxml.jackson.jr:jackson-jr-objects:2.6.3'
-    compile 'com.treasuredata:keen-client-java-core:2.0.0.4'
+    compile 'com.treasuredata:keen-client-java-core:2.0.0.5'
 
     compileOnly 'com.google.android:android:4.1.1.4'
 
