@@ -115,6 +115,7 @@ public class TreasureData implements CDPClient {
     private volatile String autoAppendAdvertisingIdColumn;
     private volatile String advertisingId;
     private volatile GetAdvertisingIdAsyncTask getAdvertisingIdTask;
+    private volatile Map<String, Map<String, Object>> defaultValues;
 
     private final AtomicBoolean isInAppPurchaseEventTracking = new AtomicBoolean(false);
     private CDPClientImpl cdpClientDelegate;
@@ -526,6 +527,9 @@ public class TreasureData implements CDPClient {
         }
 
         Map<String, Object> record = new HashMap<String, Object>();
+
+        appendDefaultValues(database, table, record);
+
         if (origRecord != null) {
             record.putAll(origRecord);
         }
@@ -633,6 +637,19 @@ public class TreasureData implements CDPClient {
                return this.currentErrorCode;
            }
         };
+    }
+
+    private void appendDefaultValues(String database, String table, Map<String, Object> record) {
+        if (defaultValues == null) return;
+
+        String anyTableOrDatabaseKey = ".";
+        if (defaultValues.containsKey(anyTableOrDatabaseKey)) record.putAll(defaultValues.get(anyTableOrDatabaseKey));
+        String anyTableKey = String.format("%s.", database);
+        if (defaultValues.containsKey(anyTableKey)) record.putAll(defaultValues.get(anyTableKey));
+        String anyDatabaseKey = String.format(".%s", table);
+        if (defaultValues.containsKey(anyDatabaseKey)) record.putAll(defaultValues.get(anyDatabaseKey));
+        String tableKey = String.format("%s.%s", database, table);
+        if (defaultValues.containsKey(tableKey)) record.putAll(defaultValues.get(tableKey));
     }
 
     public void appendSessionId(Map<String, Object> record) {
@@ -846,6 +863,58 @@ public class TreasureData implements CDPClient {
         }
     }
 
+    private String defaultValueTableKey(String database, String table) {
+        String _database = database == null ? "" : database;
+        String _table = table == null ? "" : table;
+        return String.format("%s.%s", _database, _table);
+    }
+
+    /**
+     * Set default `value` for `key` in all new events targeting `database` and `table`.
+     * When `database` and/or `table` parameters are null, the null parameter acts like a wild card that allows to set specified key value pair to new events added to any database (if `database` is null) and/or to any table (if `table` is null).
+     * For example, if you pass null to both `database` and `table` parameters, all new events will have specified default value.
+     * @param database the database to set default value to. If null, specified table of any database will have new events with the added default value.
+     * @param table the table to set default value to. If null, any table of specified database will have new events with the added default value.
+     * @param key the event's key that default value is set to, corresponding to column in table.
+     * @param value default value for `key`
+     */
+    public void setDefaultValue(String database, String table, String key, Object value) {
+        if (defaultValues == null) defaultValues = new HashMap();
+        String tableKey = this.defaultValueTableKey(database, table);
+        if (!defaultValues.containsKey(tableKey)) defaultValues.put(tableKey, new HashMap());
+        Map tableMap = defaultValues.get(tableKey);
+        tableMap.put(key, value);
+    }
+
+    /**
+     * Get default value of `key` in all new events targeting `database` and `table`.
+     * See setDefaultValue() for logic setting database and table.
+     * @param database the database to get default value from. If null, get default value of specified table of any database.
+     * @param table the table to get default value from. If null, get default value of any table of specified database.
+     * @param key the event's key that default value is set to, corresponding to column in table.
+     * @return default value for `key` for events targeting `database` and `table`.
+     */
+    public Object getDefaultValue(String database, String table, String key) {
+        if (defaultValues == null) return null;
+        String tableKey = this.defaultValueTableKey(database, table);
+        if (!defaultValues.containsKey(tableKey)) return null;
+        return defaultValues.get(tableKey).get(key);
+    }
+
+    /**
+     * Remove default value of `key` in all new events targeting `database` and `table`.
+     * See setDefaultValue() for logic setting database and table.
+     * @param database the database to remove default value from. If null, specified table of any database will have new events without the default value.
+     * @param table the table to remove default value from. If null, any table of specified database will have new events without the default value.
+     * @param key the event's key that default value is set to, corresponding to column in table.
+     */
+    public void removeDefaultValue(String database, String table, String key) {
+        if (defaultValues == null) return;
+        String tableKey = this.defaultValueTableKey(database, table);
+        if (!defaultValues.containsKey(tableKey)) return;
+        defaultValues.get(tableKey).remove(key);
+    }
+
     private boolean getCustomEventEnabled() {
         SharedPreferences sharedPreferences = getSharedPreference(context);
         synchronized (this) {
@@ -1020,6 +1089,13 @@ public class TreasureData implements CDPClient {
             return null;
         }
         return session.getId();
+    }
+
+    public static void resetSessionId(Context context) {
+        Session session = getSession(context);
+        if (session != null) {
+            session.resetId();
+        }
     }
 
     public void enableServerSideUploadTimestamp() {

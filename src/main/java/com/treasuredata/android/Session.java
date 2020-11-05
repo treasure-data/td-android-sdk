@@ -36,4 +36,8 @@ public class Session {
         }
         return id;
     }
+
+    public synchronized void resetId() {
+        id = UUID.randomUUID().toString();
+    }
 }
