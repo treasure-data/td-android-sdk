@@ -1,5 +1,12 @@
 # Change Log
 
+## Version 0.4.0
+_2020_11_06_
+
+* Add Default values feature
+* Add resetSessionId API
+* Update Keen client to fix mkdir issue
+
 ## Version 0.3.0
 _2019_10_14_
 
