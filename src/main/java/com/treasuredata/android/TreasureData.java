@@ -2,9 +2,11 @@ package com.treasuredata.android;
 
 import android.app.Activity;
 import android.app.Application;
+import android.app.UiModeManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
+import android.content.res.Configuration;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -28,6 +30,8 @@ import java.util.WeakHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
+
+import static android.content.Context.UI_MODE_SERVICE;
 
 public class TreasureData implements CDPClient {
     private static final String TAG = TreasureData.class.getSimpleName();
@@ -70,7 +74,6 @@ public class TreasureData implements CDPClient {
     private static final String EVENT_KEY_IN_APP_PURCHASE_EVENT_PRIVATE = "__is_in_app_purchase_event";
     private static final String EVENT_KEY_SERVERSIDE_UPLOAD_TIMESTAMP = "#SSUT";
     private static final String EVENT_DEFAULT_KEY_RECORD_UUID = "record_uuid";
-    private static final String OS_TYPE = "Android";
     private static final String EVENT_APP_INSTALL = "TD_ANDROID_APP_INSTALL";
     private static final String EVENT_APP_OPEN = "TD_ANDROID_APP_OPEN";
     private static final String EVENT_APP_UPDATE = "TD_ANDROID_APP_UPDATE";
@@ -685,7 +688,12 @@ public class TreasureData implements CDPClient {
         record.put(EVENT_KEY_DEVICE, Build.DEVICE);
         record.put(EVENT_KEY_MODEL, Build.MODEL);
         record.put(EVENT_KEY_OS_VER, Build.VERSION.SDK_INT);
-        record.put(EVENT_KEY_OS_TYPE, OS_TYPE);
+        UiModeManager uiModeManager = (UiModeManager) applicationContext.getSystemService(UI_MODE_SERVICE);
+        if (uiModeManager.getCurrentModeType() == Configuration.UI_MODE_TYPE_TELEVISION) {
+            record.put(EVENT_KEY_OS_TYPE, "Android TV");
+        } else {
+            record.put(EVENT_KEY_OS_TYPE, "Android");
+        }
     }
 
     public void appendAppInformation(Map<String, Object> record) {

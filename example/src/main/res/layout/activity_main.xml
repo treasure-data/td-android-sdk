@@ -15,9 +15,8 @@
 
         <TextView
             android:id="@+id/navi_news"
-            android:text="@string/nav_help_label"
             style="@style/NaviLabel"
-        />
+            android:text="@string/nav_news_label" />
         <TextView
             android:id="@+id/navi_play"
             android:text="@string/nav_play_label"
