@@ -1,16 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">td-android-sdk-demo</string>
-
-    <string name="nav_news_label">News</string>
-    <string name="nav_play_label">Play</string>
-    <string name="nav_help_label">Help</string>
-    <string name="nav_reset_label">Reset UUID</string>
-    <string name="nav_upload_label">Upload</string>
     <string name="app_title">TD Android SDK Demo</string>
-    
-    <string name="settings_auto_events">Enable Auto Events</string>
-    <string name="settings_custom_events">Enable Custom Events</string>
+    <string name="app_name">td-android-sdk-demo</string>
+    <string name="add_event">Add Event</string>
+    <string name="upload_event">Upload Event</string>
+    <string name="uuid">UUID</string>
+    <string name="get">Get</string>
+    <string name="disable">Disable</string>
+    <string name="enable">Enable</string>
+    <string name="reset">Reset</string>
+    <string name="auto_append_model_information">Auto Append Model Information</string>
+    <string name="auto_append_app_information">Auto Append App Information</string>
+    <string name="auto_append_local_information">Auto Append Local Information</string>
+    <string name="column">Column</string>
+    <string name="server_side_upload_timestamp">Server Side Upload Timestamp</string>
+    <string name="event_database">Event Database</string>
+    <string name="event_table">Event Table</string>
+    <string name="auto_append_record_uuid">Auto Append Record UUID</string>
+    <string name="auto_append_advertising_identifier">Auto Append Advertising Identifier</string>
+    <string name="session">Session</string>
+    <string name="custom_event">Custom Event</string>
+    <string name="is_enabled">Is Enabled?</string>
+    <string name="app_lifecycle">App Lifecycle</string>
+    <string name="get_session_id">Get session id</string>
+    <string name="start_session">Start session</string>
+    <string name="end_session_id">End session id</string>
+    <string name="get_global_session_id">Get global session id</string>
+    <string name="start_global_session">Start global session</string>
+    <string name="profile_api">Profile API</string>
+    <string name="fetch_user_segments">Fetch user segments</string>
+    <string name="retry_uploading">Retry uploading</string>
+    <string name="event_compression">Event compression</string>
+    <string name="end_global_session">End global session</string>
+    <string name="set_timeout">Set timeout</string>
+    <string name="logging">Logging</string>
+    <string name="first_run">First run</string>
+    <string name="string_first_run" />
+    <string name="is_first_run">Is first run?</string>
+    <string name="clear_first_run">Clear first run</string>
 
 </resources>

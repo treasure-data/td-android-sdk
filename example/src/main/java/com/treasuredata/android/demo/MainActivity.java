@@ -2,18 +2,21 @@ package com.treasuredata.android.demo;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
-import android.util.Pair;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.View.OnTouchListener;
-import android.widget.CheckBox;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.Toast;
 import com.treasuredata.android.TDCallback;
 import com.treasuredata.android.TreasureData;
+import com.treasuredata.android.cdp.FetchUserSegmentsCallback;
+import com.treasuredata.android.cdp.Profile;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +24,11 @@ import java.util.Map;
 
 public class MainActivity extends Activity {
     private static final String TAG = MainActivity.class.getSimpleName();
-    private static final String EVENTS_TABLE = "demo_tbl";
+    private String eventTable = "event_table";
+    private String eventDatabase = "event_db";
+    private String serverSideUploadTimestampColumn;
+    private String recordUUIDColumn;
+    private String aaidColumn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,89 +38,418 @@ public class MainActivity extends Activity {
         // For default callback, optional.
         TreasureData.sharedInstance().setAddEventCallBack(addEventCallback);
 
-        List<Pair<Integer, String>> targets = Arrays.asList(
-                new Pair<Integer, String>(R.id.navi_help, "navi_help"),
-                new Pair<Integer, String>(R.id.navi_news, "navi_news"),
-                new Pair<Integer, String>(R.id.navi_play, "navi_play")
-        );
-
-        for (Pair<Integer, String> target : targets) {
-            int id = target.first;
-            final String label = target.second;
-            View v = findViewById(id);
-            v.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    final Map event = new HashMap<String, Object>();
-                    event.put("label", label);
-                    event.put("id", v.getId());
-                    event.put("left", v.getLeft());
-                    event.put("right", v.getRight());
-                    event.put("top", v.getTop());
-                    event.put("bottom", v.getBottom());
-
-                    addEventCallback.eventName = label;
-                    TreasureData.sharedInstance().addEventWithCallback(EVENTS_TABLE, event, addEventCallback);
-                }
-            });
-        }
-
-        findViewById(R.id.image).setOnTouchListener(new OnTouchListener() {
+        EditText eventTableTextView = findViewById(R.id.eventTableTextView);
+        eventTableTextView.setText(eventTable);
+        eventTableTextView.addTextChangedListener(new TextWatcher() {
             @Override
-            public boolean onTouch(View v, MotionEvent ev) {
-                addEventCallback.eventName = "image";
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                eventTable = s.toString();
+            }
+        });
+
+        EditText eventDatabaseTextView = findViewById(R.id.eventDatabaseTextView);
+        eventDatabaseTextView.setText(eventDatabase);
+        eventDatabaseTextView.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                eventDatabase = s.toString();
+            }
+        });
+
+        findViewById(R.id.addEventButton).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addEventCallback.eventName = "add";
                 Map<String, Object> event = new HashMap<String, Object>();
-                event.put("label", "image");
-                event.put("action", ev.getAction());
-                event.put("down_time", ev.getDownTime());
-                event.put("event_time", ev.getEventTime());
-                event.put("pos_x", ev.getX());
-                event.put("pos_y", ev.getY());
-                event.put("pressure", ev.getPressure());
-                event.put("size", ev.getSize());
+                event.put("key", "value");
                 // Use default callback
-                TreasureData.sharedInstance().addEvent(EVENTS_TABLE, event);
-                return false;
+                TreasureData.sharedInstance().addEvent(eventTable, eventDatabase, event);
             }
         });
 
-        findViewById(R.id.upload).setOnTouchListener(new OnTouchListener() {
+        findViewById(R.id.uploadEventButton).setOnClickListener(new OnClickListener() {
             @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
+            public void onClick(View v) {
                 TreasureData.sharedInstance().uploadEventsWithCallback(uploadEventsCallback);
-                return false;
             }
         });
 
-        CheckBox checkBox = findViewById(R.id.enable_auto_events);
-        checkBox.setChecked(TreasureData.sharedInstance().isAppLifecycleEventEnabled());
-
-        checkBox.setOnClickListener(new OnClickListener() {
+        findViewById(R.id.getUUIDButton).setOnClickListener(new OnClickListener() {
             @Override
-            public void onClick(View view) {
-                CheckBox checkBox = (CheckBox)view;
-                TreasureData.sharedInstance().enableAppLifecycleEvent(checkBox.isChecked());
+            public void onClick(View v) {
+                Toast.makeText(MainActivity.this, TreasureData.sharedInstance().getUUID(), Toast.LENGTH_SHORT).show();
             }
         });
 
-        checkBox = findViewById(R.id.enable_custom_events);
-        checkBox.setChecked(TreasureData.sharedInstance().isCustomEventEnabled());
-
-        checkBox.setOnClickListener(new OnClickListener() {
+        findViewById(R.id.enableUUIDButton).setOnClickListener(new OnClickListener() {
             @Override
-            public void onClick(View view) {
-                CheckBox checkBox = (CheckBox)view;
-                TreasureData.sharedInstance().enableCustomEvent(checkBox.isChecked());
+            public void onClick(View v) {
+                TreasureData.sharedInstance().enableAutoAppendUniqId();
             }
         });
 
-        findViewById(R.id.reset).setOnClickListener(new OnClickListener() {
+        findViewById(R.id.disableUUIDButton).setOnClickListener(new OnClickListener() {
             @Override
-            public void onClick(View view) {
-                addEventCallback.eventName = "reset UUID";
+            public void onClick(View v) {
+                TreasureData.sharedInstance().disableAutoAppendUniqId();
+            }
+        });
+
+        findViewById(R.id.resetUUIDButton).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
                 TreasureData.sharedInstance().resetUniqId();
             }
         });
+
+        findViewById(R.id.enableModelInfoButton).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                TreasureData.sharedInstance().enableAutoAppendModelInformation();
+            }
+        });
+
+        findViewById(R.id.disableModelInfoButton).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                TreasureData.sharedInstance().disableAutoAppendModelInformation();
+            }
+        });
+
+        findViewById(R.id.enableAppInfoButton).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                TreasureData.sharedInstance().enableAutoAppendAppInformation();
+            }
+        });
+
+        findViewById(R.id.disableAppInfoButton).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                TreasureData.sharedInstance().disableAutoAppendAppInformation();
+            }
+        });
+
+        findViewById(R.id.enableLocalInfoButton).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                TreasureData.sharedInstance().enableAutoAppendLocaleInformation();
+            }
+        });
+
+        findViewById(R.id.disableLocalInfoButton).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                TreasureData.sharedInstance().disableAutoAppendLocaleInformation();
+            }
+        });
+
+        final EditText serverSideUploadTimestampColumnTextView = findViewById(R.id.serverSideUploadTimestampColumn);
+        serverSideUploadTimestampColumnTextView.setText(serverSideUploadTimestampColumn);
+        serverSideUploadTimestampColumnTextView.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                serverSideUploadTimestampColumn = s.toString();
+            }
+        });
+        findViewById(R.id.enableServerSideUploadTimestampButton).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (serverSideUploadTimestampColumn == null) {
+                    TreasureData.sharedInstance().enableServerSideUploadTimestamp();
+                } else {
+                    TreasureData.sharedInstance().enableServerSideUploadTimestamp(serverSideUploadTimestampColumn);
+                }
+            }
+        });
+        findViewById(R.id.disableServerSideUploadTimestampButton).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                TreasureData.sharedInstance().disableServerSideUploadTimestamp();
+            }
+        });
+
+        final EditText recordUUIDColumnTextView = findViewById(R.id.recordUUIDColumn);
+        recordUUIDColumnTextView.setText(recordUUIDColumn);
+        recordUUIDColumnTextView.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                recordUUIDColumn = s.toString();
+            }
+        });
+        findViewById(R.id.enableRecordUUIDButton).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (recordUUIDColumn == null) {
+                    TreasureData.sharedInstance().enableAutoAppendRecordUUID();
+                } else {
+                    TreasureData.sharedInstance().enableAutoAppendRecordUUID(recordUUIDColumn);
+                }
+            }
+        });
+        findViewById(R.id.disableRecordUUIDButton).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                TreasureData.sharedInstance().disableAutoAppendRecordUUID();
+            }
+        });
+
+        final EditText aaidTextView = findViewById(R.id.aaidColumn);
+        aaidTextView.setText(aaidColumn);
+        aaidTextView.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                aaidColumn = s.toString();
+            }
+        });
+        findViewById(R.id.enableAutoAppendAdvertisingIdButton).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (aaidColumn == null) {
+                    TreasureData.sharedInstance().enableAutoAppendAdvertisingIdentifier();
+                } else {
+                    TreasureData.sharedInstance().enableAutoAppendAdvertisingIdentifier(aaidColumn);
+                }
+            }
+        });
+        findViewById(R.id.disableAutoAppendAdvertisingIdButton).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                TreasureData.sharedInstance().disableAutoAppendAdvertisingIdentifier();
+            }
+        });
+
+        final String sessionTable = "";
+        final String sessionDatabase = "";
+        findViewById(R.id.getSessionIdButton).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String sessionId = TreasureData.sharedInstance().getSessionId();
+                Toast.makeText(MainActivity.this, sessionId, Toast.LENGTH_SHORT).show();
+            }
+        });
+        findViewById(R.id.startSessionButton).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (sessionDatabase == "") {
+                    TreasureData.sharedInstance().startSession(sessionTable);
+                } else {
+                    TreasureData.sharedInstance().startSession(sessionDatabase, sessionTable);
+                }
+            }
+        });
+        findViewById(R.id.endSessionButton).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String sessionId = TreasureData.sharedInstance().getSessionId();
+                Toast.makeText(MainActivity.this, sessionId, Toast.LENGTH_SHORT).show();
+                if (sessionDatabase == "") {
+                    TreasureData.sharedInstance().endSession(sessionTable);
+                } else {
+                    TreasureData.sharedInstance().endSession(sessionDatabase, sessionTable);
+                }
+            }
+        });
+        findViewById(R.id.getGlobalSessionId).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String sessionId = TreasureData.sharedInstance().getSessionId();
+                Toast.makeText(MainActivity.this, sessionId, Toast.LENGTH_SHORT).show();
+            }
+        });
+        findViewById(R.id.startGlobalSession).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                TreasureData.startSession(getApplicationContext());
+            }
+        });
+        findViewById(R.id.endGlobalSession).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                TreasureData.endSession(getApplicationContext());
+            }
+        });
+        findViewById(R.id.setTimeOutMilliButton).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                TreasureData.setSessionTimeoutMilli(20000);
+            }
+        });
+
+        findViewById(R.id.enableCustomEventButton).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                TreasureData.sharedInstance().enableCustomEvent();
+            }
+        });
+
+        findViewById(R.id.disableCustomEventButton).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                TreasureData.sharedInstance().disableCustomEvent();
+            }
+        });
+
+        findViewById(R.id.isCustomEventEnabledButton).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Boolean isCustomEventEnabled = TreasureData.sharedInstance().isCustomEventEnabled();
+                Toast.makeText(MainActivity.this, isCustomEventEnabled ? "Custom event enabled" : "Custom event not enabled", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        findViewById(R.id.enableAppLifecycleEventButton).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                TreasureData.sharedInstance().enableAppLifecycleEvent();
+            }
+        });
+
+        findViewById(R.id.disableAppLifecycleEventButton).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                TreasureData.sharedInstance().disableAppLifecycleEvent();
+            }
+        });
+
+        findViewById(R.id.isAppLifecycleEventEnabledButton).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Boolean isAppLifecycleEventEnabled = TreasureData.sharedInstance().isAppLifecycleEventEnabled();
+                Toast.makeText(MainActivity.this, isAppLifecycleEventEnabled ? "App Lifecycle event enabled" : "App Lifecycle event not enabled", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        findViewById(R.id.fetchUserSegmentsButton).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                TreasureData.sharedInstance().fetchUserSegments(Arrays.asList("<your_profile_api_tokens>"),
+                        Collections.singletonMap("<your_key_column>", "<value>"),
+                        new FetchUserSegmentsCallback() {
+                            @Override
+                            public void onSuccess(List<Profile> profiles) {
+                                System.out.println(profiles);
+                            }
+                            @Override
+                            public void onError(Exception e) {
+                                System.err.println(e);
+                            }
+                        });
+            }
+        });
+
+
+        findViewById(R.id.enableRetryUploadingButton).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                TreasureData.sharedInstance().enableAutoRetryUploading();
+            }
+        });
+
+        findViewById(R.id.disableRetryUploadingButton).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                TreasureData.sharedInstance().disableAutoRetryUploading();
+            }
+        });
+
+        findViewById(R.id.enableEventCompressionButton).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                TreasureData.enableEventCompression();
+            }
+        });
+
+        findViewById(R.id.disableEventCompressionButton).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                TreasureData.disableEventCompression();
+            }
+        });
+
+        findViewById(R.id.enableLoggingButton).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                TreasureData.enableLogging();
+            }
+        });
+
+        findViewById(R.id.disableLoggingButton).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                TreasureData.disableLogging();
+            }
+        });
+
+        findViewById(R.id.isFirstRunButton).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Boolean isFirstRun = TreasureData.sharedInstance().isFirstRun(getApplicationContext());
+                Toast.makeText(MainActivity.this, isFirstRun ? "Is first run" : "Is not first run", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        findViewById(R.id.clearFirstRunButton).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                TreasureData.sharedInstance().clearFirstRun(getApplicationContext());
+            }
+        });
+    }
+
+    public void hideSoftKeyboard() {
+        InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
     }
 
     @Override
