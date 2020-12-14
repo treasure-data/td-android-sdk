@@ -2,7 +2,7 @@ Treasure Data Android SDK
 ===============
 [<img src="https://travis-ci.org/treasure-data/td-android-sdk.svg?branch=master"/>](https://travis-ci.org/treasure-data/td-android-sdk)
 
-Android SDK for [Treasure Data](http://www.treasuredata.com/). With this SDK, you can import the events on your applications into Treasure Data easily.
+Android and Android TV SDK for [Treasure Data](http://www.treasuredata.com/). With this SDK, you can import the events on your Android and Android TV applications into Treasure Data easily.
 
 ## Installation
 
