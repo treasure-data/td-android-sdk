@@ -93,6 +93,7 @@ public class TreasureData implements CDPClient {
 
     private final Context context;
     private final TDClient client;
+    private String osType;
     private String uuid;
     private volatile String defaultDatabase;
     private volatile String defaultTable;
@@ -255,6 +256,13 @@ public class TreasureData implements CDPClient {
         this.customEventEnabled = getCustomEventEnabled();
         this.inAppPurchaseEventEnabled = getInAppPurchaseEventEventEnabled();
         this.advertisingId = getAdvertisingIdFromSharedPreferences();
+
+        UiModeManager uiModeManager = (UiModeManager) applicationContext.getSystemService(UI_MODE_SERVICE);
+        if (uiModeManager.getCurrentModeType() == Configuration.UI_MODE_TYPE_TELEVISION) {
+            this.osType = "Android TV";
+        } else {
+            this.osType = "Android";
+        }
 
         TDClient client = null;
         if (apiKey == null && TDClient.getDefaultApiKey() == null) {
@@ -688,12 +696,7 @@ public class TreasureData implements CDPClient {
         record.put(EVENT_KEY_DEVICE, Build.DEVICE);
         record.put(EVENT_KEY_MODEL, Build.MODEL);
         record.put(EVENT_KEY_OS_VER, Build.VERSION.SDK_INT);
-        UiModeManager uiModeManager = (UiModeManager) applicationContext.getSystemService(UI_MODE_SERVICE);
-        if (uiModeManager.getCurrentModeType() == Configuration.UI_MODE_TYPE_TELEVISION) {
-            record.put(EVENT_KEY_OS_TYPE, "Android TV");
-        } else {
-            record.put(EVENT_KEY_OS_TYPE, "Android");
-        }
+        record.put(EVENT_KEY_OS_TYPE, this.osType);
     }
 
     public void appendAppInformation(Map<String, Object> record) {
