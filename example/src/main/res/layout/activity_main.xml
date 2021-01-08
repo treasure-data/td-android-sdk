@@ -5,95 +5,477 @@
     android:background="#F8F8F8"
     tools:context=".MainActivity" >
 
-    <LinearLayout
-        android:id="@+id/navi"
-        android:orientation="horizontal"
-	    android:background="#FFFFFF"
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="48dip"
-        android:layout_alignParentTop="true">
+        android:layout_height="match_parent">
 
-        <TextView
-            android:id="@+id/navi_news"
-            android:text="@string/nav_help_label"
-            style="@style/NaviLabel"
-        />
-        <TextView
-            android:id="@+id/navi_play"
-            android:text="@string/nav_play_label"
-            style="@style/NaviLabel"
-        />
-        <TextView
-            android:id="@+id/navi_help"
-            android:text="@string/nav_help_label"
-            style="@style/NaviLabel"
-        />
-        <TextView
-            android:id="@+id/reset"
-            android:text="@string/nav_reset_label"
-            style="@style/NaviLabel"/>
-        <TextView
-            android:id="@+id/upload"
-            android:text="@string/nav_upload_label"
-            style="@style/NaviLabel"
-            android:background="#ffaacda0"/>
-
-    </LinearLayout>
-    <LinearLayout
-        android:orientation="horizontal"
-	    android:background="#bbbbbb"
-        android:layout_width="match_parent"
-        android:layout_height="1dip"
-        android:layout_below="@id/navi"
-    />
-    <TextView
-        android:id="@+id/title"
-        android:text="@string/app_title"
-        android:textSize="22sp"
-        android:textStyle="bold"
-        android:textColor="#999999"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/navi"
-        android:layout_marginTop="32dip"
-        android:gravity="center"
-    />
-
-    <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:layout_below="@id/title"
-        android:id="@+id/image"
-        android:layout_marginTop="12dip"
-        android:layout_marginLeft="28dip"
-        android:layout_marginRight="28dip"
-        android:src="@drawable/wine"/>
-
-    <LinearLayout
-            android:id="@+id/nav"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="36dip"
-            android:layout_alignParentBottom="true"
-            android:layout_below="@id/image"
-            android:background="#FFFFFF"
-            android:orientation="horizontal">
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
 
-        <CheckBox
-                android:id="@+id/enable_auto_events"
-                android:layout_width="wrap_content"
+            <TextView
+                android:id="@+id/title"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="12dip"
-                android:layout_weight="1"
-                android:text="@string/settings_auto_events"
-                android:textColor="#999999" />
+                android:layout_marginTop="32dip"
+                android:gravity="center"
+                android:text="@string/app_title"
+                android:textColor="#999999"
+                android:textSize="22sp"
+                android:textStyle="bold" />
 
-        <CheckBox
-                android:id="@+id/enable_custom_events"
-                android:layout_width="wrap_content"
+            <EditText
+                android:id="@+id/eventDatabaseTextView"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/settings_custom_events"
-                android:textColor="#999999" />
-    </LinearLayout>
+                android:autofillHints=""
+                android:ems="10"
+                android:hint="@string/event_database"
+                android:inputType="textPersonName" />
+
+            <EditText
+                android:id="@+id/eventTableTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:autofillHints=""
+                android:ems="10"
+                android:hint="@string/event_table"
+                android:inputType="textPersonName" />
+
+            <Button
+                android:id="@+id/addEventButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/add_event" />
+
+            <Button
+                android:id="@+id/uploadEventButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/upload_event" />
+
+            <TextView
+                android:id="@+id/title3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dip"
+                android:gravity="center"
+                android:text="@string/uuid"
+                android:textColor="#999999"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/getUUIDButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/get" />
+
+            <Button
+                android:id="@+id/enableUUIDButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/enable" />
+
+            <Button
+                android:id="@+id/disableUUIDButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/disable" />
+
+            <Button
+                android:id="@+id/resetUUIDButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/reset" />
+
+            <TextView
+                android:id="@+id/title4"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dip"
+                android:gravity="center"
+                android:text="@string/auto_append_model_information"
+                android:textColor="#999999"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/enableModelInfoButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/enable" />
+
+            <Button
+                android:id="@+id/disableModelInfoButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/disable" />
+
+            <TextView
+                android:id="@+id/title5"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dip"
+                android:gravity="center"
+                android:text="@string/auto_append_app_information"
+                android:textColor="#999999"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/enableAppInfoButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/enable" />
+
+            <Button
+                android:id="@+id/disableAppInfoButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/disable" />
+
+            <TextView
+                android:id="@+id/title6"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dip"
+                android:gravity="center"
+                android:text="@string/auto_append_local_information"
+                android:textColor="#999999"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/enableLocalInfoButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/enable" />
+
+            <Button
+                android:id="@+id/disableLocalInfoButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/disable" />
+
+            <TextView
+                android:id="@+id/title7"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dip"
+                android:gravity="center"
+                android:text="@string/server_side_upload_timestamp"
+                android:textColor="#999999"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/serverSideUploadTimestampColumn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:autofillHints=""
+                android:ems="10"
+                android:hint="@string/column"
+                android:inputType="textPersonName" />
+
+            <Button
+                android:id="@+id/enableServerSideUploadTimestampButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/enable" />
+
+            <Button
+                android:id="@+id/disableServerSideUploadTimestampButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/disable" />
+
+            <TextView
+                android:id="@+id/title2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dip"
+                android:gravity="center"
+                android:text="@string/auto_append_record_uuid"
+                android:textColor="#999999"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/recordUUIDColumn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:autofillHints=""
+                android:ems="10"
+                android:hint="@string/column"
+                android:inputType="textPersonName" />
+
+            <Button
+                android:id="@+id/enableRecordUUIDButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/enable" />
+
+            <Button
+                android:id="@+id/disableRecordUUIDButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/disable" />
+
+            <TextView
+                android:id="@+id/title8"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dip"
+                android:gravity="center"
+                android:text="@string/auto_append_advertising_identifier"
+                android:textColor="#999999"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/aaidColumn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:autofillHints=""
+                android:ems="10"
+                android:hint="@string/column"
+                android:inputType="textPersonName" />
+
+            <Button
+                android:id="@+id/enableAutoAppendAdvertisingIdButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/enable" />
+
+            <Button
+                android:id="@+id/disableAutoAppendAdvertisingIdButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/disable" />
+
+            <TextView
+                android:id="@+id/title9"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dip"
+                android:gravity="center"
+                android:text="@string/session"
+                android:textColor="#999999"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/getSessionIdButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/get_session_id" />
+
+            <Button
+                android:id="@+id/startSessionButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/start_session" />
+
+            <Button
+                android:id="@+id/endSessionButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/end_session_id" />
+
+            <Button
+                android:id="@+id/getGlobalSessionId"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/get_global_session_id" />
+
+            <Button
+                android:id="@+id/startGlobalSession"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/start_global_session" />
+
+            <Button
+                android:id="@+id/endGlobalSession"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/end_global_session" />
+
+            <Button
+                android:id="@+id/setTimeOutMilliButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/set_timeout" />
+
+            <TextView
+                android:id="@+id/title10"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dip"
+                android:gravity="center"
+                android:text="@string/custom_event"
+                android:textColor="#999999"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/enableCustomEventButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/enable" />
+
+            <Button
+                android:id="@+id/disableCustomEventButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/disable" />
+
+            <Button
+                android:id="@+id/isCustomEventEnabledButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/is_enabled" />
+
+            <TextView
+                android:id="@+id/title11"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dip"
+                android:gravity="center"
+                android:text="@string/app_lifecycle"
+                android:textColor="#999999"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/enableAppLifecycleEventButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/enable" />
+
+            <Button
+                android:id="@+id/disableAppLifecycleEventButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/disable" />
+
+            <Button
+                android:id="@+id/isAppLifecycleEventEnabledButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/is_enabled" />
+
+            <TextView
+                android:id="@+id/title12"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dip"
+                android:gravity="center"
+                android:text="@string/profile_api"
+                android:textColor="#999999"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/fetchUserSegmentsButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/fetch_user_segments" />
+
+            <TextView
+                android:id="@+id/title13"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dip"
+                android:gravity="center"
+                android:text="@string/retry_uploading"
+                android:textColor="#999999"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/enableRetryUploadingButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/enable" />
+
+            <Button
+                android:id="@+id/disableRetryUploadingButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/disable" />
+
+            <TextView
+                android:id="@+id/title14"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dip"
+                android:gravity="center"
+                android:text="@string/event_compression"
+                android:textColor="#999999"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/enableEventCompressionButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/enable" />
+
+            <Button
+                android:id="@+id/disableEventCompressionButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/disable" />
+
+            <TextView
+                android:id="@+id/title15"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dip"
+                android:gravity="center"
+                android:text="@string/logging"
+                android:textColor="#999999"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/enableLoggingButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/enable" />
+
+            <Button
+                android:id="@+id/disableLoggingButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/disable" />
+
+            <TextView
+                android:id="@+id/title16"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dip"
+                android:gravity="center"
+                android:text="@string/string_first_run"
+                android:textColor="#999999"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/isFirstRunButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/is_first_run" />
+
+            <Button
+                android:id="@+id/clearFirstRunButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/clear_first_run" />
+
+        </LinearLayout>
+    </ScrollView>
+
 </RelativeLayout>
