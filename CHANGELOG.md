@@ -1,5 +1,10 @@
 # Change Log
 
+## Version 0.4.1
+_2021_01_08_
+
+* Add support for Android TV
+
 ## Version 0.4.0
 _2020_11_06_
 

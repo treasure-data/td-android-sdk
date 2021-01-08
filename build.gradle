@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'com.treasuredata'
-version = '0.4.0'
+version = '0.4.1'
 description = 'Android SDK for Treasure Data Cloud'
 sourceCompatibility = '1.7'
 
@@ -16,7 +16,7 @@ repositories {
 }
 
 dependencies {
-    compile 'org.komamitsu:android-logger-bridge:0.0.2'
+    compile 'org.komamitsu:andr oid-logger-bridge:0.0.2'
     compile 'com.fasterxml.jackson.jr:jackson-jr-objects:2.6.3'
     compile 'com.treasuredata:keen-client-java-core:2.0.0.5'
 
