@@ -805,11 +805,12 @@ public class TreasureDataTest extends TestCase {
         assertEquals(0, client.addedEvent.size());
     }
 
-    public void testUploadEventsWithSuccess() throws IOException {
+    public void testUploadEventsWithSuccess() throws IOException, InterruptedException {
         enableCallbackForAddEvent();
         enableCallbackForUploadEvents();
 
         td.uploadEvents();
+        Thread.sleep(100);
         assertFalse(onSuccessCalledForAddEvent);
         assertNull(exceptionOnFailedCalledForAddEvent);
         assertNull(errorCodeForAddEvent);
@@ -819,7 +820,7 @@ public class TreasureDataTest extends TestCase {
         assertEquals(0, client.addedEvent.size());
     }
 
-    public void testUploadEventsWithError() throws IOException {
+    public void testUploadEventsWithError() throws IOException, InterruptedException {
         client.exceptionOnSendQueuedEventsCalled = new IllegalArgumentException("foo bar");
         client.errorCodeOnSendQueuedEventsCalled = KeenClient.ERROR_CODE_NETWORK_ERROR;
 
@@ -827,6 +828,7 @@ public class TreasureDataTest extends TestCase {
         enableCallbackForUploadEvents();
 
         td.uploadEvents();
+        Thread.sleep(100);
         assertFalse(onSuccessCalledForAddEvent);
         assertNull(exceptionOnFailedCalledForAddEvent);
         assertFalse(onSuccessCalledForUploadEvents);
