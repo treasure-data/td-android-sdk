@@ -123,6 +123,7 @@ public class TreasureData implements CDPClient {
 
     private final AtomicBoolean isInAppPurchaseEventTracking = new AtomicBoolean(false);
     private CDPClientImpl cdpClientDelegate;
+    private Debouncer debouncer;
 
     public static TreasureData initializeSharedInstance(Context context, String apiKey) {
         synchronized (TreasureData.class) {
@@ -604,17 +605,26 @@ public class TreasureData implements CDPClient {
         uploadEventsWithCallback(null);
     }
 
-    public void uploadEventsWithCallback(TDCallback callback) {
+    public void uploadEventsWithCallback(final TDCallback callback) {
+        if (debouncer == null) {
+            debouncer = new Debouncer(new Debouncer.Callback() {
+                @Override
+                public void call(Object key) {
+                    if (client == null) {
+                        Log.w(TAG, "TDClient is null");
+                        return;
+                    }
 
-        if (client == null) {
-            Log.w(TAG, "TDClient is null");
-            return;
+                    if (callback == null) {
+                        client.sendQueuedEventsAsync(null, createKeenCallback(LABEL_UPLOAD_EVENTS, uploadEventsCallBack));
+                    } else {
+                        client.sendQueuedEventsAsync(null, createKeenCallback(LABEL_UPLOAD_EVENTS, callback));
+                    }
+                    debouncer = null;
+                }
+            }, 100);
         }
-
-        if (callback == null) {
-            callback = uploadEventsCallBack;
-        }
-        client.sendQueuedEventsAsync(null, createKeenCallback(LABEL_UPLOAD_EVENTS, callback));
+        debouncer.call("uploadEvents");
     }
 
     private static KeenClient.KeenCallbackWithErrorCode createKeenCallback(final String methodName, final TDCallback callback) {
