@@ -1,7 +1,7 @@
 # Change Log
 
 ## Version 0.6.0
-_2021_04_02_
+_2021_04_22_
 
 * Debounce upload events to fix missing event when too many upload events calls repeatedly
 
