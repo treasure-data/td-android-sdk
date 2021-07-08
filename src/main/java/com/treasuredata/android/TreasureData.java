@@ -129,6 +129,7 @@ public class TreasureData implements CDPClient {
      * Initialize shared instance with Treasure Data API key
      *
      * @param apiKey Treasure Data API key
+     * @param context Context for Treasure Data shared instance
      * @return {@link TreasureData#sharedInstance()}
      */
     public static TreasureData initializeSharedInstance(Context context, String apiKey) {
@@ -146,6 +147,8 @@ public class TreasureData implements CDPClient {
 
     /**
      * The default singleton SDK instance.
+     *
+     * @return the shared instance
      */
     public static TreasureData sharedInstance() {
         if (sharedInstance == null) {
@@ -181,6 +184,8 @@ public class TreasureData implements CDPClient {
 
     /**
      * Get UUID generated from TreasureData. The value will be set to `td_uuid` column for every events if `enableAutoAppendUniqId` is called.
+     *
+     * @return UUID value
      */
     public String getUUID() {
         SharedPreferences sharedPreferences = getSharedPreference(context);
@@ -479,6 +484,8 @@ public class TreasureData implements CDPClient {
     /**
      * Encrypts the event data in the local persisted buffer.
      * This should be called only once and prior to any `addEvent...` call.
+     *
+     * @param encryptionKey encryption key to use
      */
     public static void initializeEncryptionKey(String encryptionKey) {
         TDClient.setEncryptionKey(encryptionKey);
@@ -1247,6 +1254,8 @@ public class TreasureData implements CDPClient {
 
     /**
      * Set the timeout in milliseconds. If {@link TreasureData#startSession(Context)} is called during this timeout after {@link TreasureData#endSession(Context)} is called. App will start session with the same id as previous one.
+     *
+     * @param timeoutMilli timeout duration in milliseconds
      */
     public static void setSessionTimeoutMilli(long timeoutMilli)
     {
@@ -1287,7 +1296,7 @@ public class TreasureData implements CDPClient {
     /**
      * Start tracking a global session
      *
-     * @param context
+     * @param context context of the global session
      */
     public static void startSession(Context context) {
         Session session = getSession(context);
@@ -1322,6 +1331,7 @@ public class TreasureData implements CDPClient {
 
     /**
      * End tracking global session
+     * @param context context of the global session
      */
     public static void endSession(Context context) {
         Session session = getSession(context);
