@@ -473,9 +473,9 @@ If you want to use server side upload timestamp not only client device time that
 	td.enableServerSideUploadTimestamp("server_upload_time");
 ```
 
-### Profile API
+### Profiles API
 
-Lookup for profiles via [Profile API](https://support.treasuredata.com/hc/en-us/sections/360000271688-Profiles-API)
+Lookup for profiles via [Profiles API](https://docs.treasuredata.com/display/public/PD/Working+with+Profiles+and+the+Profiles+API+Tokens)
 
 ```
 // Set your CDP endpoint to either:
