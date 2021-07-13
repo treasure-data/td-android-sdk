@@ -125,6 +125,13 @@ public class TreasureData implements CDPClient {
     private CDPClientImpl cdpClientDelegate;
     private Debouncer debouncer;
 
+    /**
+     * Initialize shared instance with Treasure Data API key
+     *
+     * @param apiKey Treasure Data API key
+     * @param context Context for Treasure Data shared instance
+     * @return {@link TreasureData#sharedInstance()}
+     */
     public static TreasureData initializeSharedInstance(Context context, String apiKey) {
         synchronized (TreasureData.class) {
             if (sharedInstance == null) {
@@ -138,6 +145,11 @@ public class TreasureData implements CDPClient {
         return initializeSharedInstance(context, null);
     }
 
+    /**
+     * The default singleton SDK instance.
+     *
+     * @return the shared instance
+     */
     public static TreasureData sharedInstance() {
         if (sharedInstance == null) {
             synchronized (TreasureData.class) {
@@ -170,6 +182,11 @@ public class TreasureData implements CDPClient {
         return context.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE);
     }
 
+    /**
+     * Get UUID generated from TreasureData. The value will be set to `td_uuid` column for every events if `enableAutoAppendUniqId` is called.
+     *
+     * @return UUID value
+     */
     public String getUUID() {
         SharedPreferences sharedPreferences = getSharedPreference(context);
         synchronized (this) {
@@ -427,66 +444,146 @@ public class TreasureData implements CDPClient {
         this(context, null);
     }
 
+    /**
+     * Enable client logging. Disabled by default.
+     */
     public static void enableLogging() {
         TDLogging.enableLogging();
     }
 
+    /**
+     * Disable client's logging
+     */
     public static void disableLogging() {
         TDLogging.disableLogging();
     }
 
+    /**
+     * Assign the target API endpoint, default is "https://in.treasuredata.com".
+     * Possible values:
+     *    AWS East  https://in.treasuredata.com
+     *    AWS Tokyo https://tokyo.in.treasuredata.com
+     *    AWS EU    https://eu01.in.treasuredata.com
+     *    AWS Asia Pacific (Seoul)  https://ap02.in.treasuredata.com
+     * This have to be call before {@link TreasureData#initializeDefaultApiKey(String)}, otherwise it won't have effect.
+     * @param apiEndpoint for the in effect endpoint.
+     */
     public static void initializeApiEndpoint(String apiEndpoint) {
         TDClient.setApiEndpoint(apiEndpoint);
     }
 
+    /**
+     * Initialize `TreasureData.sharedInstance` with the current `apiEndpoint` configured via {@link TreasureData#initializeApiEndpoint(String)}
+     *
+     * @param defaultApiKey API Key (only requires `write-only`) for the in effect endpoint {@link TreasureData#initializeApiEndpoint(String)}
+     */
     public static void initializeDefaultApiKey(String defaultApiKey) {
         TDClient.setDefaultApiKey(defaultApiKey);
     }
 
+    /**
+     * Encrypts the event data in the local persisted buffer.
+     * This should be called only once and prior to any `addEvent...` call.
+     *
+     * @param encryptionKey encryption key to use
+     */
     public static void initializeEncryptionKey(String encryptionKey) {
         TDClient.setEncryptionKey(encryptionKey);
     }
 
+    /**
+     * Event data will be compressed before uploading to server.
+     */
     public static void enableEventCompression() {
         TDHttpHandler.enableEventCompression();
     }
 
+    /**
+     * Event data will be uploaded in it's full format.
+     */
     public static void disableEventCompression() {
         TDHttpHandler.disableEventCompression();
     }
 
+    /**
+     * The destination database for events that doesn't specify one, default is "td".
+     *
+     * @param defaultDatabase name of the destination database
+     */
     public void setDefaultDatabase(String defaultDatabase) {
         this.defaultDatabase = defaultDatabase;
     }
 
+    /**
+     * The destination table for events that doesn't specify one. Currently this also applied for automatically tracked events (if enabled): app lifecycle, IAP and audits, default is "td_android".
+     *
+     * @param defaultTable name of the destination table
+     */
     public void setDefaultTable(String defaultTable) {
         this.defaultTable = defaultTable;
     }
 
+    /**
+     * Set callback for when add event either succeed or fail.
+     *
+     * @param callBack callback to be invoked
+     */
     public synchronized void setAddEventCallBack(TDCallback callBack) {
         this.addEventCallBack = callBack;
     }
 
+    /**
+     * Get callback for when add event either succeed or fail if you had set one.
+     *
+     * @return callback to be invoked
+     */
     public TDCallback getAddEventCallBack() {
         return this.addEventCallBack;
     }
 
+    /**
+     * Set callback for when upload events either succeed or fail.
+     *
+     * @param callBack callback to be invoked
+     */
     public synchronized void setUploadEventsCallBack(TDCallback callBack) {
         this.uploadEventsCallBack = callBack;
     }
 
+    /**
+     * Get callback for when upload events either succeed or fail if you had set one.
+     *
+     * @return callback to be invoked
+     */
     public TDCallback getUploadEventsCallBack() {
         return this.uploadEventsCallBack;
     }
 
+    /**
+     * Set max number of records can be sent per upload events call.
+     *
+     * @param maxUploadEventsAtOnce number of maximum events
+     */
     public void setMaxUploadEventsAtOnce(int maxUploadEventsAtOnce) {
         client.setMaxUploadEventsAtOnce(maxUploadEventsAtOnce);
     }
 
+    /**
+     * Get max number of records can be sent per upload events call.
+     *
+     * @return number of maximum events
+     */
     public int getMaxUploadEventsAtOnce() {
         return client.getMaxUploadEventsAtOnce();
     }
 
+    /**
+     * Track a new event
+     *
+     * @param database the event's destination database
+     * @param table the event's destination table
+     * @param record event data
+     */
     public void addEvent(String database, String table, Map<String, Object> record) {
         addEventWithCallback(database, table, record, null);
     }
@@ -500,6 +597,14 @@ public class TreasureData implements CDPClient {
         }
     }
 
+    /**
+     * Track a new event
+     *
+     * @param database the event's destination database
+     * @param table the event's destination table
+     * @param origRecord event data
+     * @param callback callback for when add event either succeed or fail. Default to {@link #setAddEventCallBack(TDCallback)}
+     */
     public void addEventWithCallback(String database, String table, Map<String, Object> origRecord, TDCallback callback) {
 
         if(!isCustomEventEnabled() && isCustomEvent(origRecord)) {
@@ -593,18 +698,39 @@ public class TreasureData implements CDPClient {
         client.queueEvent(null, sb.toString(), record, null, createKeenCallback(LABEL_ADD_EVENT, callback));
     }
 
+    /**
+     * Track a new event to default database set by {@link #setDefaultDatabase(String)}
+     *
+     * @param table the event's destination table
+     * @param record event data
+     */
     public void addEvent(String table, Map<String, Object> record) {
         addEvent(defaultDatabase, table, record);
     }
 
+    /**
+     * Track a new event to default database set by {@link #setDefaultDatabase(String)}
+     *
+     * @param table the event's destination table
+     * @param record event data
+     * @param callback callback for when add event either succeed or fail. Default to {@link #setAddEventCallBack(TDCallback)}
+     */
     public void addEventWithCallback(String table, Map<String, Object> record, TDCallback callback) {
         addEventWithCallback(defaultDatabase, table,  record, callback);
     }
 
+    /**
+     * Upload events with callback from {@link #setUploadEventsCallBack(TDCallback)}
+     */
     public void uploadEvents() {
         uploadEventsWithCallback(null);
     }
 
+    /**
+     * Upload events with callback
+     *
+     * @param callback callback to be invoked
+     */
     public void uploadEventsWithCallback(final TDCallback callback) {
         if (debouncer == null) {
             debouncer = new Debouncer(new Debouncer.Callback() {
@@ -746,7 +872,11 @@ public class TreasureData implements CDPClient {
         enableAppLifecycleEvent(false);
     }
 
-
+    /**
+     * Toggle app lifecycle tracking. This setting has no effect to custom tracking
+     *
+     * @param enabled true : enabled, false : disabled
+     */
     public void enableAppLifecycleEvent(boolean enabled) {
         this.appLifecycleEventEnabled = enabled;
         SharedPreferences sharedPreferences = getSharedPreference(context);
@@ -770,14 +900,25 @@ public class TreasureData implements CDPClient {
         }
     }
 
+    /**
+     * Enable tracking In App Purchase event automatically. This is disabled by default.
+     */
     public void enableInAppPurchaseEvent() {
         enableInAppPurchaseEvent(true);
     }
 
+    /**
+     * Enable tracking In App Purchase event automatically. This is disabled by default.
+     */
     public void disableInAppPurchaseEvent() {
         enableInAppPurchaseEvent(false);
     }
 
+    /**
+     * Toggle tracking In App Purchase event automatically. This is disabled by default.
+     *
+     * @param enabled true : enabled, false : disabled
+     */
     public void enableInAppPurchaseEvent(boolean enabled) {
         this.inAppPurchaseEventEnabled = enabled;
         SharedPreferences sharedPreferences = getSharedPreference(context);
@@ -798,6 +939,11 @@ public class TreasureData implements CDPClient {
         }
     }
 
+    /**
+     * Whether or not the In App Purchase tracking is enabled
+     *
+     * @return true : enabled, false : disabled
+     */
     public boolean isInAppPurchaseEventEnabled() {
         return this.inAppPurchaseEventEnabled;
     }
@@ -810,14 +956,14 @@ public class TreasureData implements CDPClient {
     }
 
     /**
-     * Enable custom event tracking. This setting has no effect to auto tracking
+     * Enable custom event tracking.
      */
     public void enableCustomEvent() {
         enableCustomEvent(true);
     }
 
     /**
-     * Disable custom event tracking. This setting has no effect to auto tracking
+     * Disable custom event tracking.
      */
     public void disableCustomEvent() {
         enableCustomEvent(false);
@@ -825,12 +971,18 @@ public class TreasureData implements CDPClient {
 
     /**
      * Whether or not the custom event tracking is enable
+     *
      * @return true : enable, false : disabled
      */
     public boolean isCustomEventEnabled() {
         return this.customEventEnabled;
     }
 
+    /**
+     * Toggle custom event availability
+     *
+     * @param enabled true : enabled, false : disabled
+     */
     public void enableCustomEvent(boolean enabled) {
         this.customEventEnabled = enabled;
         SharedPreferences sharedPreferences = getSharedPreference(context);
@@ -958,54 +1110,97 @@ public class TreasureData implements CDPClient {
         return record.containsKey(EVENT_KEY_IN_APP_PURCHASE_EVENT_PRIVATE);
     }
 
+    /**
+     * Disable automatic tracking of event when app is installed
+     */
     public void disableAppInstalledEvent() {
         this.autoTrackAppInstalledEvent = false;
     }
 
+    /**
+     * Disable automatic tracking of event when app is updated
+     */
     public void disableAppUpdatedEvent() {
         this.autoTrackAppUpdatedEvent = false;
     }
 
+    /**
+     * Disable automatic tracking of event when app is opened
+     */
     public void disableAppOpenEvent() {
         this.autoTrackAppOpenEvent = false;
     }
 
+    /**
+     * Disable the automatically appended `td_uuid` column.
+     */
     public void disableAutoAppendUniqId() {
         this.autoAppendUniqId = false;
     }
 
+    /**
+     * Automatically append `td_uuid` column for every events. The value is randomly generated and persisted, it is shared across app launches and events. Basically, it is used to represent for a unique app installation instance.
+     *
+     * This is disabled by default.
+     */
     public void enableAutoAppendUniqId() {
         this.autoAppendUniqId = true;
     }
 
+    /**
+     * Disable automatic tracking of model information
+     */
     public void disableAutoAppendModelInformation() {
         this.autoAppendModelInformation = false;
     }
 
+    /**
+     * Enable automatic tracking of model information
+     */
     public void enableAutoAppendModelInformation() {
         this.autoAppendModelInformation = true;
     }
 
+    /**
+     * Disable automatic tracking of app information
+     */
     public void disableAutoAppendAppInformation() {
         this.autoAppendAppInformation = false;
     }
 
+    /**
+     * Enable automatic tracking of app information
+     */
     public void enableAutoAppendAppInformation() {
         this.autoAppendAppInformation = true;
     }
 
+    /**
+     * Disable automatic tracking of locale information
+     */
     public void disableAutoAppendLocaleInformation() {
         this.autoAppendLocaleInformation = false;
     }
 
+    /**
+     * Enable automatic tracking of locale information
+     */
     public void enableAutoAppendLocaleInformation() {
         this.autoAppendLocaleInformation = true;
     }
 
+    /**
+     * Enable automatic tracking of advertising identifier
+     */
     public void enableAutoAppendAdvertisingIdentifier() {
         enableAutoAppendAdvertisingIdentifier(EVENT_KEY_ADVERTISING_IDENTIFIER);
     }
 
+    /**
+     * Enable automatic tracking of advertising identifier with custom column name
+     *
+     * @param columnName column name for advertising id
+     */
     public void enableAutoAppendAdvertisingIdentifier(String columnName) {
         if (columnName == null) {
             Log.w(TAG, "columnName must not be null");
@@ -1015,6 +1210,9 @@ public class TreasureData implements CDPClient {
         updateAdvertisingId();
     }
 
+    /**
+     * Disable automatic tracking of advertising identifier
+     */
     public void disableAutoAppendAdvertisingIdentifier() {
         autoAppendAdvertisingIdColumn = null;
         setAdvertisingId(null);
@@ -1040,14 +1238,25 @@ public class TreasureData implements CDPClient {
         }
     }
 
+    /**
+     * Disable automatic retry uploading. Once disabled, app will only attempt to upload events once per upload events call.
+     */
     public void disableAutoRetryUploading() {
         client.disableAutoRetryUploading();
     }
 
+    /**
+     * Enable automatic retry uploading. Once enabled, app will keep retry to upload events until events are uploaded successfully.
+     */
     public void enableAutoRetryUploading() {
         client.enableAutoRetryUploading();
     }
 
+    /**
+     * Set the timeout in milliseconds. If {@link TreasureData#startSession(Context)} is called during this timeout after {@link TreasureData#endSession(Context)} is called. App will start session with the same id as previous one.
+     *
+     * @param timeoutMilli timeout duration in milliseconds
+     */
     public static void setSessionTimeoutMilli(long timeoutMilli)
     {
         sessionTimeoutMilli = timeoutMilli;
@@ -1062,10 +1271,21 @@ public class TreasureData implements CDPClient {
         return sessions.get(applicationContext);
     }
 
+    /**
+     * Add new start session event to specified table set in the params and default database set in {@link #setDefaultDatabase(String)}
+     *
+     * @param table table to track session events
+     */
     public void startSession(String table) {
         startSession(defaultDatabase, table);
     }
 
+    /**
+     * Add new start session event
+     *
+     * @param database database to track session events
+     * @param table table to track session events
+     */
     public void startSession(String database, String table) {
         session.start();
         HashMap<String, Object> record = new HashMap<String, Object>(1);
@@ -1073,6 +1293,11 @@ public class TreasureData implements CDPClient {
         addEvent(database, table, record);
     }
 
+    /**
+     * Start tracking a global session
+     *
+     * @param context context of the global session
+     */
     public static void startSession(Context context) {
         Session session = getSession(context);
         if (session == null) {
@@ -1082,10 +1307,21 @@ public class TreasureData implements CDPClient {
         session.start();
     }
 
+    /**
+     * Add new end session event to specified table set in the params and default database set in {@link #setDefaultDatabase(String)}
+     *
+     * @param table table to track session events
+     */
     public void endSession(String table) {
         endSession(defaultDatabase, table);
     }
 
+    /**
+     * Add new end session event
+     *
+     * @param database database to track session events
+     * @param table table to track session events
+     */
     public void endSession(String database, String table) {
         HashMap<String, Object> record = new HashMap<String, Object>(1);
         record.put(EVENT_KEY_SESSION_EVENT, "end");
@@ -1093,6 +1329,10 @@ public class TreasureData implements CDPClient {
         session.finish();
     }
 
+    /**
+     * End tracking global session
+     * @param context context of the global session
+     */
     public static void endSession(Context context) {
         Session session = getSession(context);
         if (session != null) {
@@ -1100,10 +1340,18 @@ public class TreasureData implements CDPClient {
         }
     }
 
+    /**
+     * Get current session id
+     * @return current session id
+     */
     public String getSessionId() {
         return session.getId();
     }
 
+    /**
+     * Get current global session id
+     * @return current global session id
+     */
     public static String getSessionId(Context context) {
         Session session = getSession(context);
         if (session == null) {
@@ -1112,6 +1360,9 @@ public class TreasureData implements CDPClient {
         return session.getId();
     }
 
+    /**
+     * Reset global session id immediately
+     */
     public static void resetSessionId(Context context) {
         Session session = getSession(context);
         if (session != null) {
@@ -1119,11 +1370,21 @@ public class TreasureData implements CDPClient {
         }
     }
 
+    /**
+     * Automatically append the time when the event is received on server.
+     *
+     * This is disabled by default.
+     */
     public void enableServerSideUploadTimestamp() {
         serverSideUploadTimestamp = true;
         serverSideUploadTimestampColumn = null;
     }
 
+    /**
+     * Automatically append the time value when the event is received on server. Disabled by default.
+     *
+     * @param columnName The column to write the uploaded time value
+     */
     public void enableServerSideUploadTimestamp(String columnName) {
         if (columnName == null) {
             Log.w(TAG, "columnName shouldn't be null");
@@ -1134,15 +1395,26 @@ public class TreasureData implements CDPClient {
         serverSideUploadTimestampColumn = columnName;
     }
 
+    /**
+     * Disable the uploading time column
+     */
     public void disableServerSideUploadTimestamp() {
         serverSideUploadTimestamp = false;
         serverSideUploadTimestampColumn = null;
     }
 
+    /**
+     * Same as {@link #enableAutoAppendRecordUUID(String)}, using "record_uuid" as the column name.
+     */
     public void enableAutoAppendRecordUUID() {
         autoAppendRecordUUIDColumn = EVENT_DEFAULT_KEY_RECORD_UUID;
     }
 
+    /**
+     * Automatically append a random and unique ID for each event. Disabled by default.
+     *
+     * @param columnName The column to write the ID
+     */
     public void enableAutoAppendRecordUUID(String columnName) {
         if (columnName == null) {
             Log.w(TAG, "columnName shouldn't be null");
@@ -1151,6 +1423,9 @@ public class TreasureData implements CDPClient {
         autoAppendRecordUUIDColumn = columnName;
     }
 
+    /**
+     * Disable appending ID for each event.
+     */
     public void disableAutoAppendRecordUUID() {
         autoAppendRecordUUIDColumn = null;
     }
