@@ -49,6 +49,14 @@ task javadocJar(type: Jar) {
     archiveClassifier = 'javadoc'
 }
 
+task javadocSite(type: Javadoc) {
+    failOnError false
+    source = sourceSets.main.allJava
+    include 'com/treasuredata/android/**'
+    exclude 'com/treasuredata/android/billing/internal/**'
+    destinationDir = file("${rootDir}/docs")
+}
+
 publishing {
     publications {
         mavenJava(MavenPublication) {
