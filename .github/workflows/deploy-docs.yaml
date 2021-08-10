@@ -25,28 +25,20 @@ jobs:
       - name: git checkout master
         uses: actions/checkout@v2
         with:
-          ref: 'master'
-          path: td-android-sdk
-      - name: pull docs branch
-        uses: actions/checkout@v2
-        with:
           persistent-creadentials: false
           fetch-depth: 0
-          ref: 'gh-pages'
-          path: gh-pages
+          ref: 'master'
+          # path: td-android-sdk
       - name: build docs
         run: |
           ls
           pwd
-          cd ~/td-android-sdk
-          javadoc -d ~/gh-pages ./src/main/java/com/treasuredata/android/*.java
-          cd ~/gh-pages
-          rm -rf ~/td-android-sdk
+          javadoc -d docs ./src/main/java/com/treasuredata/android/*.java
       - name: clean docs
         id: tidy
         uses: cicirello/javadoc-cleanup@v1
         with:
-          path-to-root: gh-pages
+          path-to-root: docs
       - name: deploy docs
         uses: ad-m/github-push-action@master
         with:
