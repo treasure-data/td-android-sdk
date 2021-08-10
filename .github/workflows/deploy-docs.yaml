@@ -1,0 +1,54 @@
+name: Deploy Docs Microsite
+
+on:
+  workflow_dispatch:
+    inputs:
+      tags:
+        description: 'Who triggered this test run?'
+        default: ${{github.actor}}
+  push:
+    branches:
+      - master
+    paths:
+      - 'src/**'
+
+jobs:
+  deploy-docs-microsite:
+    name: Build and Deploy Docs microsite to treasure-data.github.io/td-android-sdk
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up the Java JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+      - name: git checkout master
+        uses: actions/checkout@v2
+        with:
+          ref: 'master'
+          path: td-android-sdk
+      - name: pull docs branch
+        uses: actions/checkout@v2
+        with:
+          persistent-creadentials: false
+          fetch-depth: 0
+          ref: 'gh-pages'
+          path: gh-pages
+      - name: build docs
+        run: |
+          ls
+          pwd
+          cd ~/td-android-sdk
+          javadoc -d ~/gh-pages ./src/main/java/com/treasuredata/android/*.java
+          cd ~/gh-pages
+          rm -rf ~/td-android-sdk
+      - name: clean docs
+        id: tidy
+        uses: cicirello/javadoc-cleanup@v1
+        with:
+          path-to-root: gh-pages
+      - name: deploy docs
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: gh-pages
