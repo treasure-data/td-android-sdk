@@ -1,0 +1,32 @@
+name: Javadoc Site Generation
+
+on:
+  push:
+    branches: master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Merge master -> gh-pages
+      run: |
+        git config user.email "ci-bot@treasure-data.com"
+        git config user.name "ci-bot"
+        git fetch origin gh-pages
+        git checkout gh-pages
+        git merge master --allow-unrelated-histories
+    - name: Set up JDK 8
+      uses: actions/setup-java@v2
+      with:
+        java-version: '8'
+        distribution: 'temurin'
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+    - name: Generate Javadoc Site
+      run: ./gradlew javadocSite
+    - name: Deploy Javadoc site
+      run: |
+        git add .
+        git commit -m "[ci-bot] Auto-generated Javadoc Site"
+        git push

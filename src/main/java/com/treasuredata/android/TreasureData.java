@@ -465,6 +465,7 @@ public class TreasureData implements CDPClient {
      *    AWS Tokyo https://tokyo.in.treasuredata.com
      *    AWS EU    https://eu01.in.treasuredata.com
      *    AWS Asia Pacific (Seoul)  https://ap02.in.treasuredata.com
+     *    AWS Asia Pacific (Tokyo)  https://ap03.in.treasuredata.com
      * This have to be call before {@link TreasureData#initializeDefaultApiKey(String)}, otherwise it won't have effect.
      * @param apiEndpoint for the in effect endpoint.
      */
@@ -1001,6 +1002,7 @@ public class TreasureData implements CDPClient {
      *                    AWS Tokyo                 https://cdp-tokyo.in.treasuredata.com
      *                    AWS EU                    https://cdp-eu01.in.treasuredata.com
      *                    AWS Asia Pacific (Seoul)  https://cdp-ap02.in.treasuredata.com
+     *                    AWS Asia Pacific (Tokyo)  https://cdp-ap03.in.treasuredata.com
      */
     public void setCDPEndpoint(URI cdpEndpoint) {
         this.cdpClientDelegate = new CDPClientImpl(cdpEndpoint);
@@ -1016,6 +1018,7 @@ public class TreasureData implements CDPClient {
      *                    AWS Tokyo:                https://cdp-tokyo.in.treasuredata.com
      *                    AWS EU:                   https://cdp-eu01.in.treasuredata.com
      *                    AWS Asia Pacific (Seoul)  https://cdp-ap02.in.treasuredata.com
+     *                    AWS Asia Pacific (Tokyo)  https://cdp-ap03.in.treasuredata.com
      * @throws URISyntaxException when the provided cdpEndpoint is not a valid URI
      */
     public void setCDPEndpoint(String cdpEndpoint) throws URISyntaxException {

@@ -54,6 +54,7 @@ task javadocSite(type: Javadoc) {
     source = sourceSets.main.allJava
     include 'com/treasuredata/android/**'
     exclude 'com/treasuredata/android/billing/internal/**'
+    options.noTimestamp true
     destinationDir = file("${rootDir}/docs")
 }
 
