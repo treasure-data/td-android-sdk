@@ -2,6 +2,9 @@
 
 version: 2
 
+orbs:
+  android: circleci/android@1.0
+
 _defaults:
   - &restore_gradle_cache
     restore_cache:
@@ -20,6 +23,10 @@ _defaults:
     run:
       name: Run Tests
       command: ./gradlew test
+  - &run_connected_android_tests
+      run:
+        name:  Run Connected Android Tests
+        command: ./gradlew connectedAndroidTest
   - &compress_report
     run:
       name: Compress Report
@@ -33,6 +40,19 @@ _defaults:
       path: build/test-results
 
 jobs:
+  test_api_level_31:
+    docker:
+      - image: cimg/android:2021.10.2
+    steps:
+      - checkout
+      - *restore_gradle_cache
+      - *download_dependencies
+      - *save_gradle_cache
+      - *run_tests
+      - *compress_report
+      - *store_report
+      - *store_test_results
+
   test_api_level_30:
     docker:
       - image: circleci/android:api-30
