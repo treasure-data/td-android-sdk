@@ -64,6 +64,14 @@ commands:
 
 
 jobs:
+  instrument_tests_level_31:
+    executor:
+      name: android/android-machine
+      resource-class: large
+    steps:
+      - run_instrument_tests:
+          api_level: '31'
+
   instrument_tests_level_30:
     executor:
       name: android/android-machine
@@ -138,6 +146,7 @@ workflows:
   version: 2
   test:
     jobs:
+      - instrument_tests_level_31
       - instrument_tests_level_30
       - instrument_tests_level_29
       # - test_api_level_31
