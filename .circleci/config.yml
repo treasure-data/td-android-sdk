@@ -108,7 +108,7 @@ jobs:
       - run_instrument_tests:
           api_level: '29'
 
-    instrument_tests_level_28:
+  instrument_tests_level_28:
     executor:
       name: android/android-machine
       resource-class: large
