@@ -47,7 +47,7 @@ jobs:
     steps:
       - checkout
       - android/start-emulator-and-run-tests:
-          system-image: system-images;android-29;default;x86
+          system-image: system-images;android-29;google_apis;x86
     
   test_api_level_31:
     docker:
