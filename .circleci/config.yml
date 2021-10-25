@@ -43,7 +43,7 @@ jobs:
   instrument_tests_level_29:
     executor:
       name: android/android-machine
-      resource-class: medium
+      resource-class: large
     steps:
       - checkout
       - android/start-emulator-and-run-tests:
