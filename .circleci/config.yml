@@ -48,6 +48,8 @@ jobs:
       - checkout
       - android/start-emulator-and-run-tests:
           system-image: system-images;android-29;google_apis;x86
+      - store_artifacts:
+          path: /home/circleci/project/test-host/build/reports/androidTests/connected
     
   test_api_level_31:
     docker:
