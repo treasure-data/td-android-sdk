@@ -39,18 +39,47 @@ _defaults:
     store_test_results:
       path: build/test-results
 
+
+commands:
+  store_instrument_results:
+    description: "Store instrument test results"
+    steps:
+      - run:
+          name: Compress Report
+          command: tar -cvf instrument-report.tar -C ./test-host/build/reports/androidTests/connected .
+      - store_artifacts:
+          path: instrument-report.tar
+          destination: instrument-report.tar
+
+  run_instrument_tests:
+    description: "Run instrument tests"
+    parameters:
+      api_level:
+        type: "string"
+    steps:
+      - checkout
+      - android/start-emulator-and-run-tests:
+          system-image: system-images;android-<<parameters.api_level>>;google_apis;x86
+      - store_instrument_results
+
+
 jobs:
+  instrument_tests_level_30:
+    executor:
+      name: android/android-machine
+      resource-class: large
+    steps:
+      - run_instrument_tests:
+          api_level: '30'
+
   instrument_tests_level_29:
     executor:
       name: android/android-machine
       resource-class: large
     steps:
-      - checkout
-      - android/start-emulator-and-run-tests:
-          system-image: system-images;android-29;google_apis;x86
-      - store_artifacts:
-          path: /home/circleci/project/test-host/build/reports/androidTests/connected
-    
+      - run_instrument_tests:
+          api_level: '29'
+
   test_api_level_31:
     docker:
       - image: cimg/android:2021.10.2
@@ -109,6 +138,7 @@ workflows:
   version: 2
   test:
     jobs:
+      - instrument_tests_level_30
       - instrument_tests_level_29
       # - test_api_level_31
       # - test_api_level_30
