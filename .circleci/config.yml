@@ -40,38 +40,36 @@ _defaults:
       path: build/test-results
 
 jobs:
-  test_api_level_31:
-    # docker:
-      # - image: cimg/android:2021.10.2
+  instrument_tests_level_29:
     executor:
       name: android/android-machine
       resource-class: medium
+    steps:
+      - android/start-emulator-and-run-tests:
+          system-image: system-images;android-29;default;x86
+    
+  test_api_level_31:
+    docker:
+      - image: cimg/android:2021.10.2
     steps:
       - checkout
       - *restore_gradle_cache
       - *download_dependencies
       - *save_gradle_cache
       - *run_tests
-      - android/start-emulator-and-run-tests:
-          system-image: system-images;android-31;default;x86
       - *compress_report
       - *store_report
       - *store_test_results
 
   test_api_level_30:
-    # docker:
-    #   - image: circleci/android:api-30
-    executor:
-      name: android/android-machine
-      resource-class: medium
+    docker:
+      - image: circleci/android:api-30
     steps:
       - checkout
       - *restore_gradle_cache
       - *download_dependencies
       - *save_gradle_cache
       - *run_tests
-      - android/start-emulator-and-run-tests:
-          system-image: system-images;android-30;default;x86
       - *compress_report
       - *store_report
       - *store_test_results
@@ -108,7 +106,8 @@ workflows:
   version: 2
   test:
     jobs:
-      - test_api_level_31
-      - test_api_level_30
+      - instrument_tests_level_29
+      # - test_api_level_31
+      # - test_api_level_30
       # - test_api_level_29
       # - test_api_level_28
