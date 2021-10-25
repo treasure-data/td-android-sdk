@@ -1,9 +1,9 @@
 # Very minimal setup, just for the sake of automated testing
 
-version: 2
+version: 2.1
 
 orbs:
-  android: circleci/android@1.0
+  android: circleci/android@1.0.3
 
 _defaults:
   - &restore_gradle_cache
@@ -41,29 +41,31 @@ _defaults:
 
 jobs:
   test_api_level_31:
-    docker:
-      - image: cimg/android:2021.10.2
+    # docker:
+      # - image: cimg/android:2021.10.2
     steps:
       - checkout
       - *restore_gradle_cache
       - *download_dependencies
       - *save_gradle_cache
       - *run_tests
-      - *run_connected_android_tests
+      - android/run-ui-tests:
+          system-image: system-images;android-31;default;x86
       - *compress_report
       - *store_report
       - *store_test_results
 
   test_api_level_30:
-    docker:
-      - image: circleci/android:api-30
+    # docker:
+    #   - image: circleci/android:api-30
     steps:
       - checkout
       - *restore_gradle_cache
       - *download_dependencies
       - *save_gradle_cache
       - *run_tests
-      - *run_connected_android_tests
+      - android/run-ui-tests:
+          system-image: system-images;android-30;default;x86
       - *compress_report
       - *store_report
       - *store_test_results
