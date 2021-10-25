@@ -45,6 +45,7 @@ jobs:
       name: android/android-machine
       resource-class: medium
     steps:
+      - checkout
       - android/start-emulator-and-run-tests:
           system-image: system-images;android-29;default;x86
     
