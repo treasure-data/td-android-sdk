@@ -49,6 +49,7 @@ jobs:
       - *download_dependencies
       - *save_gradle_cache
       - *run_tests
+      - *run_connected_android_tests
       - *compress_report
       - *store_report
       - *store_test_results
@@ -62,6 +63,7 @@ jobs:
       - *download_dependencies
       - *save_gradle_cache
       - *run_tests
+      - *run_connected_android_tests
       - *compress_report
       - *store_report
       - *store_test_results
@@ -75,6 +77,7 @@ jobs:
       - *download_dependencies
       - *save_gradle_cache
       - *run_tests
+      - *run_connected_android_tests
       - *compress_report
       - *store_report
       - *store_test_results
@@ -88,6 +91,7 @@ jobs:
       - *download_dependencies
       - *save_gradle_cache
       - *run_tests
+      - *run_connected_android_tests
       - *compress_report
       - *store_report
       - *store_test_results
