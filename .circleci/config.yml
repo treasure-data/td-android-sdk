@@ -90,7 +90,7 @@ jobs:
       - checkout
       - android/start-emulator-and-run-tests:
           system-image: system-images;android-31;google_apis;x86_64
-          post-emulator-wait-steps:
+          pre-emulator-wait-steps:
             - run:
                 command: adb shell input keyevent 82
       - store_instrument_results
