@@ -90,6 +90,7 @@ jobs:
       - checkout
       - android/start-emulator-and-run-tests:
           system-image: system-images;android-31;google_apis;x86_64
+          wait-for-emulator: false
           # pre-emulator-wait-steps:
             # - run:
                 # command: adb shell input keyevent 82
@@ -124,8 +125,8 @@ workflows:
   version: 2
   test:
     jobs:
-      - local_tests
+      # - local_tests
       - instrument_tests_level_31
       # - instrument_tests_level_30
       # - instrument_tests_level_29
-      - instrument_tests_level_28
+      # - instrument_tests_level_28
