@@ -1,6 +1,9 @@
 # Very minimal setup, just for the sake of automated testing
 
-version: 2
+version: 2.1
+
+orbs:
+  android: circleci/android@1.0.3
 
 _defaults:
   - &restore_gradle_cache
@@ -20,6 +23,10 @@ _defaults:
     run:
       name: Run Tests
       command: ./gradlew test
+  - &run_connected_android_tests
+      run:
+        name:  Run Connected Android Tests
+        command: ./gradlew connectedAndroidTest
   - &compress_report
     run:
       name: Compress Report
@@ -32,50 +39,91 @@ _defaults:
     store_test_results:
       path: build/test-results
 
+
+commands:
+  store_instrument_results:
+    description: "Store instrument test results"
+    steps:
+      - run:
+          name: Compress Report
+          command: tar -cvf instrument-report.tar -C ./test-host/build/reports/androidTests/connected .
+      - store_artifacts:
+          path: instrument-report.tar
+          destination: instrument-report.tar
+
+  run_instrument_tests:
+    description: "Run instrument tests"
+    parameters:
+      api_level:
+        type: "string"
+    steps:
+      - checkout
+      - android/start-emulator-and-run-tests:
+          system-image: system-images;android-<<parameters.api_level>>;google_apis;x86
+      - store_instrument_results
+
+  run_local_tests:
+    description: "Run unit tests"
+    steps:
+      - checkout
+      - *restore_gradle_cache
+      - *download_dependencies
+      - *save_gradle_cache
+      - *run_tests
+      - *compress_report
+      - *store_report
+      - *store_test_results
+
+
 jobs:
-  test_api_level_30:
+  local_tests:
     docker:
       - image: circleci/android:api-30
     steps:
-      - checkout
-      - *restore_gradle_cache
-      - *download_dependencies
-      - *save_gradle_cache
-      - *run_tests
-      - *compress_report
-      - *store_report
-      - *store_test_results
+      - run_local_tests
 
-  test_api_level_29:
-    docker:
-      - image: circleci/android:api-29
+  instrument_tests_level_31:
+    executor:
+      name: android/android-machine
+      resource-class: large
     steps:
       - checkout
-      - *restore_gradle_cache
-      - *download_dependencies
-      - *save_gradle_cache
-      - *run_tests
-      - *compress_report
-      - *store_report
-      - *store_test_results
+      - android/start-emulator-and-run-tests:
+          system-image: system-images;android-31;google_apis;x86_64
+          wait-for-emulator: false
+      - store_instrument_results
 
-  test_api_level_28:
-    docker:
-      - image: circleci/android:api-28
+  instrument_tests_level_30:
+    executor:
+      name: android/android-machine
+      resource-class: large
     steps:
-      - checkout
-      - *restore_gradle_cache
-      - *download_dependencies
-      - *save_gradle_cache
-      - *run_tests
-      - *compress_report
-      - *store_report
-      - *store_test_results
+      - run_instrument_tests:
+          api_level: '30'
+
+  instrument_tests_level_29:
+    executor:
+      name: android/android-machine
+      resource-class: large
+    steps:
+      - run_instrument_tests:
+          api_level: '29'
+
+  instrument_tests_level_28:
+    executor:
+      name: android/android-machine
+      resource-class: large
+    steps:
+      - run_instrument_tests:
+          api_level: '28'
+
 
 workflows:
   version: 2
   test:
     jobs:
-      - test_api_level_30
-      - test_api_level_29
-      - test_api_level_28
+      - local_tests
+      - instrument_tests_level_31
+      - instrument_tests_level_30
+      - instrument_tests_level_29
+      - instrument_tests_level_28
