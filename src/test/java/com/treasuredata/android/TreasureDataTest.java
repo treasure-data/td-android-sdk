@@ -810,7 +810,7 @@ public class TreasureDataTest extends TestCase {
         enableCallbackForUploadEvents();
 
         td.uploadEvents();
-        Thread.sleep(100);
+        Thread.sleep(200);
         assertFalse(onSuccessCalledForAddEvent);
         assertNull(exceptionOnFailedCalledForAddEvent);
         assertNull(errorCodeForAddEvent);

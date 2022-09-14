@@ -39,39 +39,42 @@ class TDHttpHandler extends UrlConnectionHttpHandler {
         this.apiEndpoint = apiEndpoint;
     }
 
-    protected HttpURLConnection openConnection(Request request) throws IOException {
-        URL url = new URL(String.format("%s/android/v3/event", this.apiEndpoint));
-        HttpURLConnection result = (HttpURLConnection) url.openConnection();
-        result.setConnectTimeout(DEFAULT_CONNECT_TIMEOUT);
-        result.setReadTimeout(DEFAULT_READ_TIMEOUT);
-        return result;
-    }
+//    protected HttpURLConnection openConnection(Request request) throws IOException {
+//        URL url = new URL(String.format("%s/android/v3/event", this.apiEndpoint));
+//        HttpURLConnection result = (HttpURLConnection) url.openConnection();
+//        result.setConnectTimeout(DEFAULT_CONNECT_TIMEOUT);
+//        result.setReadTimeout(DEFAULT_READ_TIMEOUT);
+//        return result;
+//    }
 
     protected void sendRequest(HttpURLConnection connection, Request request) throws IOException {
         connection.setRequestMethod("POST");
-        connection.setRequestProperty("Content-Type", "application/json");
-        connection.setRequestProperty("X-TD-Data-Type", "k");
-        connection.setRequestProperty("X-TD-Write-Key", apiKey);
+//        connection.setRequestProperty("Content-Type", "application/json");
+//        connection.setRequestProperty("X-TD-Data-Type", "k");
+//        connection.setRequestProperty("X-TD-Write-Key", apiKey);
+        connection.setRequestProperty("Authorization", "TD1 " + apiKey);
+        connection.setRequestProperty("Content-Type", "application/vnd.treasuredata.v1.js+json");
+        connection.setRequestProperty("Accept", "application/vnd.treasuredata.v1.js+json");
         connection.setRequestProperty("User-Agent", String.format("TD-Android-SDK/%s (%s %s)", VERSION, Build.MODEL, Build.VERSION.RELEASE));
         connection.setDoOutput(true);
 
         try {
-            if (isEventCompression) {
-                connection.setRequestProperty("Content-Encoding", "deflate");
-                ByteArrayOutputStream srcOutputStream = new ByteArrayOutputStream();
-                request.body.writeTo(srcOutputStream);
-                byte[] srcBytes = srcOutputStream.toByteArray();
-
-                BufferedInputStream compressedInputStream = new BufferedInputStream(new DeflaterInputStream(new ByteArrayInputStream(srcBytes)));
-                int readLen;
-                byte[] buf = new byte[256];
-                while ((readLen = compressedInputStream.read(buf)) > 0) {
-                    connection.getOutputStream().write(buf, 0, readLen);
-                }
-            }
-            else {
+//            if (isEventCompression) {
+//                connection.setRequestProperty("Content-Encoding", "deflate");
+//                ByteArrayOutputStream srcOutputStream = new ByteArrayOutputStream();
+//                request.body.writeTo(srcOutputStream);
+//                byte[] srcBytes = srcOutputStream.toByteArray();
+//
+//                BufferedInputStream compressedInputStream = new BufferedInputStream(new DeflaterInputStream(new ByteArrayInputStream(srcBytes)));
+//                int readLen;
+//                byte[] buf = new byte[256];
+//                while ((readLen = compressedInputStream.read(buf)) > 0) {
+//                    connection.getOutputStream().write(buf, 0, readLen);
+//                }
+//            }
+//            else {
                 request.body.writeTo(connection.getOutputStream());
-            }
+//            }
         }
         finally {
             connection.getOutputStream().close();

@@ -1,6 +1,5 @@
 package com.treasuredata.android;
 
-import android.content.Context;
 import io.keen.client.java.GlobalPropertiesEvaluator;
 import io.keen.client.java.KeenClient;
 import io.keen.client.java.KeenProject;
@@ -40,6 +39,7 @@ class TDClient extends KeenClient {
                 return properties;
             }
         });
+        setBaseUrl(apiEndpoint);
     }
 
     static void setDefaultApiKey(String defaultApiKey) {
