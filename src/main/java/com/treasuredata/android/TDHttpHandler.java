@@ -7,8 +7,7 @@ import io.keen.client.java.http.UrlConnectionHttpHandler;
 
 import java.io.*;
 import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.zip.DeflaterInputStream;
+import java.util.zip.GZIPOutputStream;
 
 class TDHttpHandler extends UrlConnectionHttpHandler {
     static volatile String VERSION = "0.0.0";
@@ -49,34 +48,25 @@ class TDHttpHandler extends UrlConnectionHttpHandler {
 
     protected void sendRequest(HttpURLConnection connection, Request request) throws IOException {
         connection.setRequestMethod("POST");
-//        connection.setRequestProperty("Content-Type", "application/json");
-//        connection.setRequestProperty("X-TD-Data-Type", "k");
-//        connection.setRequestProperty("X-TD-Write-Key", apiKey);
         connection.setRequestProperty("Authorization", "TD1 " + apiKey);
         connection.setRequestProperty("Content-Type", "application/vnd.treasuredata.v1.js+json");
         connection.setRequestProperty("Accept", "application/vnd.treasuredata.v1.js+json");
         connection.setRequestProperty("User-Agent", String.format("TD-Android-SDK/%s (%s %s)", VERSION, Build.MODEL, Build.VERSION.RELEASE));
         connection.setDoOutput(true);
 
-        try {
-//            if (isEventCompression) {
-//                connection.setRequestProperty("Content-Encoding", "deflate");
-//                ByteArrayOutputStream srcOutputStream = new ByteArrayOutputStream();
-//                request.body.writeTo(srcOutputStream);
-//                byte[] srcBytes = srcOutputStream.toByteArray();
-//
-//                BufferedInputStream compressedInputStream = new BufferedInputStream(new DeflaterInputStream(new ByteArrayInputStream(srcBytes)));
-//                int readLen;
-//                byte[] buf = new byte[256];
-//                while ((readLen = compressedInputStream.read(buf)) > 0) {
-//                    connection.getOutputStream().write(buf, 0, readLen);
-//                }
-//            }
-//            else {
-                request.body.writeTo(connection.getOutputStream());
-//            }
+        if (isEventCompression) {
+            connection.setRequestProperty("Content-Encoding", "gzip");
+            ByteArrayOutputStream srcOutputStream = new ByteArrayOutputStream();
+            request.body.writeTo(srcOutputStream);
+            byte[] srcBytes = srcOutputStream.toByteArray();
+
+            GZIPOutputStream gzipOutputStream = new GZIPOutputStream(connection.getOutputStream());
+            BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(gzipOutputStream);
+            bufferedOutputStream.write(srcBytes);
+            bufferedOutputStream.close();
         }
-        finally {
+        else {
+            request.body.writeTo(connection.getOutputStream());
             connection.getOutputStream().close();
         }
     }
