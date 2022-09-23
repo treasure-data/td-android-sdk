@@ -11,9 +11,7 @@ import java.util.zip.GZIPOutputStream;
 
 class TDHttpHandler extends UrlConnectionHttpHandler {
     static volatile String VERSION = "0.0.0";
-    private static final int DEFAULT_CONNECT_TIMEOUT = 30000;
-    private static final int DEFAULT_READ_TIMEOUT = 30000;
-    private static final String DEFAULT_API_ENDPOINT = "https://in.treasuredata.com";
+    private static final String DEFAULT_API_ENDPOINT = "https://us01.records.in.treasuredata.com";
     private static volatile boolean isEventCompression = true;
 
     private final String apiKey;
@@ -37,14 +35,6 @@ class TDHttpHandler extends UrlConnectionHttpHandler {
         this.apiKey = apiKey;
         this.apiEndpoint = apiEndpoint;
     }
-
-//    protected HttpURLConnection openConnection(Request request) throws IOException {
-//        URL url = new URL(String.format("%s/android/v3/event", this.apiEndpoint));
-//        HttpURLConnection result = (HttpURLConnection) url.openConnection();
-//        result.setConnectTimeout(DEFAULT_CONNECT_TIMEOUT);
-//        result.setReadTimeout(DEFAULT_READ_TIMEOUT);
-//        return result;
-//    }
 
     protected void sendRequest(HttpURLConnection connection, Request request) throws IOException {
         connection.setRequestMethod("POST");
