@@ -459,13 +459,9 @@ public class TreasureData implements CDPClient {
     }
 
     /**
-     * Assign the target API endpoint, default is "https://in.treasuredata.com".
+     * Assign the target API endpoint, default is "https://us01.records.in.treasuredata.com".
      * Possible values:
-     *    AWS East  https://in.treasuredata.com
-     *    AWS Tokyo https://tokyo.in.treasuredata.com
-     *    AWS EU    https://eu01.in.treasuredata.com
-     *    AWS Asia Pacific (Seoul)  https://ap02.in.treasuredata.com
-     *    AWS Asia Pacific (Tokyo)  https://ap03.in.treasuredata.com
+     *    AWS East  https://https://us01.records.in.treasuredata.com
      * This have to be call before {@link TreasureData#initializeDefaultApiKey(String)}, otherwise it won't have effect.
      * @param apiEndpoint for the in effect endpoint.
      */
