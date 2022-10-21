@@ -367,6 +367,23 @@
                 android:text="@string/is_enabled" />
 
             <TextView
+                android:id="@+id/titleDefaultValue"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dip"
+                android:gravity="center"
+                android:text="@string/default_value"
+                android:textColor="#999999"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/setDefaultValueButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/set_default_value" />
+
+            <TextView
                 android:id="@+id/title12"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

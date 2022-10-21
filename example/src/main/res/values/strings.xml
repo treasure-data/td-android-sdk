@@ -28,6 +28,8 @@
     <string name="end_session_id">End session id</string>
     <string name="get_global_session_id">Get global session id</string>
     <string name="start_global_session">Start global session</string>
+    <string name="default_value">Default value</string>
+    <string name="set_default_value">Set default value</string>
     <string name="profile_api">Profile API</string>
     <string name="fetch_user_segments">Fetch user segments</string>
     <string name="retry_uploading">Retry uploading</string>
