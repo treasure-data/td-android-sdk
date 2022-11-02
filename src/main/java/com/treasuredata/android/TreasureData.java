@@ -72,7 +72,6 @@ public class TreasureData implements CDPClient {
     private static final String EVENT_KEY_APP_LIFECYCLE_EVENT_PRIVATE = "__is_app_lifecycle_event";
     private static final String EVENT_KEY_RESET_UUID_EVENT_PRIVATE = "__is_reset_uuid_event";
     private static final String EVENT_KEY_IN_APP_PURCHASE_EVENT_PRIVATE = "__is_in_app_purchase_event";
-    private static final String EVENT_KEY_SERVERSIDE_UPLOAD_TIMESTAMP = "#SSUT";
     private static final String EVENT_DEFAULT_KEY_RECORD_UUID = "record_uuid";
     private static final String EVENT_APP_INSTALL = "TD_ANDROID_APP_INSTALL";
     private static final String EVENT_APP_OPEN = "TD_ANDROID_APP_OPEN";
@@ -112,8 +111,6 @@ public class TreasureData implements CDPClient {
     private static volatile long sessionTimeoutMilli = Session.DEFAULT_SESSION_PENDING_MILLIS;
     private final String appVersion;
     private final int appVersionNumber;
-    private volatile boolean serverSideUploadTimestamp;
-    private volatile String serverSideUploadTimestampColumn;
     private Session session = new Session();
     private volatile String autoAppendRecordUUIDColumn;
     private volatile String autoAppendAdvertisingIdColumn;
@@ -680,15 +677,6 @@ public class TreasureData implements CDPClient {
             return;
         }
 
-        if (serverSideUploadTimestamp) {
-            String columnName = serverSideUploadTimestampColumn;
-            if (columnName != null) {
-                record.put(EVENT_KEY_SERVERSIDE_UPLOAD_TIMESTAMP, columnName);
-            }
-            else {
-                record.put(EVENT_KEY_SERVERSIDE_UPLOAD_TIMESTAMP, true);
-            }
-        }
 
         StringBuilder sb = new StringBuilder();
         sb.append(database).append(".").append(table);
@@ -1370,39 +1358,6 @@ public class TreasureData implements CDPClient {
     }
 
     /**
-     * Automatically append the time when the event is received on server.
-     *
-     * This is disabled by default.
-     */
-    public void enableServerSideUploadTimestamp() {
-        serverSideUploadTimestamp = true;
-        serverSideUploadTimestampColumn = null;
-    }
-
-    /**
-     * Automatically append the time value when the event is received on server. Disabled by default.
-     *
-     * @param columnName The column to write the uploaded time value
-     */
-    public void enableServerSideUploadTimestamp(String columnName) {
-        if (columnName == null) {
-            Log.w(TAG, "columnName shouldn't be null");
-            return;
-        }
-
-        serverSideUploadTimestamp = true;
-        serverSideUploadTimestampColumn = columnName;
-    }
-
-    /**
-     * Disable the uploading time column
-     */
-    public void disableServerSideUploadTimestamp() {
-        serverSideUploadTimestamp = false;
-        serverSideUploadTimestampColumn = null;
-    }
-
-    /**
      * Same as {@link #enableAutoAppendRecordUUID(String)}, using "record_uuid" as the column name.
      */
     public void enableAutoAppendRecordUUID() {
@@ -1564,12 +1519,5 @@ public class TreasureData implements CDPClient {
         public void endSession(String database, String table) {
         }
 
-        @Override
-        public void enableServerSideUploadTimestamp() {
-        }
-
-        @Override
-        public void disableServerSideUploadTimestamp() {
-        }
     }
 }
