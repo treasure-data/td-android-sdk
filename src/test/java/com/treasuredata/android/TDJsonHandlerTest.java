@@ -28,9 +28,6 @@ public class TDJsonHandlerTest extends TestCase {
     private static final String JSON_STR = "{\n" +
                 "    \"name\":\"komamitsu\",\n" +
                 "    \"age\":123,\n" +
-                "    \"keen\": {\n" +
-                "        \"timestamp\": \"2014-12-31T23:59:01.123+0000\"\n" +
-                "    },\n" +
                 "    \"uuid\":\"2F1FCD4D-74A6-45EF-B9B0-CD82DE49BE69\"\n" +
                 "}";
     private TDJsonHandler jsonHandler = new TDJsonHandler();
@@ -54,7 +51,6 @@ public class TDJsonHandlerTest extends TestCase {
         Map<String, Object> result = jsonHandler.readJson(new StringReader(JSON_STR));
         assertEquals("komamitsu", result.get("name"));
         assertEquals(123, result.get("age"));
-        assertEquals("2014-12-31T23:59:01.123+0000", ((Map<String, Object>) result.get("keen")).get("timestamp"));
         assertEquals("2F1FCD4D-74A6-45EF-B9B0-CD82DE49BE69", result.get("uuid"));
     }
 
@@ -67,7 +63,6 @@ public class TDJsonHandlerTest extends TestCase {
         value.put("age", 123);
         Map<String, Object> keen = new HashMap<String, Object>();
         keen.put("timestamp", "2014-12-31T23:59:01.123+0000");
-        value.put("keen", keen);
         value.put("now", now);
         value.put("f_nan", Float.NaN);
         value.put("f_pos_inf", Float.POSITIVE_INFINITY);
@@ -94,7 +89,6 @@ public class TDJsonHandlerTest extends TestCase {
         Map<String, Object> value = list.get(0);
         assertEquals("komamitsu", value.get("name"));
         assertEquals(123, value.get("age"));
-        assertEquals("2014-12-31T23:59:01.123+0000", ((Map<String, Object>) value.get("keen")).get("timestamp"));
         assertEquals(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(now), value.get("now"));
         assertEquals(String.valueOf(Float.NaN), value.get("f_nan"));
         assertEquals(String.valueOf(Float.POSITIVE_INFINITY), value.get("f_pos_inf"));
