@@ -35,7 +35,7 @@ class TDClient extends KeenClient {
             @Override
             public Map<String, Object> getGlobalProperties(String s) {
                 Map<String, Object> properties = new HashMap<String, Object>(1);
-                properties.put("#UUID", UUID.randomUUID().toString());
+                properties.put("uuid", UUID.randomUUID().toString());
                 return properties;
             }
         });

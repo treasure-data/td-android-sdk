@@ -23,8 +23,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
 
 public class TDJsonHandlerTest extends TestCase {
     private static final String JSON_STR = "{\n" +
@@ -33,7 +31,7 @@ public class TDJsonHandlerTest extends TestCase {
                 "    \"keen\": {\n" +
                 "        \"timestamp\": \"2014-12-31T23:59:01.123+0000\"\n" +
                 "    },\n" +
-                "    \"#UUID\":\"2F1FCD4D-74A6-45EF-B9B0-CD82DE49BE69\"\n" +
+                "    \"uuid\":\"2F1FCD4D-74A6-45EF-B9B0-CD82DE49BE69\"\n" +
                 "}";
     private TDJsonHandler jsonHandler = new TDJsonHandler();
     private JSON json = new CustomizedJSON();
@@ -57,7 +55,7 @@ public class TDJsonHandlerTest extends TestCase {
         assertEquals("komamitsu", result.get("name"));
         assertEquals(123, result.get("age"));
         assertEquals("2014-12-31T23:59:01.123+0000", ((Map<String, Object>) result.get("keen")).get("timestamp"));
-        assertEquals("2F1FCD4D-74A6-45EF-B9B0-CD82DE49BE69", result.get("#UUID"));
+        assertEquals("2F1FCD4D-74A6-45EF-B9B0-CD82DE49BE69", result.get("uuid"));
     }
 
     private Map<String, ?> createExampleMap(Date now)
@@ -77,8 +75,7 @@ public class TDJsonHandlerTest extends TestCase {
         value.put("d_nan", Double.NaN);
         value.put("d_pos_inf", Double.POSITIVE_INFINITY);
         value.put("d_neg_inf", Double.NEGATIVE_INFINITY);
-        value.put("#UUID", "2F1FCD4D-74A6-45EF-B9B0-CD82DE49BE69");
-        value.put("uuid", UUID.fromString("8f88e079-7dc6-46f8-abfb-a533130f4ea0"));
+        value.put("uuid", "2F1FCD4D-74A6-45EF-B9B0-CD82DE49BE69");
         value.put("url", new URL("https://github.com/FasterXML/jackson-jr?a=x&b=y"));
         value.put("uri", URI.create("https://github.com/FasterXML/jackson-jr?c=x&c=y"));
         root.put("testdb.testtbl", Arrays.asList(value));
@@ -105,10 +102,9 @@ public class TDJsonHandlerTest extends TestCase {
         assertEquals(String.valueOf(Double.NaN), value.get("d_nan"));
         assertEquals(String.valueOf(Double.POSITIVE_INFINITY), value.get("d_pos_inf"));
         assertEquals(String.valueOf(Double.NEGATIVE_INFINITY), value.get("d_neg_inf"));
-        assertEquals("8f88e079-7dc6-46f8-abfb-a533130f4ea0", value.get("uuid"));
         assertEquals("https://github.com/FasterXML/jackson-jr?a=x&b=y", value.get("url"));
         assertEquals("https://github.com/FasterXML/jackson-jr?c=x&c=y", value.get("uri"));
-        assertEquals("2F1FCD4D-74A6-45EF-B9B0-CD82DE49BE69", value.get("#UUID"));
+        assertEquals("2F1FCD4D-74A6-45EF-B9B0-CD82DE49BE69", value.get("uuid"));
     }
 
     public void testWriteJson() throws Exception {
