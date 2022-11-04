@@ -4,6 +4,13 @@ Treasure Data Android SDK
 
 Android and Android TV SDK for [Treasure Data](http://www.treasuredata.com/). With this SDK, you can import the events on your Android and Android TV applications into Treasure Data easily.
 
+## Migration to version 1
+
+Version 1 has major changes that are not backward compatible with previous versions. If you are upgrading from version 0.6.0 or earlier, your code will not run correctly without doing these following steps:
+- API endpoint has changed to Ingestion Endpoint. For now, the only available endpoint is https://us01.records.in.treasuredata.com.
+- Server side upload timestamp feature is removed. If you need this feature, please contact our support team.
+- `uuid` is now reserved column name. If you try to add value to event's `uuid` key, you won't see the column show up in the database.
+
 ## Installation
 
 You can install td-android-sdk into your Android project in the following ways.
