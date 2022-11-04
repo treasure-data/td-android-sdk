@@ -35,7 +35,6 @@ public class DemoApp extends Application {
         TreasureData.sharedInstance().enableAutoAppendModelInformation();
         TreasureData.sharedInstance().enableAutoAppendAppInformation();
         TreasureData.sharedInstance().enableAutoAppendLocaleInformation();
-        TreasureData.sharedInstance().enableServerSideUploadTimestamp("server_upload_time");
         TreasureData.sharedInstance().enableAutoAppendRecordUUID();
         TreasureData.sharedInstance().enableAutoAppendAdvertisingIdentifier("custom_td_maid");
         TreasureData.sharedInstance().setDefaultDatabase("default_db");

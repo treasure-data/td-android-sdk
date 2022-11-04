@@ -39,8 +39,8 @@ class TDHttpHandler extends UrlConnectionHttpHandler {
     protected void sendRequest(HttpURLConnection connection, Request request) throws IOException {
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Authorization", "TD1 " + apiKey);
-        connection.setRequestProperty("Content-Type", "application/vnd.treasuredata.v1.js+json");
-        connection.setRequestProperty("Accept", "application/vnd.treasuredata.v1.js+json");
+        connection.setRequestProperty("Content-Type", "application/vnd.treasuredata.v1+json");
+        connection.setRequestProperty("Accept", "application/vnd.treasuredata.v1+json");
         connection.setRequestProperty("User-Agent", String.format("TD-Android-SDK/%s (%s %s)", VERSION, Build.MODEL, Build.VERSION.RELEASE));
         connection.setDoOutput(true);
 
