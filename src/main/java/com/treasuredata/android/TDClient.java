@@ -17,7 +17,7 @@ import java.util.concurrent.Executors;
 class TDClient extends KeenClient {
     private static final String TAG = TDClient.class.getSimpleName();
     private static String defaultApiKey;
-    private static String apiEndpoint;
+    private static String apiEndpoint = "https://us01.records.in.treasuredata.com";
     private static String encryptionKey;
 
     TDClient(String apiKey, File eventStoreRoot) throws IOException {

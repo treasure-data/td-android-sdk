@@ -160,38 +160,6 @@
                 android:text="@string/disable" />
 
             <TextView
-                android:id="@+id/title7"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="32dip"
-                android:gravity="center"
-                android:text="@string/server_side_upload_timestamp"
-                android:textColor="#999999"
-                android:textSize="22sp"
-                android:textStyle="bold" />
-
-            <EditText
-                android:id="@+id/serverSideUploadTimestampColumn"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:autofillHints=""
-                android:ems="10"
-                android:hint="@string/column"
-                android:inputType="textPersonName" />
-
-            <Button
-                android:id="@+id/enableServerSideUploadTimestampButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/enable" />
-
-            <Button
-                android:id="@+id/disableServerSideUploadTimestampButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/disable" />
-
-            <TextView
                 android:id="@+id/title2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
