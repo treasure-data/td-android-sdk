@@ -375,6 +375,21 @@ If you've set an encryption key via `TreasureData.initializeEncryptionKey`, our 
 	TreasureData.sharedInstance().addEvent("demotbl", …);
 ```
 
+### Adding local timestamp to each event record automatically (enabled by default)
+
+By default, local timestamp will be added to event's `time` key automatically. If you `disableAutoAppendLocalTimestamp` without adding `time` key to the event yourself, the server will add server side timestamp to `time` column. You can also auto track local time with custom column. If so, the `time` column will have server side timestamp.
+
+```
+    // Use local time as `time` column
+    TreasureData.sharedInstance().enableAutoAppendLocalTimestamp();
+
+    // Add local time as a customized column name
+    TreasureData.sharedInstance().enableAutoAppendLocalTimestamp("custom_time");
+
+    // Disable auto append local time
+    TreasureData.sharedInstance().disableAutoAppendLocalTimestamp();
+```
+
 ### Adding UUID of the device to each event automatically
 
 UUID of the device will be added to each event automatically if you call `TreasureData#enableAutoAppendUniqId()`. This value won't change until the application is uninstalled.
