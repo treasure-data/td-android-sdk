@@ -72,6 +72,7 @@ public class TreasureData implements CDPClient {
     private static final String EVENT_KEY_APP_LIFECYCLE_EVENT_PRIVATE = "__is_app_lifecycle_event";
     private static final String EVENT_KEY_RESET_UUID_EVENT_PRIVATE = "__is_reset_uuid_event";
     private static final String EVENT_KEY_IN_APP_PURCHASE_EVENT_PRIVATE = "__is_in_app_purchase_event";
+    private static final String EVENT_KEY_LOCAL_TIMESTAMP = "time";
     private static final String EVENT_DEFAULT_KEY_RECORD_UUID = "record_uuid";
     private static final String EVENT_APP_INSTALL = "TD_ANDROID_APP_INSTALL";
     private static final String EVENT_APP_OPEN = "TD_ANDROID_APP_OPEN";
@@ -111,6 +112,7 @@ public class TreasureData implements CDPClient {
     private static volatile long sessionTimeoutMilli = Session.DEFAULT_SESSION_PENDING_MILLIS;
     private final String appVersion;
     private final int appVersionNumber;
+    private volatile String autoAppendLocalTimestampColumn;
     private Session session = new Session();
     private volatile String autoAppendRecordUUIDColumn;
     private volatile String autoAppendAdvertisingIdColumn;
@@ -303,6 +305,8 @@ public class TreasureData implements CDPClient {
         }
         this.appVersion = appVersion;
         this.appVersionNumber = appVersionNumber;
+
+        this.enableAutoAppendLocalTimestamp();
 
         this.client = client;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
@@ -647,6 +651,10 @@ public class TreasureData implements CDPClient {
 
         appendSessionId(record);
 
+        if (autoAppendLocalTimestampColumn != null) {
+            appendLocalTimeStamp(record);
+        }
+
         if (autoAppendUniqId) {
             appendUniqId(record);
         }
@@ -803,6 +811,11 @@ public class TreasureData implements CDPClient {
         if (globalSessionId != null) {
             record.put(EVENT_KEY_SESSION_ID, globalSessionId);
         }
+    }
+
+    public void appendLocalTimeStamp(Map<String, Object> record) {
+        int timestamp = (int)(System.currentTimeMillis()/1000);
+        record.put(autoAppendLocalTimestampColumn, timestamp);
     }
 
     public void appendUniqId(Map<String, Object> record) {
@@ -1174,6 +1187,33 @@ public class TreasureData implements CDPClient {
      */
     public void enableAutoAppendLocaleInformation() {
         this.autoAppendLocaleInformation = true;
+    }
+
+    /**
+     * Enable automatic tracking of local timestamp to `time` column. This is enabled by default
+     */
+    public void enableAutoAppendLocalTimestamp() {
+        enableAutoAppendLocalTimestamp(EVENT_KEY_LOCAL_TIMESTAMP);
+    }
+
+    /**
+     * Enable automatic tracking of local timestamp with custom column name
+     *
+     * @param columnName custom column name
+     */
+    public void enableAutoAppendLocalTimestamp(String columnName) {
+        if (columnName == null) {
+            Log.w(TAG, "columnName must not be null");
+            return;
+        }
+        autoAppendLocalTimestampColumn = columnName;
+    }
+
+    /**
+     * Disable automatic tracking of local timestamp
+     */
+    public void disableAutoAppendLocalTimestamp() {
+        autoAppendLocalTimestampColumn = null;
     }
 
     /**
