@@ -125,23 +125,40 @@ public class TreasureData implements CDPClient {
     private Debouncer debouncer;
 
     /**
-     * Initialize shared instance with Treasure Data API key
+     * Initialize shared instance with Treasure Data API key and API endpoint
      *
      * @param apiKey Treasure Data API key
+     * @param apiEndpoint Treasure Data API key
+     * @param context Context for Treasure Data shared instance
+     * @return {@link TreasureData#sharedInstance()}
+     */
+    public static TreasureData initializeSharedInstance(Context context, String apiKey, String apiEndpoint) {
+        synchronized (TreasureData.class) {
+            if (sharedInstance == null) {
+                sharedInstance = new TreasureData(context, apiKey, apiEndpoint);
+            }
+        }
+        return sharedInstance;
+    }
+
+    /**
+     * Initialize shared instance with Treasure Data API key and default API endpoint
+     *
+     * @param apiKey Treasure Data API key of default API endpoint. To set API endpoint, use {@link TreasureData#initializeSharedInstance(Context, String, String)}
      * @param context Context for Treasure Data shared instance
      * @return {@link TreasureData#sharedInstance()}
      */
     public static TreasureData initializeSharedInstance(Context context, String apiKey) {
         synchronized (TreasureData.class) {
             if (sharedInstance == null) {
-                sharedInstance = new TreasureData(context, apiKey);
+                sharedInstance = new TreasureData(context, apiKey, null);
             }
         }
         return sharedInstance;
     }
 
     public static TreasureData initializeSharedInstance(Context context) {
-        return initializeSharedInstance(context, null);
+        return initializeSharedInstance(context, null, null);
     }
 
     /**
@@ -265,7 +282,7 @@ public class TreasureData implements CDPClient {
         }
     }
 
-    public TreasureData(Context context, String apiKey) {
+    public TreasureData(Context context, String apiKey, String apiEndpoint) {
         applicationContext = context.getApplicationContext();
         this.context = context.getApplicationContext();
         this.uuid = getUUID();
@@ -282,12 +299,12 @@ public class TreasureData implements CDPClient {
         }
 
         TDClient client = null;
-        if (apiKey == null && TDClient.getDefaultApiKey() == null) {
-            Log.e(TAG, "initializeApiKey() hasn't called yet");
+        if (apiKey == null) {
+            throw new IllegalArgumentException("apiKey must not be null");
         }
         else {
             try {
-                client = new TDClient(apiKey, applicationContext.getCacheDir());
+                client = new TDClient(apiKey, apiEndpoint, applicationContext.getCacheDir());
             } catch (IOException e) {
                 Log.e(TAG, "Failed to construct TreasureData object", e);
             }
@@ -441,10 +458,6 @@ public class TreasureData implements CDPClient {
         }
     }
 
-    public TreasureData(Context context) {
-        this(context, null);
-    }
-
     /**
      * Enable client logging. Disabled by default.
      */
@@ -457,26 +470,6 @@ public class TreasureData implements CDPClient {
      */
     public static void disableLogging() {
         TDLogging.disableLogging();
-    }
-
-    /**
-     * Assign the target API endpoint, default is "https://us01.records.in.treasuredata.com".
-     * Possible values:
-     *    AWS East  https://https://us01.records.in.treasuredata.com
-     * This have to be call before {@link TreasureData#initializeDefaultApiKey(String)}, otherwise it won't have effect.
-     * @param apiEndpoint for the in effect endpoint.
-     */
-    public static void initializeApiEndpoint(String apiEndpoint) {
-        TDClient.setApiEndpoint(apiEndpoint);
-    }
-
-    /**
-     * Initialize `TreasureData.sharedInstance` with the current `apiEndpoint` configured via {@link TreasureData#initializeApiEndpoint(String)}
-     *
-     * @param defaultApiKey API Key (only requires `write-only`) for the in effect endpoint {@link TreasureData#initializeApiEndpoint(String)}
-     */
-    public static void initializeDefaultApiKey(String defaultApiKey) {
-        TDClient.setDefaultApiKey(defaultApiKey);
     }
 
     /**
@@ -992,7 +985,6 @@ public class TreasureData implements CDPClient {
     /**
      * This is required before calling {@link TreasureData#fetchUserSegments},
      * Note that this CDP Endpoint is independent and
-     * not related to the API endpoint setup from {@link TreasureData#initializeApiEndpoint(String)}
      *
      * @param cdpEndpoint Known endpoints are:
      *                    AWS US                    https://cdp.in.treasuredata.com
@@ -1008,7 +1000,6 @@ public class TreasureData implements CDPClient {
     /**
      * This is required before calling {@link TreasureData#fetchUserSegments},
      * Note that this CDP Endpoint is independent and
-     * not related to the API endpoint setup from {@link TreasureData#initializeApiEndpoint(String)}
      *
      * @param cdpEndpoint Known endpoints are:
      *                    AWS US:                   https://cdp.in.treasuredata.com
@@ -1434,10 +1425,10 @@ public class TreasureData implements CDPClient {
 
     // Only for testing
     @Deprecated
-    TreasureData(Context context, TDClient mockClient, String uuid) {
+    TreasureData(Context context, TDClient mockClient) {
         this.context = context;
         this.client = mockClient;
-        this.uuid = uuid;
+        this.uuid = null;
         this.appVersion = "3.1.4";
         this.appVersionNumber = 42;
     }

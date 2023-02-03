@@ -87,7 +87,7 @@ public class TreasureDataTest extends TestCase {
     private TreasureData td;
 
     private TreasureData createTreasureData(Context context, TDClient client) {
-        return new TreasureData(context, client, null);
+        return new TreasureData(context, client);
     }
 
     public void setUp() throws IOException {
@@ -826,7 +826,7 @@ public class TreasureDataTest extends TestCase {
         enableCallbackForUploadEvents();
 
         td.uploadEvents();
-        Thread.sleep(100);
+        Thread.sleep(200);
         assertFalse(onSuccessCalledForAddEvent);
         assertNull(exceptionOnFailedCalledForAddEvent);
         assertFalse(onSuccessCalledForUploadEvents);
@@ -837,7 +837,7 @@ public class TreasureDataTest extends TestCase {
         assertEquals(0, client.addedEvent.size());
     }
 
-    public void testAddDefaultValuesSuccesfully() throws IOException {
+    public void testAddDefaultValuesSuccessfully() throws IOException {
         Map<String, Object> records = new HashMap<String, Object>();
         records.put("key", "value");
         td.setDefaultValue(null, null, "string", "String");

@@ -136,8 +136,8 @@ public class TDClientTest
     {
         server.enqueue(new MockResponse().setBody("{\"receipts\":[{\"success\":true},{\"success\":true}]}"));
         server.start();
-        TDClient.setApiEndpoint(String.format("http://127.0.0.1:%d", server.getPort()));
-        TDClient client = new TDClient(APIKEY, cacheDir);
+        String apiEndpoint = String.format("http://127.0.0.1:%d", server.getPort());
+        TDClient client = new TDClient(APIKEY, apiEndpoint, cacheDir);
 
         HashMap<String, Object> event0 = new HashMap<String, Object>();
         event0.put("name", "Foo");
@@ -162,8 +162,8 @@ public class TDClientTest
         server.enqueue(new MockResponse().setBody("{\"receipts\":[{\"success\":true}]}"));
         server.enqueue(new MockResponse().setBody("{\"receipts\":[{\"success\":true}]}"));
         server.start();
-        TDClient.setApiEndpoint(String.format("http://127.0.0.1:%d", server.getPort()));
-        TDClient client = new TDClient(APIKEY, cacheDir);
+        String apiEndpoint = String.format("http://127.0.0.1:%d", server.getPort());
+        TDClient client = new TDClient(APIKEY, apiEndpoint, cacheDir);
 
         HashMap<String, Object> event0 = new HashMap<String, Object>();
         event0.put("name", "Foo");
@@ -189,8 +189,8 @@ public class TDClientTest
         server.enqueue(new MockResponse().setBody("{\"receipts\":[{\"success\":true},{\"success\":true},{\"success\":true}]}"));
         server.enqueue(new MockResponse().setBody("{\"receipts\":[{\"success\":true}]}"));
         server.start();
-        TDClient.setApiEndpoint(String.format("http://127.0.0.1:%d", server.getPort()));
-        TDClient client = new TDClient(APIKEY, cacheDir);
+        String apiEndpoint = String.format("http://127.0.0.1:%d", server.getPort());
+        TDClient client = new TDClient(APIKEY, apiEndpoint, cacheDir);
         client.setMaxUploadEventsAtOnce(3);
 
         HashMap<String, Object> event0 = new HashMap<String, Object>();
@@ -224,8 +224,8 @@ public class TDClientTest
             throws Exception {
         server.start();
 
-        TDClient.setApiEndpoint(String.format("http://127.0.0.1:%d", server.getPort()));
-        TDClient client = new TDClient(APIKEY, cacheDir);
+        String apiEndpoint = String.format("http://127.0.0.1:%d", server.getPort());
+        TDClient client = new TDClient(APIKEY, apiEndpoint, cacheDir);
         client.setMaxUploadEventsAtOnce(2);
 
         HashMap<String, Object> event0 = new HashMap<String, Object>();

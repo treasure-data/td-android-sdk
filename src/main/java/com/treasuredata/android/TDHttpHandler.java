@@ -11,7 +11,6 @@ import java.util.zip.GZIPOutputStream;
 
 class TDHttpHandler extends UrlConnectionHttpHandler {
     static volatile String VERSION = "0.0.0";
-    private static final String DEFAULT_API_ENDPOINT = "https://us01.records.in.treasuredata.com";
     private static volatile boolean isEventCompression = true;
 
     private final String apiKey;
@@ -30,7 +29,7 @@ class TDHttpHandler extends UrlConnectionHttpHandler {
             throw new IllegalArgumentException("apiKey is null");
         }
         if (apiEndpoint == null) {
-            apiEndpoint = DEFAULT_API_ENDPOINT;
+            throw new IllegalArgumentException("apiEndpoint is null");
         }
         this.apiKey = apiKey;
         this.apiEndpoint = apiEndpoint;

@@ -82,7 +82,7 @@ public class TreasureDataInstrumentTest extends TestCase {
     private TreasureData td;
 
     private TreasureData createTreasureData(Context context, TDClient client) {
-        return new TreasureData(context, client, null);
+        return new TreasureData(context, client);
     }
 
     public void setUp() throws IOException {
