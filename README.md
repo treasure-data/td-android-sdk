@@ -56,7 +56,7 @@ public class ExampleApp extends Application {
     // Initialize Treasure Data Android SDK
     TreasureData.initializeEncryptionKey("RANDOM_STRING_TO_ENCRYPT_DATA");
     TreasureData.disableLogging();
-    TreasureData.initializeSharedInstance(this, "YOUR_WRITE_ONLY_API_KEY");
+    TreasureData.initializeSharedInstance(this, "YOUR_WRITE_ONLY_API_KEY", "API_ENDPOINT");
     TreasureData.sharedInstance.setDefaultDatabase("your_application_name");
     TreasureData.sharedInstance.setDefaultTable("your_event_name");
     TreasureData.sharedInstance.enableAutoAppendUniqId();
@@ -350,11 +350,10 @@ The states have effects across device reboots, app updates, so you can simply ca
 
 ### Endpoint
 
-The API endpoint (default: https://us01.records.in.treasuredata.com) can be modified using  `TreasureData.initializeApiEndpoint`. For example:
+The API endpoint (default: https://us01.records.in.treasuredata.com) can be changed. For example:
 
 ```
-    TreasureData.initializeApiEndpoint("https://specifying-another-endpoint.com");
-    td = new TreasureData(this, "your_api_key");
+    td = new TreasureData(this, "your_api_key", "https://specifying-another-endpoint.com");
 ```
 
 ### Encryption key
