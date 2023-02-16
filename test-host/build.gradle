@@ -14,11 +14,11 @@ android {
     compileSdkVersion 30
     defaultConfig {
         applicationId "com.treasuredata.android.test"
-        minSdkVersion 15
+        minSdkVersion 16
         targetSdkVersion 30
         versionCode 1
         versionName "1.0"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         release {
@@ -41,9 +41,11 @@ dependencies {
 
     implementation 'androidx.appcompat:appcompat:1.2.0'
 
-    implementation 'com.google.android.gms:play-services-ads:17.1.1'
+//    implementation 'com.google.android.gms:play-services-ads:17.1.1'
+    implementation 'com.google.android.gms:play-services-ads:20.0.0'
+    implementation 'com.treasuredata:keen-client-java-core:3.0.0'
 
-    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'junit:junit:4.12'
 
     androidTestImplementation 'org.mockito:mockito-android:2.28.2'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'

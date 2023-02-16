@@ -2,7 +2,7 @@ package com.treasuredata.android;
 
 import android.app.Application;
 import android.content.Context;
-import android.support.test.InstrumentationRegistry;
+import androidx.test.InstrumentationRegistry;
 
 import junit.framework.TestCase;
 
