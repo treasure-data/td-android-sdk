@@ -3,6 +3,7 @@ package com.treasuredata.android;
 import android.app.Application;
 import android.content.Context;
 import androidx.test.InstrumentationRegistry;
+import androidx.test.runner.AndroidJUnit4;
 
 import junit.framework.TestCase;
 
@@ -18,6 +19,12 @@ import io.keen.client.java.KeenProject;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+@RunWith(AndroidJUnit4.class)
 public class TreasureDataInstrumentTest extends TestCase {
     private static final String DUMMY_API_KEY = "dummy_api_key";
 
@@ -85,6 +92,7 @@ public class TreasureDataInstrumentTest extends TestCase {
         return new TreasureData(context, client);
     }
 
+    @Before
     public void setUp() throws IOException {
         Application application = mock(Application.class);
         context = InstrumentationRegistry.getTargetContext();
@@ -93,6 +101,7 @@ public class TreasureDataInstrumentTest extends TestCase {
         td = spy(createTreasureData(context, client));
     }
 
+    @Test
     public void testEnableAutoAppendAdvertisingId() throws IOException {
         td.enableAutoAppendAdvertisingIdentifier();
         try {
@@ -113,6 +122,7 @@ public class TreasureDataInstrumentTest extends TestCase {
         assertTrue(client.addedEvent.get(0).event.containsKey("td_maid"));
     }
 
+    @Test
     public void testDisableAutoAppendAdvertisingId() throws IOException {
         td.enableAutoAppendAdvertisingIdentifier();
         td.disableAutoAppendAdvertisingIdentifier();

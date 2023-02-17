@@ -3,7 +3,7 @@
 version: 2.1
 
 orbs:
-  android: circleci/android@1.0.3
+  android: circleci/android@2.1.2
 
 _defaults:
   - &restore_gradle_cache
@@ -44,12 +44,17 @@ commands:
   store_instrument_results:
     description: "Store instrument test results"
     steps:
+      - store_test_results:
+          path: test-host/build/reports/androidTests/connected
       - run:
           name: Compress Report
           command: tar -cvf instrument-report.tar -C ./test-host/build/reports/androidTests/connected .
       - store_artifacts:
           path: instrument-report.tar
           destination: instrument-report.tar
+      - store_artifacts:
+          path: test-host/build/outputs/androidTest-results/connected/test-result.pb
+          destination: test-result.pb
 
   run_instrument_tests:
     description: "Run instrument tests"
