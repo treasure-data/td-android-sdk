@@ -111,11 +111,8 @@ jobs:
       resource-class: large
       tag: "2022.07.1"
     steps:
-      - checkout
-      - android/start-emulator-and-run-tests:
-          system-image: system-images;android-31;google_apis;x86_64
-          wait-for-emulator: false
-      - store_instrument_results
+      - run_instrument_tests:
+          api_level: '31'
 
   instrument_tests_level_30:
     executor:
@@ -141,8 +138,10 @@ jobs:
       resource-class: large
       tag: "2022.07.1"
     steps:
-      - run_instrument_tests:
-          api_level: '28'
+      - checkout
+      - android/start-emulator-and-run-tests:
+          system-image: system-images;android-28;google_apis;x86
+      - store_instrument_results
 
 
 workflows:
