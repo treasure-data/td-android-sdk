@@ -90,7 +90,6 @@ jobs:
   instrument_tests_level_31:
     executor:
       name: android/android-machine
-      resource-class: large
       tag: "2023.02"
     steps:
       - checkout
@@ -102,7 +101,6 @@ jobs:
   instrument_tests_level_30:
     executor:
       name: android/android-machine
-      resource-class: large
       tag: "2023.02"
     steps:
       - run_instrument_tests:
@@ -111,7 +109,6 @@ jobs:
   instrument_tests_level_29:
     executor:
       name: android/android-machine
-      resource-class: large
       tag: "2023.02"
     steps:
       - run_instrument_tests:
@@ -120,7 +117,6 @@ jobs:
   instrument_tests_level_28:
     executor:
       name: android/android-machine
-      resource-class: large
       tag: "2023.02"
     steps:
       - run_instrument_tests:
