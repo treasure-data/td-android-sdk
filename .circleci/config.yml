@@ -64,7 +64,7 @@ commands:
     steps:
       - checkout
       - android/start-emulator-and-run-tests:
-          system-image: system-images;android-<<parameters.api_level>>;google_apis;x86
+          system-image: system-images;android-<<parameters.api_level>>;google_apis;x86_64
       - store_instrument_results
 
   run_local_tests:
