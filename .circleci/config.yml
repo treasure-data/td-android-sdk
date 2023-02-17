@@ -90,7 +90,8 @@ jobs:
   instrument_tests_level_31:
     executor:
       name: android/android-machine
-      tag: "2023.02"
+      resource-class: large
+      tag: "2021.10.1"
     steps:
       - checkout
       - android/start-emulator-and-run-tests:
@@ -101,7 +102,8 @@ jobs:
   instrument_tests_level_30:
     executor:
       name: android/android-machine
-      tag: "2023.02"
+      resource-class: large
+      tag: "2021.10.1"
     steps:
       - run_instrument_tests:
           api_level: '30'
@@ -109,7 +111,8 @@ jobs:
   instrument_tests_level_29:
     executor:
       name: android/android-machine
-      tag: "2023.02"
+      resource-class: large
+      tag: "2021.10.1"
     steps:
       - run_instrument_tests:
           api_level: '29'
@@ -117,7 +120,8 @@ jobs:
   instrument_tests_level_28:
     executor:
       name: android/android-machine
-      tag: "2023.02"
+      resource-class: large
+      tag: "2021.10.1"
     steps:
       - run_instrument_tests:
           api_level: '28'
