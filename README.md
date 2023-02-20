@@ -8,6 +8,7 @@ Android and Android TV SDK for [Treasure Data](http://www.treasuredata.com/). Wi
 
 Version 1 has major changes that are not backward compatible with previous versions. If you are upgrading from version 0.6.0 or earlier, your code will not run correctly without doing these following steps:
 - API endpoint has changed to Ingestion Endpoint. For now, the only available endpoint is https://us01.records.in.treasuredata.com.
+- `initializeApiEndpoint(String apiEndpoint)` API is no longer available, please use `initializeSharedInstance(Context context, String apiKey, String apiEndpoint)` instead.
 - Server side upload timestamp feature is removed. If you need this feature, please contact our support team.
 - `uuid` is now reserved column name. If you try to add value to event's `uuid` key, you won't see the column show up in the database.
 
