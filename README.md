@@ -4,6 +4,14 @@ Treasure Data Android SDK
 
 Android and Android TV SDK for [Treasure Data](http://www.treasuredata.com/). With this SDK, you can import the events on your Android and Android TV applications into Treasure Data easily.
 
+## Migration to version 1
+
+Version 1 has major changes that are not backward compatible with previous versions. If you are upgrading from version 0.6.0 or earlier, your code will not run correctly without doing these following steps:
+- API endpoint has changed to Ingestion Endpoint. The default value is https://us01.records.in.treasuredata.com.
+- `initializeApiEndpoint(String apiEndpoint)` API is no longer available, please use `initializeSharedInstance(Context context, String apiKey, String apiEndpoint)` instead.
+- Server side upload timestamp feature is removed. If you need this feature, please contact our support team.
+- `uuid` is now reserved column name. If you try to add value to event's `uuid` key, you won't see the column show up in the database.
+
 ## Installation
 
 You can install td-android-sdk into your Android project in the following ways.
@@ -49,7 +57,7 @@ public class ExampleApp extends Application {
     // Initialize Treasure Data Android SDK
     TreasureData.initializeEncryptionKey("RANDOM_STRING_TO_ENCRYPT_DATA");
     TreasureData.disableLogging();
-    TreasureData.initializeSharedInstance(this, "YOUR_WRITE_ONLY_API_KEY");
+    TreasureData.initializeSharedInstance(this, "YOUR_WRITE_ONLY_API_KEY", "API_ENDPOINT");
     TreasureData.sharedInstance.setDefaultDatabase("your_application_name");
     TreasureData.sharedInstance.setDefaultTable("your_event_name");
     TreasureData.sharedInstance.enableAutoAppendUniqId();
@@ -343,11 +351,10 @@ The states have effects across device reboots, app updates, so you can simply ca
 
 ### Endpoint
 
-The API endpoint (default: https://in.treasuredata.com) can be modified using  `TreasureData.initializeApiEndpoint`. For example:
+The API endpoint (default: https://us01.records.in.treasuredata.com) can be changed. For example:
 
 ```
-    TreasureData.initializeApiEndpoint("https://specifying-another-endpoint.com");
-    td = new TreasureData(this, "your_api_key");
+    td = new TreasureData(this, "your_api_key", "https://specifying-another-endpoint.com");
 ```
 
 ### Encryption key
@@ -366,6 +373,21 @@ If you've set an encryption key via `TreasureData.initializeEncryptionKey`, our 
 	TreasureData.sharedInstance().setDefaultDatabase("default_db");
 		:
 	TreasureData.sharedInstance().addEvent("demotbl", …);
+```
+
+### Adding local timestamp to each event record automatically (enabled by default)
+
+By default, local timestamp will be added to event's `time` key automatically. If you `disableAutoAppendLocalTimestamp` without adding `time` key to the event yourself, the server will add server side timestamp to `time` column. You can also auto track local time with custom column. If so, the `time` column will have server side timestamp.
+
+```
+    // Use local time as `time` column
+    TreasureData.sharedInstance().enableAutoAppendLocalTimestamp();
+
+    // Add local time as a customized column name
+    TreasureData.sharedInstance().enableAutoAppendLocalTimestamp("custom_time");
+
+    // Disable auto append local time
+    TreasureData.sharedInstance().disableAutoAppendLocalTimestamp();
 ```
 
 ### Adding UUID of the device to each event automatically
