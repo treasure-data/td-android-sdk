@@ -1,5 +1,12 @@
 # Change Log
 
+## version 1.0.0
+_2023-02-27_
+
+* Add support for Ingest API and Ingest format
+* Event collector and keen format are no longer supported
+* New intialization APIs with removed initWithEndpoint() API
+
 ## Version 0.6.0
 _2021_04_22_
 
