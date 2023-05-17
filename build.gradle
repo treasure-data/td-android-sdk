@@ -31,9 +31,11 @@ dependencies {
 }
 
 task fatJar(type: Jar) {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
 //    dependsOn configurations.runtime
     dependsOn configurations.runtimeClasspath
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
     with jar
     // The name "shaded" here is just to be consistent with old packaged
     // when we were still maven-shade-plugin to make the fat JAR, no classes are actually get shaded or shadowed.
