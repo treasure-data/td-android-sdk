@@ -25,17 +25,15 @@ public class DemoApp extends Application {
     }
 
     private void setupTreasureData() {
-        // TreasureData.initializeApiEndpoint("https://specify-other-endpoint-if-needed.com");
         TreasureData.enableLogging();
         TreasureData.initializeEncryptionKey("hello world");
         TreasureData.setSessionTimeoutMilli(30 * 1000);
 
-        TreasureData.initializeSharedInstance(this, "your_write_api_key");
+        TreasureData.initializeSharedInstance(this, "your_write_api_key", "https://api_endpoint");
         TreasureData.sharedInstance().enableAutoAppendUniqId();
         TreasureData.sharedInstance().enableAutoAppendModelInformation();
         TreasureData.sharedInstance().enableAutoAppendAppInformation();
         TreasureData.sharedInstance().enableAutoAppendLocaleInformation();
-        TreasureData.sharedInstance().enableServerSideUploadTimestamp("server_upload_time");
         TreasureData.sharedInstance().enableAutoAppendRecordUUID();
         TreasureData.sharedInstance().enableAutoAppendAdvertisingIdentifier("custom_td_maid");
         TreasureData.sharedInstance().setDefaultDatabase("default_db");

@@ -35,7 +35,7 @@ import static android.content.Context.UI_MODE_SERVICE;
 
 public class TreasureData implements CDPClient {
     private static final String TAG = TreasureData.class.getSimpleName();
-    private static final String VERSION = "0.6.0";
+    private static final String VERSION = "1.0.0";
     private static final String LABEL_ADD_EVENT = "addEvent";
     private static final String LABEL_UPLOAD_EVENTS = "uploadEvents";
     private static final Pattern DATABASE_NAME_PATTERN = Pattern.compile("^[0-9a-z_]{3,255}$");
@@ -72,7 +72,7 @@ public class TreasureData implements CDPClient {
     private static final String EVENT_KEY_APP_LIFECYCLE_EVENT_PRIVATE = "__is_app_lifecycle_event";
     private static final String EVENT_KEY_RESET_UUID_EVENT_PRIVATE = "__is_reset_uuid_event";
     private static final String EVENT_KEY_IN_APP_PURCHASE_EVENT_PRIVATE = "__is_in_app_purchase_event";
-    private static final String EVENT_KEY_SERVERSIDE_UPLOAD_TIMESTAMP = "#SSUT";
+    private static final String EVENT_KEY_LOCAL_TIMESTAMP = "time";
     private static final String EVENT_DEFAULT_KEY_RECORD_UUID = "record_uuid";
     private static final String EVENT_APP_INSTALL = "TD_ANDROID_APP_INSTALL";
     private static final String EVENT_APP_OPEN = "TD_ANDROID_APP_OPEN";
@@ -112,8 +112,7 @@ public class TreasureData implements CDPClient {
     private static volatile long sessionTimeoutMilli = Session.DEFAULT_SESSION_PENDING_MILLIS;
     private final String appVersion;
     private final int appVersionNumber;
-    private volatile boolean serverSideUploadTimestamp;
-    private volatile String serverSideUploadTimestampColumn;
+    private volatile String autoAppendLocalTimestampColumn;
     private Session session = new Session();
     private volatile String autoAppendRecordUUIDColumn;
     private volatile String autoAppendAdvertisingIdColumn;
@@ -126,23 +125,40 @@ public class TreasureData implements CDPClient {
     private Debouncer debouncer;
 
     /**
-     * Initialize shared instance with Treasure Data API key
+     * Initialize shared instance with Treasure Data API key and API endpoint
      *
      * @param apiKey Treasure Data API key
+     * @param apiEndpoint Treasure Data API key
+     * @param context Context for Treasure Data shared instance
+     * @return {@link TreasureData#sharedInstance()}
+     */
+    public static TreasureData initializeSharedInstance(Context context, String apiKey, String apiEndpoint) {
+        synchronized (TreasureData.class) {
+            if (sharedInstance == null) {
+                sharedInstance = new TreasureData(context, apiKey, apiEndpoint);
+            }
+        }
+        return sharedInstance;
+    }
+
+    /**
+     * Initialize shared instance with Treasure Data API key and default API endpoint
+     *
+     * @param apiKey Treasure Data API key of default API endpoint. To set API endpoint, use {@link TreasureData#initializeSharedInstance(Context, String, String)}
      * @param context Context for Treasure Data shared instance
      * @return {@link TreasureData#sharedInstance()}
      */
     public static TreasureData initializeSharedInstance(Context context, String apiKey) {
         synchronized (TreasureData.class) {
             if (sharedInstance == null) {
-                sharedInstance = new TreasureData(context, apiKey);
+                sharedInstance = new TreasureData(context, apiKey, null);
             }
         }
         return sharedInstance;
     }
 
     public static TreasureData initializeSharedInstance(Context context) {
-        return initializeSharedInstance(context, null);
+        return initializeSharedInstance(context, null, null);
     }
 
     /**
@@ -266,7 +282,7 @@ public class TreasureData implements CDPClient {
         }
     }
 
-    public TreasureData(Context context, String apiKey) {
+    public TreasureData(Context context, String apiKey, String apiEndpoint) {
         applicationContext = context.getApplicationContext();
         this.context = context.getApplicationContext();
         this.uuid = getUUID();
@@ -283,12 +299,12 @@ public class TreasureData implements CDPClient {
         }
 
         TDClient client = null;
-        if (apiKey == null && TDClient.getDefaultApiKey() == null) {
-            Log.e(TAG, "initializeApiKey() hasn't called yet");
+        if (apiKey == null) {
+            throw new IllegalArgumentException("apiKey must not be null");
         }
         else {
             try {
-                client = new TDClient(apiKey, applicationContext.getCacheDir());
+                client = new TDClient(apiKey, apiEndpoint, applicationContext.getCacheDir());
             } catch (IOException e) {
                 Log.e(TAG, "Failed to construct TreasureData object", e);
             }
@@ -306,6 +322,8 @@ public class TreasureData implements CDPClient {
         }
         this.appVersion = appVersion;
         this.appVersionNumber = appVersionNumber;
+
+        this.enableAutoAppendLocalTimestamp();
 
         this.client = client;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
@@ -440,10 +458,6 @@ public class TreasureData implements CDPClient {
         }
     }
 
-    public TreasureData(Context context) {
-        this(context, null);
-    }
-
     /**
      * Enable client logging. Disabled by default.
      */
@@ -456,30 +470,6 @@ public class TreasureData implements CDPClient {
      */
     public static void disableLogging() {
         TDLogging.disableLogging();
-    }
-
-    /**
-     * Assign the target API endpoint, default is "https://in.treasuredata.com".
-     * Possible values:
-     *    AWS East  https://in.treasuredata.com
-     *    AWS Tokyo https://tokyo.in.treasuredata.com
-     *    AWS EU    https://eu01.in.treasuredata.com
-     *    AWS Asia Pacific (Seoul)  https://ap02.in.treasuredata.com
-     *    AWS Asia Pacific (Tokyo)  https://ap03.in.treasuredata.com
-     * This have to be call before {@link TreasureData#initializeDefaultApiKey(String)}, otherwise it won't have effect.
-     * @param apiEndpoint for the in effect endpoint.
-     */
-    public static void initializeApiEndpoint(String apiEndpoint) {
-        TDClient.setApiEndpoint(apiEndpoint);
-    }
-
-    /**
-     * Initialize `TreasureData.sharedInstance` with the current `apiEndpoint` configured via {@link TreasureData#initializeApiEndpoint(String)}
-     *
-     * @param defaultApiKey API Key (only requires `write-only`) for the in effect endpoint {@link TreasureData#initializeApiEndpoint(String)}
-     */
-    public static void initializeDefaultApiKey(String defaultApiKey) {
-        TDClient.setDefaultApiKey(defaultApiKey);
     }
 
     /**
@@ -654,6 +644,10 @@ public class TreasureData implements CDPClient {
 
         appendSessionId(record);
 
+        if (autoAppendLocalTimestampColumn != null) {
+            appendLocalTimeStamp(record);
+        }
+
         if (autoAppendUniqId) {
             appendUniqId(record);
         }
@@ -684,15 +678,6 @@ public class TreasureData implements CDPClient {
             return;
         }
 
-        if (serverSideUploadTimestamp) {
-            String columnName = serverSideUploadTimestampColumn;
-            if (columnName != null) {
-                record.put(EVENT_KEY_SERVERSIDE_UPLOAD_TIMESTAMP, columnName);
-            }
-            else {
-                record.put(EVENT_KEY_SERVERSIDE_UPLOAD_TIMESTAMP, true);
-            }
-        }
 
         StringBuilder sb = new StringBuilder();
         sb.append(database).append(".").append(table);
@@ -819,6 +804,11 @@ public class TreasureData implements CDPClient {
         if (globalSessionId != null) {
             record.put(EVENT_KEY_SESSION_ID, globalSessionId);
         }
+    }
+
+    public void appendLocalTimeStamp(Map<String, Object> record) {
+        int timestamp = (int)(System.currentTimeMillis()/1000);
+        record.put(autoAppendLocalTimestampColumn, timestamp);
     }
 
     public void appendUniqId(Map<String, Object> record) {
@@ -995,7 +985,6 @@ public class TreasureData implements CDPClient {
     /**
      * This is required before calling {@link TreasureData#fetchUserSegments},
      * Note that this CDP Endpoint is independent and
-     * not related to the API endpoint setup from {@link TreasureData#initializeApiEndpoint(String)}
      *
      * @param cdpEndpoint Known endpoints are:
      *                    AWS US                    https://cdp.in.treasuredata.com
@@ -1011,7 +1000,6 @@ public class TreasureData implements CDPClient {
     /**
      * This is required before calling {@link TreasureData#fetchUserSegments},
      * Note that this CDP Endpoint is independent and
-     * not related to the API endpoint setup from {@link TreasureData#initializeApiEndpoint(String)}
      *
      * @param cdpEndpoint Known endpoints are:
      *                    AWS US:                   https://cdp.in.treasuredata.com
@@ -1190,6 +1178,33 @@ public class TreasureData implements CDPClient {
      */
     public void enableAutoAppendLocaleInformation() {
         this.autoAppendLocaleInformation = true;
+    }
+
+    /**
+     * Enable automatic tracking of local timestamp to `time` column. This is enabled by default
+     */
+    public void enableAutoAppendLocalTimestamp() {
+        enableAutoAppendLocalTimestamp(EVENT_KEY_LOCAL_TIMESTAMP);
+    }
+
+    /**
+     * Enable automatic tracking of local timestamp with custom column name
+     *
+     * @param columnName custom column name
+     */
+    public void enableAutoAppendLocalTimestamp(String columnName) {
+        if (columnName == null) {
+            Log.w(TAG, "columnName must not be null");
+            return;
+        }
+        autoAppendLocalTimestampColumn = columnName;
+    }
+
+    /**
+     * Disable automatic tracking of local timestamp
+     */
+    public void disableAutoAppendLocalTimestamp() {
+        autoAppendLocalTimestampColumn = null;
     }
 
     /**
@@ -1374,39 +1389,6 @@ public class TreasureData implements CDPClient {
     }
 
     /**
-     * Automatically append the time when the event is received on server.
-     *
-     * This is disabled by default.
-     */
-    public void enableServerSideUploadTimestamp() {
-        serverSideUploadTimestamp = true;
-        serverSideUploadTimestampColumn = null;
-    }
-
-    /**
-     * Automatically append the time value when the event is received on server. Disabled by default.
-     *
-     * @param columnName The column to write the uploaded time value
-     */
-    public void enableServerSideUploadTimestamp(String columnName) {
-        if (columnName == null) {
-            Log.w(TAG, "columnName shouldn't be null");
-            return;
-        }
-
-        serverSideUploadTimestamp = true;
-        serverSideUploadTimestampColumn = columnName;
-    }
-
-    /**
-     * Disable the uploading time column
-     */
-    public void disableServerSideUploadTimestamp() {
-        serverSideUploadTimestamp = false;
-        serverSideUploadTimestampColumn = null;
-    }
-
-    /**
      * Same as {@link #enableAutoAppendRecordUUID(String)}, using "record_uuid" as the column name.
      */
     public void enableAutoAppendRecordUUID() {
@@ -1443,10 +1425,10 @@ public class TreasureData implements CDPClient {
 
     // Only for testing
     @Deprecated
-    TreasureData(Context context, TDClient mockClient, String uuid) {
+    TreasureData(Context context, TDClient mockClient) {
         this.context = context;
         this.client = mockClient;
-        this.uuid = uuid;
+        this.uuid = null;
         this.appVersion = "3.1.4";
         this.appVersionNumber = 42;
     }
@@ -1568,12 +1550,5 @@ public class TreasureData implements CDPClient {
         public void endSession(String database, String table) {
         }
 
-        @Override
-        public void enableServerSideUploadTimestamp() {
-        }
-
-        @Override
-        public void disableServerSideUploadTimestamp() {
-        }
     }
 }

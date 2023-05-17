@@ -1,6 +1,5 @@
 package com.treasuredata.android;
 
-import android.content.Context;
 import io.keen.client.java.GlobalPropertiesEvaluator;
 import io.keen.client.java.KeenClient;
 import io.keen.client.java.KeenProject;
@@ -17,41 +16,29 @@ import java.util.concurrent.Executors;
 
 class TDClient extends KeenClient {
     private static final String TAG = TDClient.class.getSimpleName();
-    private static String defaultApiKey;
-    private static String apiEndpoint;
+    private static String defaultApiEndpoint = "https://us01.records.in.treasuredata.com";
     private static String encryptionKey;
 
-    TDClient(String apiKey, File eventStoreRoot) throws IOException {
+    TDClient(String apiKey, String apiEndpoint, File eventStoreRoot) throws IOException {
         super(
                 new TDClientBuilder()
-                        .withHttpHandler(new TDHttpHandler((apiKey == null ? TDClient.defaultApiKey : apiKey), apiEndpoint))
+                        .withHttpHandler(new TDHttpHandler(apiKey, apiEndpoint == null ? defaultApiEndpoint : apiEndpoint))
                         .withEventStore(new TDEventStore(eventStoreRoot))
                         .withJsonHandler(new TDJsonHandler(encryptionKey))
                         .withPublishExecutor(Executors.newSingleThreadExecutor())
         );
         // setDebugMode(true);
-        setApiKey(apiKey == null ? TDClient.defaultApiKey : apiKey);
+        setApiKey(apiKey);
         setActive(true);
         setGlobalPropertiesEvaluator(new GlobalPropertiesEvaluator() {
             @Override
             public Map<String, Object> getGlobalProperties(String s) {
                 Map<String, Object> properties = new HashMap<String, Object>(1);
-                properties.put("#UUID", UUID.randomUUID().toString());
+                properties.put("uuid", UUID.randomUUID().toString());
                 return properties;
             }
         });
-    }
-
-    static void setDefaultApiKey(String defaultApiKey) {
-        TDClient.defaultApiKey = defaultApiKey;
-    }
-
-    static String getDefaultApiKey() {
-        return TDClient.defaultApiKey;
-    }
-
-    static void setApiEndpoint(String apiEndpoint) {
-        TDClient.apiEndpoint = apiEndpoint;
+        setBaseUrl(apiEndpoint == null ? defaultApiEndpoint : apiEndpoint);
     }
 
     public static void setEncryptionKey(String encryptionKey) {

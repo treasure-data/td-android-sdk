@@ -87,7 +87,7 @@ public class TreasureDataTest extends TestCase {
     private TreasureData td;
 
     private TreasureData createTreasureData(Context context, TDClient client) {
-        return new TreasureData(context, client, null);
+        return new TreasureData(context, client);
     }
 
     public void setUp() throws IOException {
@@ -258,8 +258,8 @@ public class TreasureDataTest extends TestCase {
         assertTrue(client.addedEvent.get(0).event.containsValue("val"));
     }
 
-    public void testAddEventAndUploadEventsWithoutCallBackWithServerSideUploadTimestamp() throws IOException {
-        td.enableServerSideUploadTimestamp();
+    public void testAddEventAndUploadEventsWithoutCallBackWithLocalTimestamp() throws IOException {
+        td.enableAutoAppendLocalTimestamp();
         Map<String, Object> records = new HashMap<String, Object>();
         records.put("key", "val");
         td.addEvent("db_", "tbl", records);
@@ -269,13 +269,12 @@ public class TreasureDataTest extends TestCase {
         assertEquals(2, client.addedEvent.get(0).event.size());
         assertTrue(client.addedEvent.get(0).event.containsKey("key"));
         assertTrue(client.addedEvent.get(0).event.containsValue("val"));
-        assertTrue(client.addedEvent.get(0).event.containsKey("#SSUT"));
-        assertTrue(client.addedEvent.get(0).event.containsValue(true));
+        assertTrue(client.addedEvent.get(0).event.containsKey("time"));
     }
 
-    public void testDisableServerSideUploadTimestampForDefaultColumnName() throws IOException {
-        td.enableServerSideUploadTimestamp();
-        td.disableServerSideUploadTimestamp();
+    public void testDisableLocalTimestampForDefaultColumnName() throws IOException {
+        td.enableAutoAppendLocalTimestamp();
+        td.disableAutoAppendLocalTimestamp();
         Map<String, Object> records = new HashMap<String, Object>();
         records.put("key", "val");
         td.addEvent("db_", "tbl", records);
@@ -287,8 +286,8 @@ public class TreasureDataTest extends TestCase {
         assertTrue(client.addedEvent.get(0).event.containsValue("val"));
     }
 
-    public void testAddEventAndUploadEventsWithServerSideUploadTimestampWithCustomizedColumnName() throws IOException {
-        td.enableServerSideUploadTimestamp("uploaded_time");
+    public void testAddEventAndUploadEventsWithLocalTimestampWithCustomizedColumnName() throws IOException {
+        td.enableAutoAppendLocalTimestamp("custom_time");
         Map<String, Object> records = new HashMap<String, Object>();
         records.put("key", "val");
         td.addEvent("db_", "tbl", records);
@@ -298,13 +297,12 @@ public class TreasureDataTest extends TestCase {
         assertEquals(2, client.addedEvent.get(0).event.size());
         assertTrue(client.addedEvent.get(0).event.containsKey("key"));
         assertTrue(client.addedEvent.get(0).event.containsValue("val"));
-        assertTrue(client.addedEvent.get(0).event.containsKey("#SSUT"));
-        assertTrue(client.addedEvent.get(0).event.containsValue("uploaded_time"));
+        assertTrue(client.addedEvent.get(0).event.containsKey("custom_time"));
     }
 
-    public void testDisableServerSideUploadTimestampForCustomizedColumnName() throws IOException {
-        td.enableServerSideUploadTimestamp("uploaded_time");
-        td.disableServerSideUploadTimestamp();
+    public void testDisableLocalTimestampForCustomizedColumnName() throws IOException {
+        td.enableAutoAppendLocalTimestamp("custom_time");
+        td.disableAutoAppendLocalTimestamp();
         Map<String, Object> records = new HashMap<String, Object>();
         records.put("key", "val");
         td.addEvent("db_", "tbl", records);
@@ -316,8 +314,8 @@ public class TreasureDataTest extends TestCase {
         assertTrue(client.addedEvent.get(0).event.containsValue("val"));
     }
 
-    public void testAddEventAndUploadEventsWithServerSideUploadTimestampWithEmptyColumnName() throws IOException {
-        td.enableServerSideUploadTimestamp(null);
+    public void testAddEventAndUploadEventsWithLocalTimestampWithEmptyColumnName() throws IOException {
+        td.enableAutoAppendLocalTimestamp(null);
         Map<String, Object> records = new HashMap<String, Object>();
         records.put("key", "val");
         td.addEvent("db_", "tbl", records);
@@ -810,7 +808,7 @@ public class TreasureDataTest extends TestCase {
         enableCallbackForUploadEvents();
 
         td.uploadEvents();
-        Thread.sleep(100);
+        Thread.sleep(200);
         assertFalse(onSuccessCalledForAddEvent);
         assertNull(exceptionOnFailedCalledForAddEvent);
         assertNull(errorCodeForAddEvent);
@@ -828,7 +826,7 @@ public class TreasureDataTest extends TestCase {
         enableCallbackForUploadEvents();
 
         td.uploadEvents();
-        Thread.sleep(100);
+        Thread.sleep(200);
         assertFalse(onSuccessCalledForAddEvent);
         assertNull(exceptionOnFailedCalledForAddEvent);
         assertFalse(onSuccessCalledForUploadEvents);
@@ -839,7 +837,7 @@ public class TreasureDataTest extends TestCase {
         assertEquals(0, client.addedEvent.size());
     }
 
-    public void testAddDefaultValuesSuccesfully() throws IOException {
+    public void testAddDefaultValuesSuccessfully() throws IOException {
         Map<String, Object> records = new HashMap<String, Object>();
         records.put("key", "value");
         td.setDefaultValue(null, null, "string", "String");

@@ -83,7 +83,7 @@ public class MainActivity extends Activity {
                 Map<String, Object> event = new HashMap<String, Object>();
                 event.put("key", "value");
                 // Use default callback
-                TreasureData.sharedInstance().addEvent(eventTable, eventDatabase, event);
+                TreasureData.sharedInstance().addEvent(eventDatabase, eventTable, event);
             }
         });
 
@@ -161,41 +161,6 @@ public class MainActivity extends Activity {
             @Override
             public void onClick(View v) {
                 TreasureData.sharedInstance().disableAutoAppendLocaleInformation();
-            }
-        });
-
-        final EditText serverSideUploadTimestampColumnTextView = findViewById(R.id.serverSideUploadTimestampColumn);
-        serverSideUploadTimestampColumnTextView.setText(serverSideUploadTimestampColumn);
-        serverSideUploadTimestampColumnTextView.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                serverSideUploadTimestampColumn = s.toString();
-            }
-        });
-        findViewById(R.id.enableServerSideUploadTimestampButton).setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (serverSideUploadTimestampColumn == null) {
-                    TreasureData.sharedInstance().enableServerSideUploadTimestamp();
-                } else {
-                    TreasureData.sharedInstance().enableServerSideUploadTimestamp(serverSideUploadTimestampColumn);
-                }
-            }
-        });
-        findViewById(R.id.disableServerSideUploadTimestampButton).setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                TreasureData.sharedInstance().disableServerSideUploadTimestamp();
             }
         });
 

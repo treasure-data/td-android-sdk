@@ -2,7 +2,7 @@ package com.treasuredata.android.cdp;
 
 import android.os.Handler;
 import android.os.Looper;
-import android.support.test.runner.AndroidJUnit4;
+import androidx.test.runner.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;

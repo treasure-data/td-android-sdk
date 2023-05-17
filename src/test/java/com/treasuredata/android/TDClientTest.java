@@ -70,23 +70,25 @@ public class TDClientTest
                     for (int i = 0; i < server.getRequestCount(); i++) {
                         RecordedRequest recordedRequest = server.takeRequest();
                         assertThat(recordedRequest.getMethod(), is("POST"));
-                        assertThat(recordedRequest.getHeader("X-TD-Write-Key"), is(APIKEY));
-                        assertThat(recordedRequest.getHeader("X-TD-Data-Type"), is("k"));
+                        assertThat(recordedRequest.getHeader("Authorization"), is("TD1 " + APIKEY));
                         Map<String, Object> requests = JSON.mapFrom(recordedRequest.getBody().inputStream());
-                        for (String table : requests.keySet()) {
-                            List<Map<String, Object>> events = (List<Map<String, Object>>) requests.get(table);
-                            if (eventMap.get(table) == null) {
-                                eventMap.put(table, new ArrayList<Map<String, Object>>());
-                            }
-                            eventMap.get(table).addAll(events);
+                        String[] pathComponents = recordedRequest.getPath().split("/");
+                        String table = pathComponents[1].replace("/", "") + "." + pathComponents[2].replace("/", "");
+
+                        List<Map<String, Object>> events = (List<Map<String, Object>>) requests.get("events");
+                        if (eventMap.get(table) == null) {
+                            eventMap.put(table, new ArrayList<Map<String, Object>>());
                         }
+                        eventMap.get(table).addAll(events);
                     }
 
-                    int numOfEvents = 0;
+                    int expectedRequestCount = 0;
                     for (Map<String, List<Map<String, Object>>> expected : expects) {
                         for (String table : expected.keySet()) {
                             List<Map<String, Object>> expectedEvents = expected.get(table);
-                            numOfEvents += expectedEvents.size();
+                            expectedRequestCount += expectedEvents.size() % client.getMaxUploadEventsAtOnce() == 0
+                                    ? expectedEvents.size() / client.getMaxUploadEventsAtOnce()
+                                    : expectedEvents.size() / client.getMaxUploadEventsAtOnce() + 1;
                             Collections.sort(expectedEvents, new Comparator<Map<String, Object>>() {
                                 @Override
                                 public int compare(Map<String, Object> o1, Map<String, Object> o2) {
@@ -112,8 +114,6 @@ public class TDClientTest
                         }
                     }
 
-                    int expectedRequestCount = numOfEvents % client.getMaxUploadEventsAtOnce() == 0
-                            ? numOfEvents / client.getMaxUploadEventsAtOnce() : numOfEvents / client.getMaxUploadEventsAtOnce() + 1;
                     assertThat("Number of request made", server.getRequestCount(), is(expectedRequestCount));
                     latch.countDown();
                 } catch (Exception e) {
@@ -134,10 +134,10 @@ public class TDClientTest
     public void sendToSingleTable()
             throws Exception
     {
-        server.enqueue(new MockResponse().setBody("{\"db0.tbl0\":[{\"success\":true},{\"success\":true}]}"));
+        server.enqueue(new MockResponse().setBody("{\"receipts\":[{\"success\":true},{\"success\":true}]}"));
         server.start();
-        TDClient.setApiEndpoint(String.format("http://127.0.0.1:%d", server.getPort()));
-        TDClient client = new TDClient(APIKEY, cacheDir);
+        String apiEndpoint = String.format("http://127.0.0.1:%d", server.getPort());
+        TDClient client = new TDClient(APIKEY, apiEndpoint, cacheDir);
 
         HashMap<String, Object> event0 = new HashMap<String, Object>();
         event0.put("name", "Foo");
@@ -159,12 +159,11 @@ public class TDClientTest
     public void sendToTwoTables()
             throws Exception
     {
-        server.enqueue(new MockResponse().setBody(
-                "{\"db0.tbl0\":[{\"success\":true}]," +
-                 "\"db1.tbl1\":[{\"success\":true}]}"));
+        server.enqueue(new MockResponse().setBody("{\"receipts\":[{\"success\":true}]}"));
+        server.enqueue(new MockResponse().setBody("{\"receipts\":[{\"success\":true}]}"));
         server.start();
-        TDClient.setApiEndpoint(String.format("http://127.0.0.1:%d", server.getPort()));
-        TDClient client = new TDClient(APIKEY, cacheDir);
+        String apiEndpoint = String.format("http://127.0.0.1:%d", server.getPort());
+        TDClient client = new TDClient(APIKEY, apiEndpoint, cacheDir);
 
         HashMap<String, Object> event0 = new HashMap<String, Object>();
         event0.put("name", "Foo");
@@ -187,11 +186,11 @@ public class TDClientTest
     public void sendToSingleTableWithLimitedUploadedEvents()
             throws Exception
     {
-        server.enqueue(new MockResponse().setBody("{\"db0.tbl0\":[{\"success\":true},{\"success\":true},{\"success\":true}]}"));
-        server.enqueue(new MockResponse().setBody("{\"db0.tbl0\":[{\"success\":true}]}"));
+        server.enqueue(new MockResponse().setBody("{\"receipts\":[{\"success\":true},{\"success\":true},{\"success\":true}]}"));
+        server.enqueue(new MockResponse().setBody("{\"receipts\":[{\"success\":true}]}"));
         server.start();
-        TDClient.setApiEndpoint(String.format("http://127.0.0.1:%d", server.getPort()));
-        TDClient client = new TDClient(APIKEY, cacheDir);
+        String apiEndpoint = String.format("http://127.0.0.1:%d", server.getPort());
+        TDClient client = new TDClient(APIKEY, apiEndpoint, cacheDir);
         client.setMaxUploadEventsAtOnce(3);
 
         HashMap<String, Object> event0 = new HashMap<String, Object>();
@@ -225,9 +224,9 @@ public class TDClientTest
             throws Exception {
         server.start();
 
-        TDClient.setApiEndpoint(String.format("http://127.0.0.1:%d", server.getPort()));
-        TDClient client = new TDClient(APIKEY, cacheDir);
-        client.setMaxUploadEventsAtOnce(3);
+        String apiEndpoint = String.format("http://127.0.0.1:%d", server.getPort());
+        TDClient client = new TDClient(APIKEY, apiEndpoint, cacheDir);
+        client.setMaxUploadEventsAtOnce(2);
 
         HashMap<String, Object> event0 = new HashMap<String, Object>();
         event0.put("name", "Foo");
@@ -249,11 +248,16 @@ public class TDClientTest
         event3.put("age", 111);
         client.queueEvent("db1.tbl1", event3);
 
+        HashMap<String, Object> event4 = new HashMap<String, Object>();
+        event4.put("name", "YYY");
+        event4.put("age", 111);
+        client.queueEvent("db1.tbl1", event4);
+
         Map<String, List<Map<String, Object>>> expected0 = new HashMap<String, List<Map<String, Object>>>();
         expected0.put("db0.tbl0", Arrays.<Map<String, Object>>asList(event0, event1));
 
         Map<String, List<Map<String, Object>>> expected1 = new HashMap<String, List<Map<String, Object>>>();
-        expected1.put("db1.tbl1", Arrays.<Map<String, Object>>asList(event2, event3));
+        expected1.put("db1.tbl1", Arrays.<Map<String, Object>>asList(event2, event3, event4));
 
         // We must get db0.tbl0 handle and get the number of handles from there
         // to mock the correct number of success responses for each db
@@ -262,17 +266,13 @@ public class TDClientTest
                 .get("db0.tbl0");
 
         if (db0Tbl0Handles.size() == 2) {
-            server.enqueue(new MockResponse().setBody(
-                    "{\"db0.tbl0\":[{\"success\":true},{\"success\":true}]," +
-                            "\"db1.tbl1\":[{\"success\":true}]}"));
-            server.enqueue(new MockResponse().setBody(
-                    "{\"db1.tbl1\":[{\"success\":true}]}"));
+            server.enqueue(new MockResponse().setBody("{\"receipts\":[{\"success\":true},{\"success\":true}]}"));
+            server.enqueue(new MockResponse().setBody("{\"receipts\":[{\"success\":true},{\"success\":true}]}"));
+            server.enqueue(new MockResponse().setBody("{\"receipts\":[{\"success\":true}]}"));
         } else {
-            server.enqueue(new MockResponse().setBody(
-                    "{\"db0.tbl0\":[{\"success\":true}]," +
-                            "\"db1.tbl1\":[{\"success\":true},{\"success\":true}]}"));
-            server.enqueue(new MockResponse().setBody(
-                    "{\"db0.tbl0\":[{\"success\":true}]}"));
+            server.enqueue(new MockResponse().setBody("{\"receipts\":[{\"success\":true},{\"success\":true}]}"));
+            server.enqueue(new MockResponse().setBody("{\"receipts\":[{\"success\":true}]}"));
+            server.enqueue(new MockResponse().setBody("{\"receipts\":[{\"success\":true},{\"success\":true}]}"));
         }
 
         sendQueuedEventsAndAssert(client, Arrays.asList(expected0, expected1));

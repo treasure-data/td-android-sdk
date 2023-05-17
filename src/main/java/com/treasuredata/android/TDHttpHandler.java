@@ -7,14 +7,10 @@ import io.keen.client.java.http.UrlConnectionHttpHandler;
 
 import java.io.*;
 import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.zip.DeflaterInputStream;
+import java.util.zip.GZIPOutputStream;
 
 class TDHttpHandler extends UrlConnectionHttpHandler {
     static volatile String VERSION = "0.0.0";
-    private static final int DEFAULT_CONNECT_TIMEOUT = 30000;
-    private static final int DEFAULT_READ_TIMEOUT = 30000;
-    private static final String DEFAULT_API_ENDPOINT = "https://in.treasuredata.com";
     private static volatile boolean isEventCompression = true;
 
     private final String apiKey;
@@ -33,47 +29,33 @@ class TDHttpHandler extends UrlConnectionHttpHandler {
             throw new IllegalArgumentException("apiKey is null");
         }
         if (apiEndpoint == null) {
-            apiEndpoint = DEFAULT_API_ENDPOINT;
+            throw new IllegalArgumentException("apiEndpoint is null");
         }
         this.apiKey = apiKey;
         this.apiEndpoint = apiEndpoint;
     }
 
-    protected HttpURLConnection openConnection(Request request) throws IOException {
-        URL url = new URL(String.format("%s/android/v3/event", this.apiEndpoint));
-        HttpURLConnection result = (HttpURLConnection) url.openConnection();
-        result.setConnectTimeout(DEFAULT_CONNECT_TIMEOUT);
-        result.setReadTimeout(DEFAULT_READ_TIMEOUT);
-        return result;
-    }
-
     protected void sendRequest(HttpURLConnection connection, Request request) throws IOException {
         connection.setRequestMethod("POST");
-        connection.setRequestProperty("Content-Type", "application/json");
-        connection.setRequestProperty("X-TD-Data-Type", "k");
-        connection.setRequestProperty("X-TD-Write-Key", apiKey);
+        connection.setRequestProperty("Authorization", "TD1 " + apiKey);
+        connection.setRequestProperty("Content-Type", "application/vnd.treasuredata.v1+json");
+        connection.setRequestProperty("Accept", "application/vnd.treasuredata.v1+json");
         connection.setRequestProperty("User-Agent", String.format("TD-Android-SDK/%s (%s %s)", VERSION, Build.MODEL, Build.VERSION.RELEASE));
         connection.setDoOutput(true);
 
-        try {
-            if (isEventCompression) {
-                connection.setRequestProperty("Content-Encoding", "deflate");
-                ByteArrayOutputStream srcOutputStream = new ByteArrayOutputStream();
-                request.body.writeTo(srcOutputStream);
-                byte[] srcBytes = srcOutputStream.toByteArray();
+        if (isEventCompression) {
+            connection.setRequestProperty("Content-Encoding", "gzip");
+            ByteArrayOutputStream srcOutputStream = new ByteArrayOutputStream();
+            request.body.writeTo(srcOutputStream);
+            byte[] srcBytes = srcOutputStream.toByteArray();
 
-                BufferedInputStream compressedInputStream = new BufferedInputStream(new DeflaterInputStream(new ByteArrayInputStream(srcBytes)));
-                int readLen;
-                byte[] buf = new byte[256];
-                while ((readLen = compressedInputStream.read(buf)) > 0) {
-                    connection.getOutputStream().write(buf, 0, readLen);
-                }
-            }
-            else {
-                request.body.writeTo(connection.getOutputStream());
-            }
+            GZIPOutputStream gzipOutputStream = new GZIPOutputStream(connection.getOutputStream());
+            BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(gzipOutputStream);
+            bufferedOutputStream.write(srcBytes);
+            bufferedOutputStream.close();
         }
-        finally {
+        else {
+            request.body.writeTo(connection.getOutputStream());
             connection.getOutputStream().close();
         }
     }
