@@ -52,8 +52,9 @@ task javadocJar(type: Jar) {
 }
 
 task javadocSite(type: Javadoc) {
-    failOnError false
+    failOnError true
     source = sourceSets.main.allJava
+    classpath = sourceSets.main.compileClasspath + sourceSets.main.output // This is to compile excluded internal files as well
     include 'com/treasuredata/android/**'
     exclude 'com/treasuredata/android/billing/internal/**'
     options.noTimestamp true
