@@ -8,7 +8,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Merge master -> gh-pages
       run: |
         git config user.email "ci-bot@treasure-data.com"
