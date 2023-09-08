@@ -10,6 +10,7 @@ Version 1 has major changes that are not backward compatible with previous versi
 - API endpoint has changed to Ingestion Endpoint. The default value is https://us01.records.in.treasuredata.com.
 - `initializeApiEndpoint(String apiEndpoint)` API is no longer available, please use `initializeSharedInstance(Context context, String apiKey, String apiEndpoint)` instead.
 - Server side upload timestamp feature is removed. If you need this feature, please contact our support team.
+- New `enableAutoAppendLocalTimestamp` and `disableAutoAppendLocalTimestamp` APIs to help automatically track local timestamp.
 - `uuid` is now reserved column name. If you try to add value to event's `uuid` key, you won't see the column show up in the database.
 
 ## Installation
@@ -482,18 +483,6 @@ It outputs the following column names and values:
 
 - `td_locale_country` : java.util.Locale.getCountry() (from Context.getResources().getConfiguration().locale)
 - `td_locale_lang` : java.util.Locale.getLanguage() (from Context.getResources().getConfiguration().locale)
-
-### Use server side upload timestamp
-
-If you want to use server side upload timestamp not only client device time that is recorded when your application calls `addEvent`, use `enableServerSideUploadTimestamp`.
-
-```
-	// Use server side upload time as `time` column
-	td.enableServerSideUploadTimestamp(true);
-	
-	// Add server side upload time as a customized column name
-	td.enableServerSideUploadTimestamp("server_upload_time");
-```
 
 ### Profiles API
 
