@@ -87,6 +87,15 @@ jobs:
     steps:
       - run_local_tests
 
+  instrument_tests_level_34:
+    executor:
+      name: android/android-machine
+      resource-class: large
+      tag: "2023.09.1"
+    steps:
+      - run_instrument_tests:
+          api_level: '34'
+
   instrument_tests_level_33:
     executor:
       name: android/android-machine
@@ -149,6 +158,7 @@ workflows:
   test:
     jobs:
       - local_tests
+      - instrument_tests_level_34
       - instrument_tests_level_33
       - instrument_tests_level_32
       - instrument_tests_level_31
