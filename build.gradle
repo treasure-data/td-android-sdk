@@ -1,6 +1,15 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        google()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.4.0'
+    }
+}
+
 plugins {
     id 'java'
-//    id 'maven'
     id 'maven-publish'
     id 'signing'
 }
@@ -8,7 +17,9 @@ plugins {
 group = 'com.treasuredata'
 version = '1.0.0'
 description = 'Android SDK for Treasure Data Cloud'
-sourceCompatibility = '1.7'
+
+java.sourceCompatibility = JavaVersion.VERSION_1_7
+java.targetCompatibility = JavaVersion.VERSION_1_7
 
 repositories {
     mavenCentral()
@@ -23,9 +34,9 @@ dependencies {
 
     compileOnly 'com.google.android:android:4.1.1.4'
 
-    testImplementation 'com.google.android.gms:play-services-ads:17.1.1'
-    testImplementation 'junit:junit:4.12'
-    testImplementation 'org.mockito:mockito-core:1.8.5'
+//    testImplementation 'com.google.android.gms:play-services-ads:23.0.0'
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.mockito:mockito-core:5.3.1'
     testImplementation 'com.squareup.okhttp3:mockwebserver:3.6.0'
     testImplementation 'com.google.android:android:4.1.1.4'
 }

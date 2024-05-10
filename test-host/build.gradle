@@ -1,21 +1,21 @@
 buildscript {
     repositories {
-        jcenter()
+        mavenCentral()
         google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.2.2'
+        classpath 'com.android.tools.build:gradle:8.4.0'
     }
 }
 
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 30
     defaultConfig {
         applicationId "com.treasuredata.android.test"
-        minSdkVersion 16
-        targetSdkVersion 30
+        compileSdk 34
+        minSdkVersion 21
+        targetSdkVersion 34
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -26,6 +26,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+    namespace 'com.treasuredata.android.test'
 }
 
 repositories {
@@ -41,8 +42,7 @@ dependencies {
 
     implementation 'androidx.appcompat:appcompat:1.2.0'
 
-//    implementation 'com.google.android.gms:play-services-ads:17.1.1'
-    implementation 'com.google.android.gms:play-services-ads:20.0.0'
+    implementation 'com.google.android.gms:play-services-ads:23.0.0'
     implementation 'com.treasuredata:keen-client-java-core:3.0.0'
 
     androidTestImplementation 'junit:junit:4.12'
