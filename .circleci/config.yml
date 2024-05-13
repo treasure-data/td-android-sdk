@@ -83,7 +83,7 @@ commands:
 jobs:
   local_tests:
     docker:
-      - image: circleci/android:api-30
+      - image: circleci/android:api-34
     steps:
       - run_local_tests
 

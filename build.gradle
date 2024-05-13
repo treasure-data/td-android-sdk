@@ -18,8 +18,8 @@ group = 'com.treasuredata'
 version = '1.0.0'
 description = 'Android SDK for Treasure Data Cloud'
 
-java.sourceCompatibility = JavaVersion.VERSION_1_7
-java.targetCompatibility = JavaVersion.VERSION_1_7
+java.sourceCompatibility = JavaVersion.VERSION_1_8
+java.targetCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
     mavenCentral()
