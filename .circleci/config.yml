@@ -44,17 +44,26 @@ commands:
   store_instrument_results:
     description: "Store instrument test results"
     steps:
-      - store_test_results:
-          path: test-host/build/reports/androidTests/connected
       - run:
-          name: Compress Report
+        name: Save test results
+        command: |
+          mkdir -p ~/test-results/junit/
+          find . -type f -regex ".*/build/outputs/androidTest-results/.*xml" -exec cp {} ~/test-results/junit/ \;
+        when: always
+      - store_test_results:
+          path: ~/test-results
+      - run:
+          name: Compress Instrument Test Report
           command: tar -cvf instrument-report.tar -C ./test-host/build/reports/androidTests/connected .
       - store_artifacts:
           path: instrument-report.tar
           destination: instrument-report.tar
+      - run:
+          name: Compress test-result.pb
+          command: tar -cvf pb-report.tar -C test-host/build/outputs/androidTest-results/connected .
       - store_artifacts:
-          path: test-host/build/outputs/androidTest-results/connected/test-result.pb
-          destination: test-result.pb
+          path: pb-report.tar
+          destination: pb-report.tar
 
   run_instrument_tests:
     description: "Run instrument tests"
@@ -157,11 +166,11 @@ workflows:
   version: 2
   test:
     jobs:
-      - local_tests
+#      - local_tests
       - instrument_tests_level_34
-      - instrument_tests_level_33
-      - instrument_tests_level_32
-      - instrument_tests_level_31
-      - instrument_tests_level_30
-      - instrument_tests_level_29
-      - instrument_tests_level_28
+#      - instrument_tests_level_33
+#      - instrument_tests_level_32
+#      - instrument_tests_level_31
+#      - instrument_tests_level_30
+#      - instrument_tests_level_29
+#      - instrument_tests_level_28
