@@ -1,22 +1,21 @@
 buildscript {
     repositories {
-        jcenter()
+        mavenCentral()
         google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.2.2'
+        classpath 'com.android.tools.build:gradle:8.4.0'
     }
 }
 
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 30
-
     defaultConfig {
         applicationId "com.treasuredata.android.demo"
-        minSdkVersion 14
-        targetSdkVersion 30
+        compileSdk 34
+        minSdkVersion 21
+        targetSdkVersion 34
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -28,6 +27,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
     }
+    namespace 'com.treasuredata.android.demo'
 }
 
 repositories {
@@ -39,10 +39,10 @@ repositories {
 
 dependencies {
     implementation rootProject
-    implementation 'com.google.android.gms:play-services-ads:17.1.1'
-    implementation 'com.android.installreferrer:installreferrer:1.1'
+    implementation 'com.google.android.gms:play-services-ads:23.0.0'
+    implementation 'com.android.installreferrer:installreferrer:2.2'
 
-    testImplementation 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
 
 }

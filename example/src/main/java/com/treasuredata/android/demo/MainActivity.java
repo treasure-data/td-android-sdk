@@ -26,7 +26,6 @@ public class MainActivity extends Activity {
     private static final String TAG = MainActivity.class.getSimpleName();
     private String eventTable = "event_table";
     private String eventDatabase = "event_db";
-    private String serverSideUploadTimestampColumn;
     private String recordUUIDColumn;
     private String aaidColumn;
 

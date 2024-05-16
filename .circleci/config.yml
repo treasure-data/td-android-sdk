@@ -3,7 +3,7 @@
 version: 2.1
 
 orbs:
-  android: circleci/android@2.1.2
+  android: circleci/android@2.5.0
 
 _defaults:
   - &restore_gradle_cache
@@ -44,17 +44,26 @@ commands:
   store_instrument_results:
     description: "Store instrument test results"
     steps:
-      - store_test_results:
-          path: test-host/build/reports/androidTests/connected
       - run:
-          name: Compress Report
+          name: Save test results
+          command: |
+            mkdir -p ~/test-results/junit/
+            find . -type f -regex ".*/build/outputs/androidTest-results/.*xml" -exec cp {} ~/test-results/junit/ \;
+          when: always
+      - store_test_results:
+          path: ~/test-results
+      - run:
+          name: Compress Instrument Test Report
           command: tar -cvf instrument-report.tar -C ./test-host/build/reports/androidTests/connected .
       - store_artifacts:
           path: instrument-report.tar
           destination: instrument-report.tar
+      - run:
+          name: Compress test-result.pb
+          command: tar -cvf pb-report.tar -C test-host/build/outputs/androidTest-results/connected .
       - store_artifacts:
-          path: test-host/build/outputs/androidTest-results/connected/test-result.pb
-          destination: test-result.pb
+          path: pb-report.tar
+          destination: pb-report.tar
 
   run_instrument_tests:
     description: "Run instrument tests"
@@ -83,7 +92,7 @@ commands:
 jobs:
   local_tests:
     docker:
-      - image: circleci/android:api-30
+      - image: cimg/android:2024.04.1
     steps:
       - run_local_tests
 
@@ -91,7 +100,7 @@ jobs:
     executor:
       name: android/android-machine
       resource-class: large
-      tag: "2023.09.1"
+      tag: "2024.04.1"
     steps:
       - run_instrument_tests:
           api_level: '34'
@@ -100,7 +109,7 @@ jobs:
     executor:
       name: android/android-machine
       resource-class: large
-      tag: "2022.07.1"
+      tag: "2024.04.1"
     steps:
       - run_instrument_tests:
           api_level: '33'
@@ -109,7 +118,7 @@ jobs:
     executor:
       name: android/android-machine
       resource-class: large
-      tag: "2022.07.1"
+      tag: "2024.04.1"
     steps:
       - run_instrument_tests:
           api_level: '32'
@@ -118,7 +127,7 @@ jobs:
     executor:
       name: android/android-machine
       resource-class: large
-      tag: "2022.07.1"
+      tag: "2024.04.1"
     steps:
       - run_instrument_tests:
           api_level: '31'
@@ -127,7 +136,7 @@ jobs:
     executor:
       name: android/android-machine
       resource-class: large
-      tag: "2022.07.1"
+      tag: "2024.04.1"
     steps:
       - run_instrument_tests:
           api_level: '30'
@@ -136,7 +145,7 @@ jobs:
     executor:
       name: android/android-machine
       resource-class: large
-      tag: "2022.07.1"
+      tag: "2024.04.1"
     steps:
       - run_instrument_tests:
           api_level: '29'
@@ -145,7 +154,7 @@ jobs:
     executor:
       name: android/android-machine
       resource-class: large
-      tag: "2022.07.1"
+      tag: "2024.04.1"
     steps:
       - checkout
       - android/start-emulator-and-run-tests:
