@@ -9,7 +9,8 @@ Android and Android TV SDK for [Treasure Data](http://www.treasuredata.com/). Wi
 Version 1 has major changes that are not backward compatible with previous versions. If you are upgrading from version 0.6.0 or earlier, your code will not run correctly without doing these following steps:
 - API endpoint has changed to Ingestion Endpoint. The default value is https://us01.records.in.treasuredata.com.
 - `initializeApiEndpoint(String apiEndpoint)` API is no longer available, please use `initializeSharedInstance(Context context, String apiKey, String apiEndpoint)` instead.
-- Server side upload timestamp feature is removed. If you need this feature, please contact our support team.
+- Server side upload timestamp feature is removed.
+- New `enableAutoAppendLocalTimestamp` and `disableAutoAppendLocalTimestamp` APIs to help automatically track local timestamp.
 - `uuid` is now reserved column name. If you try to add value to event's `uuid` key, you won't see the column show up in the database.
 
 ## Installation
@@ -483,18 +484,6 @@ It outputs the following column names and values:
 - `td_locale_country` : java.util.Locale.getCountry() (from Context.getResources().getConfiguration().locale)
 - `td_locale_lang` : java.util.Locale.getLanguage() (from Context.getResources().getConfiguration().locale)
 
-### Use server side upload timestamp
-
-If you want to use server side upload timestamp not only client device time that is recorded when your application calls `addEvent`, use `enableServerSideUploadTimestamp`.
-
-```
-	// Use server side upload time as `time` column
-	td.enableServerSideUploadTimestamp(true);
-	
-	// Add server side upload time as a customized column name
-	td.enableServerSideUploadTimestamp("server_upload_time");
-```
-
 ### Profiles API
 
 Lookup for profiles via [Profiles API](https://docs.treasuredata.com/display/public/PD/Working+with+Profiles+and+the+Profiles+API+Tokens)
@@ -536,12 +525,24 @@ TreasureData.sharedInstance().fetchUserSegments(Arrays.asList("<your_profile_api
 
 Android SDK for Arm Treasure Data only supports any Android device running API 28 (Android 9.0) and higher
 
+| Codename           | Version | API    | v0.6.0             | v1.0.0             |
+| :----------------- | :------ | :----- | :----------------- | :----------------- |
+| Android 14         | 14      | 34     | not tested         | :white_check_mark: |
+| Android 13         | 13      | 33     | not tested         | :white_check_mark: |
+| Android 12         | 13      | 31, 32 | not tested         | :white_check_mark: |
+| Android 11         | 11      | 30     | :white_check_mark: | :white_check_mark: |
+| Android 10         | 10      | 29     | :white_check_mark: | :white_check_mark: |
+| Pie                | 9.0     | 28     | :white_check_mark: | :white_check_mark: |
+| Oreo               | 8.1     | 27     | :white_check_mark: | not tested         |
+| Oreo               | 8.0     | 26     | :white_check_mark: | not tested         |
+| Nougat             | 7.1     | 25     | :white_check_mark: | not tested         |
+| Nougat             | 7.0     | 24     | :white_check_mark: | not tested         |
+| Marshmallow        | 6.0     | 23     | :white_check_mark: | not tested         |
+| Lollipop           | 5.1     | 22     | :white_check_mark: | not tested         |
+| Lollipop           | 5.0     | 21     | :white_check_mark: | not tested         |
+| KitKat             | 4.4     | 19     | :white_check_mark: | not tested         |
+| Jelly Bean         | 4.3     | 18     | :white_check_mark: | not tested         |
+| Jelly Bean         | 4.2     | 17     | not tested         | not tested         |
+| Jelly Bean         | 4.1     | 16     | not tested         | not tested         |
+| Ice Cream Sandwich | 4.0     | 15     | not tested         | not tested         |
 
-|Codename          |Version | API| Tested?|
-|------------------|-------:|---:|:------:|
-|Android 13        |11.0    |30  |Yes     |
-|Android 12L       |11.0    |30  |Yes     |
-|Android 12        |11.0    |30  |Yes     |
-|Android 11        |11.0    |30  |Yes     |
-|Android 10        |10.0    |29  |Yes     |
-|Pie               |9.0     |28  |Yes     |
