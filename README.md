@@ -12,6 +12,7 @@ Version 1 has major changes that are not backward compatible with previous versi
 - Server side upload timestamp feature is removed.
 - New `enableAutoAppendLocalTimestamp` and `disableAutoAppendLocalTimestamp` APIs to help automatically track local timestamp.
 - `uuid` is now reserved column name. If you try to add value to event's `uuid` key, you won't see the column show up in the database.
+- Auto tracking of client id by adding `td_ip` field is no longer supported.
 
 ## Installation
 
@@ -528,8 +529,8 @@ Android SDK for Arm Treasure Data only supports any Android device running API 2
 | Codename           | Version | API    | v0.6.0             | v1.0.0             |
 | :----------------- | :------ | :----- | :----------------- | :----------------- |
 | Android 14         | 14      | 34     | not tested         | :white_check_mark: |
-| Android 13         | 13      | 33     | not tested         | :white_check_mark: |
-| Android 12         | 13      | 31, 32 | not tested         | :white_check_mark: |
+| Android 13         | 13      | 33     | :white_check_mark: | :white_check_mark: |
+| Android 12         | 13      | 31, 32 | :white_check_mark: | :white_check_mark: |
 | Android 11         | 11      | 30     | :white_check_mark: | :white_check_mark: |
 | Android 10         | 10      | 29     | :white_check_mark: | :white_check_mark: |
 | Pie                | 9.0     | 28     | :white_check_mark: | :white_check_mark: |
