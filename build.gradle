@@ -15,7 +15,7 @@ plugins {
 }
 
 group = 'com.treasuredata'
-version = '1.0.0'
+version = '1.0.1'
 description = 'Android SDK for Treasure Data Cloud'
 
 java.sourceCompatibility = JavaVersion.VERSION_1_8
