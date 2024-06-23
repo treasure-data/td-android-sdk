@@ -6,6 +6,7 @@ import android.content.Context;
 import io.keen.client.java.KeenCallback;
 import io.keen.client.java.KeenClient;
 import io.keen.client.java.KeenProject;
+
 import junit.framework.TestCase;
 
 import java.io.IOException;
@@ -962,5 +963,17 @@ public class TreasureDataTest extends TestCase {
         Map event1 = client.addedEvent.get(0).event;
         assertEquals(event1.get("key"), "Value");
         assertNull(event1.get("key2"));
+    }
+
+    public void testAutoTrackingIP() {
+        TDHttpHandler tdHttpHandler = (TDHttpHandler) client.getHttpHandler();
+
+        assertFalse(tdHttpHandler.isTrackingIPEnabled);
+
+        td.enableAutoTrackingIP();
+        assertTrue(tdHttpHandler.isTrackingIPEnabled);
+
+        td.disableAutoTrackingIP();
+        assertFalse(tdHttpHandler.isTrackingIPEnabled);
     }
 }

@@ -27,6 +27,7 @@ class TDClient extends KeenClient {
                         .withJsonHandler(new TDJsonHandler(encryptionKey))
                         .withPublishExecutor(Executors.newSingleThreadExecutor())
         );
+
         // setDebugMode(true);
         setApiKey(apiKey);
         setActive(true);
@@ -56,7 +57,10 @@ class TDClient extends KeenClient {
     // Only for test
     @Deprecated
     TDClient(String apiKey) {
-        super(new TDClientBuilder());
+        super(
+                new TDClientBuilder()
+                        .withHttpHandler(new TDHttpHandler(apiKey, "test-endpoint"))
+        );
         setApiKey(apiKey);
     }
 

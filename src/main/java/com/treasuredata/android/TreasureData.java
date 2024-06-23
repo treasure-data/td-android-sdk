@@ -497,6 +497,23 @@ public class TreasureData implements CDPClient {
     }
 
     /**
+     * Device's IP will be added to td_ip column in Treasure Data backend.
+     */
+    public void enableAutoTrackingIP() {
+        TDHttpHandler tdHttpHandler = (TDHttpHandler) client.getHttpHandler();
+        tdHttpHandler.isTrackingIPEnabled = true;
+    }
+
+    /**
+     * Device's IP will not be added to td_ip column in Treasure Data backend.
+     * This is the default behavior.
+     */
+    public void disableAutoTrackingIP() {
+        TDHttpHandler tdHttpHandler = (TDHttpHandler) client.getHttpHandler();
+        tdHttpHandler.isTrackingIPEnabled = false;
+    }
+
+    /**
      * The destination database for events that doesn't specify one, default is "td".
      *
      * @param defaultDatabase name of the destination database
