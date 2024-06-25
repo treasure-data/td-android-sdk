@@ -16,6 +16,8 @@ class TDHttpHandler extends UrlConnectionHttpHandler {
     private final String apiKey;
     private final String apiEndpoint;
 
+    volatile boolean isTrackingIPEnabled = false;
+
     public static void disableEventCompression() {
         isEventCompression = false;
     }
@@ -36,10 +38,11 @@ class TDHttpHandler extends UrlConnectionHttpHandler {
     }
 
     protected void sendRequest(HttpURLConnection connection, Request request) throws IOException {
+        String contentType = isTrackingIPEnabled ? "application/vnd.treasuredata.v1.mobile+json" : "application/vnd.treasuredata.v1+json";
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Authorization", "TD1 " + apiKey);
-        connection.setRequestProperty("Content-Type", "application/vnd.treasuredata.v1+json");
-        connection.setRequestProperty("Accept", "application/vnd.treasuredata.v1+json");
+        connection.setRequestProperty("Content-Type", contentType);
+        connection.setRequestProperty("Accept", contentType);
         connection.setRequestProperty("User-Agent", String.format("TD-Android-SDK/%s (%s %s)", VERSION, Build.MODEL, Build.VERSION.RELEASE));
         connection.setDoOutput(true);
 

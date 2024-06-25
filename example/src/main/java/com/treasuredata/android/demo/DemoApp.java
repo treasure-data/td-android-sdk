@@ -9,6 +9,7 @@ import com.android.installreferrer.api.ReferrerDetails;
 import com.treasuredata.android.TreasureData;
 
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by vinhvd on 2/6/18.
