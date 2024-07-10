@@ -12,7 +12,7 @@ Version 1 has major changes that are not backward compatible with previous versi
 - Server side upload timestamp feature is removed.
 - New `enableAutoAppendLocalTimestamp` and `disableAutoAppendLocalTimestamp` APIs to help automatically track local timestamp.
 - `uuid` is now reserved column name. If you try to add value to event's `uuid` key, you won't see the column show up in the database.
-- Auto tracking of client id by adding `td_ip` field is no longer supported.
+- Auto tracking of client id by adding `td_ip` field is no longer supported. Instead, use new `enableAutoTrackingIP` and `disableAutoTrackingIP` APIs.
 
 ## Installation
 
@@ -24,7 +24,7 @@ If you use gradle, add the following dependency to `dependencies` directive in t
 
 ```
 dependencies {
-    implementation 'com.treasuredata:td-android-sdk:1.0.1'
+    implementation 'com.treasuredata:td-android-sdk:1.1.0'
 }
 ```
 
@@ -36,7 +36,7 @@ If you use maven, add the following directives to your pom.xml
   <dependency>
     <groupId>com.treasuredata</groupId>
     <artifactId>td-android-sdk</artifactId>
-    <version>1.0.1</version>
+    <version>1.1.0</version>
   </dependency>
 ```
 
@@ -485,6 +485,20 @@ It outputs the following column names and values:
 - `td_locale_country` : java.util.Locale.getCountry() (from Context.getResources().getConfiguration().locale)
 - `td_locale_lang` : java.util.Locale.getLanguage() (from Context.getResources().getConfiguration().locale)
 
+### Auto tracking device IP
+
+Device IP will be added to each event automatically in `td_ip` column if you call `enableAutoTrackingIP`. Note that the tracked IP address is the one when you upload the events to Treasure Data, not the one when you add the event.
+
+```
+[[TreasureData sharedInstance] enableAutoTrackingIP];
+```
+
+To disable auto tracking IP:
+
+```
+[[TreasureData sharedInstance] disableAutoTrackingIP];
+```
+
 ### Profiles API
 
 Lookup for profiles via [Profiles API](https://docs.treasuredata.com/display/public/PD/Working+with+Profiles+and+the+Profiles+API+Tokens)
@@ -526,24 +540,24 @@ TreasureData.sharedInstance().fetchUserSegments(Arrays.asList("<your_profile_api
 
 Android SDK for Arm Treasure Data only supports any Android device running API 28 (Android 9.0) and higher
 
-| Codename           | Version | API    | v0.6.0             | v1.0.0             | v1.0.1             |
-| :----------------- | :------ | :----- | :----------------- | :----------------- | :----------------- |
-| Android 14         | 14      | 34     | not tested         | :white_check_mark: | :white_check_mark: |
-| Android 13         | 13      | 33     | :white_check_mark: | :white_check_mark: | :white_check_mark: |
-| Android 12         | 13      | 31, 32 | :white_check_mark: | :white_check_mark: | :white_check_mark: |
-| Android 11         | 11      | 30     | :white_check_mark: | :white_check_mark: | :white_check_mark: |
-| Android 10         | 10      | 29     | :white_check_mark: | :white_check_mark: | :white_check_mark: |
-| Pie                | 9.0     | 28     | :white_check_mark: | :white_check_mark: | :white_check_mark: |
-| Oreo               | 8.1     | 27     | :white_check_mark: | not tested         | not tested         |
-| Oreo               | 8.0     | 26     | :white_check_mark: | not tested         | not tested         |
-| Nougat             | 7.1     | 25     | :white_check_mark: | not tested         | not tested         |
-| Nougat             | 7.0     | 24     | :white_check_mark: | not tested         | not tested         |
-| Marshmallow        | 6.0     | 23     | :white_check_mark: | not tested         | not tested         |
-| Lollipop           | 5.1     | 22     | :white_check_mark: | not tested         | not tested         |
-| Lollipop           | 5.0     | 21     | :white_check_mark: | not tested         | not tested         |
-| KitKat             | 4.4     | 19     | :white_check_mark: | not tested         | not tested         |
-| Jelly Bean         | 4.3     | 18     | :white_check_mark: | not tested         | not tested         |
-| Jelly Bean         | 4.2     | 17     | not tested         | not tested         | not tested         |
-| Jelly Bean         | 4.1     | 16     | not tested         | not tested         | not tested         |
-| Ice Cream Sandwich | 4.0     | 15     | not tested         | not tested         | not tested         |
+| Codename           | Version | API    | v0.6.0             | v1.0.0             | v1.0.1             | v1.1.0             |
+| :----------------- | :------ | :----- | :----------------- | :----------------- | :----------------- | :----------------- |
+| Android 14         | 14      | 34     | not tested         | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| Android 13         | 13      | 33     | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| Android 12         | 13      | 31, 32 | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| Android 11         | 11      | 30     | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| Android 10         | 10      | 29     | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| Pie                | 9.0     | 28     | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| Oreo               | 8.1     | 27     | :white_check_mark: | not tested         | not tested         | not tested         |
+| Oreo               | 8.0     | 26     | :white_check_mark: | not tested         | not tested         | not tested         |
+| Nougat             | 7.1     | 25     | :white_check_mark: | not tested         | not tested         | not tested         |
+| Nougat             | 7.0     | 24     | :white_check_mark: | not tested         | not tested         | not tested         |
+| Marshmallow        | 6.0     | 23     | :white_check_mark: | not tested         | not tested         | not tested         |
+| Lollipop           | 5.1     | 22     | :white_check_mark: | not tested         | not tested         | not tested         |
+| Lollipop           | 5.0     | 21     | :white_check_mark: | not tested         | not tested         | not tested         |
+| KitKat             | 4.4     | 19     | :white_check_mark: | not tested         | not tested         | not tested         |
+| Jelly Bean         | 4.3     | 18     | :white_check_mark: | not tested         | not tested         | not tested         |
+| Jelly Bean         | 4.2     | 17     | not tested         | not tested         | not tested         | not tested         |
+| Jelly Bean         | 4.1     | 16     | not tested         | not tested         | not tested         | not tested         |
+| Ice Cream Sandwich | 4.0     | 15     | not tested         | not tested         | not tested         | not tested         |
 

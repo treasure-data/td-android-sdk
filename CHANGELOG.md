@@ -1,5 +1,10 @@
 # Change Log
 
+## Version 1.1.0
+_2024-07-10_
+
+* New APIs enableAutoTrackingIP and disableAutoTrackingIP to track device’s IP in td_ip column
+
 ## Version 1.0.1
 _2024-05-30_
 

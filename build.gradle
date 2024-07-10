@@ -15,7 +15,7 @@ plugins {
 }
 
 group = 'com.treasuredata'
-version = '1.0.1'
+version = '1.1.0'
 description = 'Android SDK for Treasure Data Cloud'
 
 java.sourceCompatibility = JavaVersion.VERSION_1_8
@@ -126,8 +126,8 @@ publishing {
             def snapshotsRepoUrl = 'https://oss.sonatype.org/content/repositories/snapshots'
             url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
             credentials {
-                username findProperty('sonatypeUsername')
-                password findProperty('sonatypePassword')
+                username findProperty('sonatypeTokenUsername')
+                password findProperty('sonatypeTokenPassword')
             }
         }
     }
