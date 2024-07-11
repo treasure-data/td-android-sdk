@@ -35,7 +35,7 @@ import static android.content.Context.UI_MODE_SERVICE;
 
 public class TreasureData implements CDPClient {
     private static final String TAG = TreasureData.class.getSimpleName();
-    private static final String VERSION = "1.0.1";
+    private static final String VERSION = "1.1.0";
     private static final String LABEL_ADD_EVENT = "addEvent";
     private static final String LABEL_UPLOAD_EVENTS = "uploadEvents";
     private static final Pattern DATABASE_NAME_PATTERN = Pattern.compile("^[0-9a-z_]{3,255}$");
