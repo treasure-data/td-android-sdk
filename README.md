@@ -490,13 +490,13 @@ It outputs the following column names and values:
 Device IP will be added to each event automatically in `td_ip` column if you call `enableAutoTrackingIP`. Note that the tracked IP address is the one when you upload the events to Treasure Data, not the one when you add the event.
 
 ```
-[[TreasureData sharedInstance] enableAutoTrackingIP];
+TreasureData.sharedInstance().enableAutoTrackingIP();
 ```
 
 To disable auto tracking IP:
 
 ```
-[[TreasureData sharedInstance] disableAutoTrackingIP];
+TreasureData.sharedInstance().disableAutoTrackingIP();
 ```
 
 ### Profiles API
