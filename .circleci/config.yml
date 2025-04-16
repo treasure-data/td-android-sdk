@@ -164,7 +164,6 @@ workflows:
   test:
     jobs:
       - local_tests
-      - instrument_tests_level_36
       - instrument_tests_level_35
       - instrument_tests_level_34
       - instrument_tests_level_33
