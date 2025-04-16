@@ -92,24 +92,15 @@ commands:
 jobs:
   local_tests:
     docker:
-      - image: cimg/android:2025.04.1
+      - image: cimg/android:2024.07.1
     steps:
       - run_local_tests
-
-  instrument_tests_level_36:
-    executor:
-      name: android/android-machine
-      resource-class: medium
-      tag: "2025.04.1"
-    steps:
-      - run_instrument_tests:
-          api_level: '36'
 
   instrument_tests_level_35:
     executor:
       name: android/android-machine
-      resource-class: medium
-      tag: "2025.04.1"
+      resource-class: large
+      tag: "2024.07.1"
     steps:
       - run_instrument_tests:
           api_level: '35'
@@ -117,8 +108,8 @@ jobs:
   instrument_tests_level_34:
     executor:
       name: android/android-machine
-      resource-class: medium
-      tag: "2025.04.1"
+      resource-class: large
+      tag: "2024.07.1"
     steps:
       - run_instrument_tests:
           api_level: '34'
@@ -126,8 +117,8 @@ jobs:
   instrument_tests_level_33:
     executor:
       name: android/android-machine
-      resource-class: medium
-      tag: "2025.04.1"
+      resource-class: large
+      tag: "2024.07.1"
     steps:
       - run_instrument_tests:
           api_level: '33'
@@ -135,8 +126,8 @@ jobs:
   instrument_tests_level_32:
     executor:
       name: android/android-machine
-      resource-class: medium
-      tag: "2025.04.1"
+      resource-class: large
+      tag: "2024.07.1"
     steps:
       - run_instrument_tests:
           api_level: '32'
@@ -144,8 +135,8 @@ jobs:
   instrument_tests_level_31:
     executor:
       name: android/android-machine
-      resource-class: medium
-      tag: "2025.04.1"
+      resource-class: large
+      tag: "2024.07.1"
     steps:
       - run_instrument_tests:
           api_level: '31'
@@ -153,8 +144,8 @@ jobs:
   instrument_tests_level_30:
     executor:
       name: android/android-machine
-      resource-class: medium
-      tag: "2025.04.1"
+      resource-class: large
+      tag: "2024.07.1"
     steps:
       - run_instrument_tests:
           api_level: '30'
@@ -162,8 +153,8 @@ jobs:
   instrument_tests_level_29:
     executor:
       name: android/android-machine
-      resource-class: medium
-      tag: "2025.04.1"
+      resource-class: large
+      tag: "2024.07.1"
     steps:
       - run_instrument_tests:
           api_level: '29'
