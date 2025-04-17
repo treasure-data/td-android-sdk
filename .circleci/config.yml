@@ -97,12 +97,8 @@ jobs:
       - run_local_tests
 
   instrument_tests_level_35:
-    executor:
-      machine:
-        image: android-default
-      name: android/android_machine
-      resource_class: large
-      tag: "2025.04.1"
+    machine:
+      image: android-default
     steps:
       - run_instrument_tests:
           api_level: '35'
