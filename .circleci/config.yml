@@ -3,7 +3,7 @@
 version: 2.1
 
 orbs:
-  android: circleci/android@3.1.0
+  android: circleci/android@3.0.0
 
 _defaults:
   - &restore_gradle_cache
@@ -97,9 +97,10 @@ jobs:
       - run_local_tests
 
   instrument_tests_level_35:
-    machine:
-      image: android-default
+    executor:
+      name: android/android_machine
       resource_class: large
+      tag: "2025.04.1"
     steps:
       - run_instrument_tests:
           api_level: '35'
