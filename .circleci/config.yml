@@ -3,7 +3,7 @@
 version: 2.1
 
 orbs:
-  android: circleci/android@2.5.0
+  android: circleci/android@3.1.0
 
 _defaults:
   - &restore_gradle_cache
@@ -72,8 +72,8 @@ commands:
         type: "string"
     steps:
       - checkout
-      - android/start-emulator-and-run-tests:
-          system-image: system-images;android-<<parameters.api_level>>;google_apis;x86_64
+      - android/start_emulator_and_run_tests:
+          system_image: system-images;android-<<parameters.api_level>>;google_apis;x86_64
       - store_instrument_results
 
   run_local_tests:
@@ -92,69 +92,71 @@ commands:
 jobs:
   local_tests:
     docker:
-      - image: cimg/android:2024.07.1
+      - image: cimg/android:2025.04.1
     steps:
       - run_local_tests
 
   instrument_tests_level_35:
     executor:
-      name: android/android-machine
-      resource-class: large
-      tag: "2024.07.1"
+      machine:
+        image: android-default
+      name: android/android_machine
+      resource_class: large
+      tag: "2025.04.1"
     steps:
       - run_instrument_tests:
           api_level: '35'
 
   instrument_tests_level_34:
     executor:
-      name: android/android-machine
-      resource-class: large
-      tag: "2024.07.1"
+      name: android/android_machine
+      resource_class: large
+      tag: "2025.04.1"
     steps:
       - run_instrument_tests:
           api_level: '34'
 
   instrument_tests_level_33:
     executor:
-      name: android/android-machine
-      resource-class: large
-      tag: "2024.07.1"
+      name: android/android_machine
+      resource_class: large
+      tag: "2025.04.1"
     steps:
       - run_instrument_tests:
           api_level: '33'
 
   instrument_tests_level_32:
     executor:
-      name: android/android-machine
-      resource-class: large
-      tag: "2024.07.1"
+      name: android/android_machine
+      resource_class: large
+      tag: "2025.04.1"
     steps:
       - run_instrument_tests:
           api_level: '32'
 
   instrument_tests_level_31:
     executor:
-      name: android/android-machine
-      resource-class: large
-      tag: "2024.07.1"
+      name: android/android_machine
+      resource_class: large
+      tag: "2025.04.1"
     steps:
       - run_instrument_tests:
           api_level: '31'
 
   instrument_tests_level_30:
     executor:
-      name: android/android-machine
-      resource-class: large
-      tag: "2024.07.1"
+      name: android/android_machine
+      resource_class: large
+      tag: "2025.04.1"
     steps:
       - run_instrument_tests:
           api_level: '30'
 
   instrument_tests_level_29:
     executor:
-      name: android/android-machine
-      resource-class: large
-      tag: "2024.07.1"
+      name: android/android_machine
+      resource_class: large
+      tag: "2025.04.1"
     steps:
       - run_instrument_tests:
           api_level: '29'
