@@ -99,6 +99,7 @@ jobs:
   instrument_tests_level_35:
     machine:
       image: android-default
+      resource_class: large
     steps:
       - run_instrument_tests:
           api_level: '35'
