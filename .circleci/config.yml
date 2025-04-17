@@ -72,8 +72,8 @@ commands:
         type: "string"
     steps:
       - checkout
-      - android/start_emulator_and_run_tests:
-          system_image: system-images;android-<<parameters.api_level>>;google_apis;x86_64
+      - android/start-emulator-and-run-tests:
+          system-image: system-images;android-<<parameters.api_level>>;google_apis;x86_64
       - store_instrument_results
 
   run_local_tests:
@@ -98,8 +98,8 @@ jobs:
 
   instrument_tests_level_36:
     executor:
-      name: android/android_machine
-      resource_class: large
+      name: android/android-machine
+      resource-class: large
       tag: "2024.11.1"
     steps:
       - run_instrument_tests:
@@ -107,8 +107,8 @@ jobs:
 
   instrument_tests_level_35:
     executor:
-      name: android/android_machine
-      resource_class: large
+      name: android/android-machine
+      resource-class: large
       tag: "2024.11.1"
     steps:
       - run_instrument_tests:
@@ -116,8 +116,8 @@ jobs:
 
   instrument_tests_level_34:
     executor:
-      name: android/android_machine
-      resource_class: large
+      name: android/android-machine
+      resource-class: large
       tag: "2024.11.1"
     steps:
       - run_instrument_tests:
@@ -125,8 +125,8 @@ jobs:
 
   instrument_tests_level_33:
     executor:
-      name: android/android_machine
-      resource_class: large
+      name: android/android-machine
+      resource-class: large
       tag: "2024.11.1"
     steps:
       - run_instrument_tests:
@@ -134,8 +134,8 @@ jobs:
 
   instrument_tests_level_32:
     executor:
-      name: android/android_machine
-      resource_class: large
+      name: android/android-machine
+      resource-class: large
       tag: "2024.11.1"
     steps:
       - run_instrument_tests:
@@ -143,8 +143,8 @@ jobs:
 
   instrument_tests_level_31:
     executor:
-      name: android/android_machine
-      resource_class: large
+      name: android/android-machine
+      resource-class: large
       tag: "2024.11.1"
     steps:
       - run_instrument_tests:
@@ -152,8 +152,8 @@ jobs:
 
   instrument_tests_level_30:
     executor:
-      name: android/android_machine
-      resource_class: large
+      name: android/android-machine
+      resource-class: large
       tag: "2024.11.1"
     steps:
       - run_instrument_tests:
@@ -161,8 +161,8 @@ jobs:
 
   instrument_tests_level_29:
     executor:
-      name: android/android_machine
-      resource_class: large
+      name: android/android-machine
+      resource-class: large
       tag: "2024.11.1"
     steps:
       - run_instrument_tests:
