@@ -542,6 +542,7 @@ Android SDK for Arm Treasure Data only supports any Android device running API 2
 
 | Codename           | Version | API    | v0.6.0             | v1.0.0             | v1.0.1             | v1.1.0             |
 | :----------------- | :------ | :----- | :----------------- | :----------------- | :----------------- | :----------------- |
+| Android 15         | 15      | 35     | not tested         | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | Android 14         | 14      | 34     | not tested         | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | Android 13         | 13      | 33     | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | Android 12         | 13      | 31, 32 | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
