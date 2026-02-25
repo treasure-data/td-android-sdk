@@ -97,7 +97,7 @@ jobs:
   instrument_tests_level_36:
     executor:
       name: android/android_machine
-      resource-class: xlarge
+      resource_class: xlarge
       tag: "2025.10.1"
     steps:
       - run_instrument_tests:
@@ -106,7 +106,7 @@ jobs:
   instrument_tests_level_35:
     executor:
       name: android/android_machine
-      resource-class: large
+      resource_class: large
       tag: "2024.11.1"
     steps:
       - run_instrument_tests:
@@ -115,7 +115,7 @@ jobs:
   instrument_tests_level_34:
     executor:
       name: android/android_machine
-      resource-class: large
+      resource_class: large
       tag: "2024.11.1"
     steps:
       - run_instrument_tests:
@@ -124,7 +124,7 @@ jobs:
   instrument_tests_level_33:
     executor:
       name: android/android_machine
-      resource-class: large
+      resource_class: large
       tag: "2024.11.1"
     steps:
       - run_instrument_tests:
@@ -133,7 +133,7 @@ jobs:
   instrument_tests_level_32:
     executor:
       name: android/android_machine
-      resource-class: large
+      resource_class: large
       tag: "2024.11.1"
     steps:
       - run_instrument_tests:
@@ -142,7 +142,7 @@ jobs:
   instrument_tests_level_31:
     executor:
       name: android/android_machine
-      resource-class: large
+      resource_class: large
       tag: "2024.11.1"
     steps:
       - run_instrument_tests:
@@ -151,7 +151,7 @@ jobs:
   instrument_tests_level_30:
     executor:
       name: android/android_machine
-      resource-class: large
+      resource_class: large
       tag: "2024.11.1"
     steps:
       - run_instrument_tests:
@@ -160,7 +160,7 @@ jobs:
   instrument_tests_level_29:
     executor:
       name: android/android_machine
-      resource-class: large
+      resource_class: large
       tag: "2024.11.1"
     steps:
       - run_instrument_tests:
