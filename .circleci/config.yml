@@ -3,7 +3,7 @@
 version: 2.1
 
 orbs:
-  android: circleci/android@2.5.0
+  android: circleci/android@3.2.0
 
 _defaults:
   - &restore_gradle_cache
