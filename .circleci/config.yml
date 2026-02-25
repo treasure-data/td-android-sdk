@@ -99,7 +99,7 @@ jobs:
   instrument_tests_level_36:
     executor:
       name: android/android-machine
-      resource-class: large
+      resource-class: xlarge
       tag: "2025.10.1"
     steps:
       - run_instrument_tests:
