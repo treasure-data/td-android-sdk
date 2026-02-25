@@ -92,7 +92,7 @@ commands:
 jobs:
   local_tests:
     docker:
-      - image: cimg/android:2024.11.1
+      - image: cimg/android:2026.02
     steps:
       - run_local_tests
 
