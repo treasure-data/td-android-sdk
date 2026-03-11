@@ -3,7 +3,7 @@
 version: 2.1
 
 orbs:
-  android: circleci/android@2.5.0
+  android: circleci/android@3.2.0
 
 _defaults:
   - &restore_gradle_cache
@@ -24,9 +24,9 @@ _defaults:
       name: Run Tests
       command: ./gradlew test
   - &run_connected_android_tests
-      run:
-        name:  Run Connected Android Tests
-        command: ./gradlew connectedAndroidTest
+    run:
+      name: Run Connected Android Tests
+      command: ./gradlew connectedAndroidTest
   - &compress_report
     run:
       name: Compress Report
@@ -38,7 +38,6 @@ _defaults:
   - &store_test_results
     store_test_results:
       path: build/test-results
-
 
 commands:
   store_instrument_results:
@@ -72,8 +71,8 @@ commands:
         type: "string"
     steps:
       - checkout
-      - android/start-emulator-and-run-tests:
-          system-image: system-images;android-<<parameters.api_level>>;google_apis;x86_64
+      - android/start_emulator_and_run_tests:
+          system_image: system-images;android-<<parameters.api_level>>;google_apis;x86_64
       - store_instrument_results
 
   run_local_tests:
@@ -88,89 +87,95 @@ commands:
       - *store_report
       - *store_test_results
 
-
 jobs:
   local_tests:
     docker:
-      - image: cimg/android:2024.04.1
+      - image: cimg/android:2026.02
     steps:
       - run_local_tests
 
-  instrument_tests_level_34:
+  instrument_tests_level_36:
     executor:
-      name: android/android-machine
-      resource-class: large
-      tag: "2024.04.1"
+      name: android/android_machine
+      resource_class: xlarge
+      tag: "2025.10.1"
     steps:
       - run_instrument_tests:
-          api_level: '34'
+          api_level: "36"
+
+  instrument_tests_level_35:
+    executor:
+      name: android/android_machine
+      resource_class: large
+      tag: "2024.11.1"
+    steps:
+      - run_instrument_tests:
+          api_level: "35"
+
+  instrument_tests_level_34:
+    executor:
+      name: android/android_machine
+      resource_class: large
+      tag: "2024.11.1"
+    steps:
+      - run_instrument_tests:
+          api_level: "34"
 
   instrument_tests_level_33:
     executor:
-      name: android/android-machine
-      resource-class: large
-      tag: "2024.04.1"
+      name: android/android_machine
+      resource_class: large
+      tag: "2024.11.1"
     steps:
       - run_instrument_tests:
-          api_level: '33'
+          api_level: "33"
 
   instrument_tests_level_32:
     executor:
-      name: android/android-machine
-      resource-class: large
-      tag: "2024.04.1"
+      name: android/android_machine
+      resource_class: large
+      tag: "2024.11.1"
     steps:
       - run_instrument_tests:
-          api_level: '32'
+          api_level: "32"
 
   instrument_tests_level_31:
     executor:
-      name: android/android-machine
-      resource-class: large
-      tag: "2024.04.1"
+      name: android/android_machine
+      resource_class: large
+      tag: "2024.11.1"
     steps:
       - run_instrument_tests:
-          api_level: '31'
+          api_level: "31"
 
   instrument_tests_level_30:
     executor:
-      name: android/android-machine
-      resource-class: large
-      tag: "2024.04.1"
+      name: android/android_machine
+      resource_class: large
+      tag: "2024.11.1"
     steps:
       - run_instrument_tests:
-          api_level: '30'
+          api_level: "30"
 
   instrument_tests_level_29:
     executor:
-      name: android/android-machine
-      resource-class: large
-      tag: "2024.04.1"
+      name: android/android_machine
+      resource_class: large
+      tag: "2024.11.1"
     steps:
       - run_instrument_tests:
-          api_level: '29'
-
-  instrument_tests_level_28:
-    executor:
-      name: android/android-machine
-      resource-class: large
-      tag: "2024.04.1"
-    steps:
-      - checkout
-      - android/start-emulator-and-run-tests:
-          system-image: system-images;android-28;google_apis;x86
-      - store_instrument_results
-
+          api_level: "29"
 
 workflows:
   version: 2
   test:
     jobs:
       - local_tests
+      - instrument_tests_level_36
+      - instrument_tests_level_35
       - instrument_tests_level_34
       - instrument_tests_level_33
       - instrument_tests_level_32
       - instrument_tests_level_31
       - instrument_tests_level_30
       - instrument_tests_level_29
-      - instrument_tests_level_28
