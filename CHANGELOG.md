@@ -1,5 +1,10 @@
 # Change Log
 
+## Version 1.2.0
+_2026-06-12_
+
+* Upgrade jackson-jr-objects to 2.20.1
+
 ## Version 1.1.0
 _2024-07-10_
 
