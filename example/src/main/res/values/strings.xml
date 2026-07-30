@@ -41,5 +41,7 @@
     <string name="string_first_run" />
     <string name="is_first_run">Is first run?</string>
     <string name="clear_first_run">Clear first run</string>
+    <string name="string_landing_page">Landing Page (TDBridge)</string>
+    <string name="open_landing_page">Open landing page</string>
 
 </resources>

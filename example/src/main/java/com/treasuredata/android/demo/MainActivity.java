@@ -1,6 +1,7 @@
 package com.treasuredata.android.demo;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -407,6 +408,13 @@ public class MainActivity extends Activity {
             @Override
             public void onClick(View v) {
                 TreasureData.sharedInstance().clearFirstRun(getApplicationContext());
+            }
+        });
+
+        findViewById(R.id.openLandingPageButton).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, PopupDemoActivity.class));
             }
         });
     }
