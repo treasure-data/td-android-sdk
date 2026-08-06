@@ -29,6 +29,11 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name="com.treasuredata.android.demo.PopupDemoActivity"
+            android:exported="true"
+            android:label="TDJSBridge demo" />
+
         <meta-data
             android:name="com.google.android.gms.ads.AD_MANAGER_APP"
             android:value="true" />

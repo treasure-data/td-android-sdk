@@ -460,6 +460,23 @@
                 android:layout_height="wrap_content"
                 android:text="@string/clear_first_run" />
 
+            <TextView
+                android:id="@+id/title17"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dip"
+                android:gravity="center"
+                android:text="@string/string_landing_page"
+                android:textColor="#999999"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/openLandingPageButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/open_landing_page" />
+
         </LinearLayout>
     </ScrollView>
 
