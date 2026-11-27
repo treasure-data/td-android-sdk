@@ -94,7 +94,7 @@ public class TreasureData implements CDPClient {
     private final Context context;
     private final TDClient client;
     private String osType;
-    private String uuid;
+    private volatile String uuid;
     private volatile String defaultDatabase;
     private volatile String defaultTable;
     private volatile TDCallback addEventCallBack;
@@ -244,8 +244,9 @@ public class TreasureData implements CDPClient {
         // Reset UUID
         SharedPreferences sharedPreferences = getSharedPreference(context);
         synchronized (this) {
-            String uuid = UUID.randomUUID().toString();
-            sharedPreferences.edit().putString(SHARED_PREF_KEY_UUID, uuid).commit();
+            String newUuid = UUID.randomUUID().toString();
+            sharedPreferences.edit().putString(SHARED_PREF_KEY_UUID, newUuid).commit();
+            this.uuid = newUuid;
         }
     }
 
