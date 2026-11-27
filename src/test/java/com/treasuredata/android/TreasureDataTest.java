@@ -2,6 +2,7 @@ package com.treasuredata.android;
 
 import android.app.Application;
 import android.content.Context;
+import android.content.SharedPreferences;
 
 import io.keen.client.java.KeenCallback;
 import io.keen.client.java.KeenClient;
@@ -9,11 +10,17 @@ import io.keen.client.java.KeenProject;
 
 import junit.framework.TestCase;
 
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -975,5 +982,58 @@ public class TreasureDataTest extends TestCase {
 
         td.disableAutoTrackingIP();
         assertFalse(tdHttpHandler.isTrackingIPEnabled);
+    }
+
+    public void testResetUniqIdUpdatesCachedUuidForSubsequentEvents() {
+        final Map<String, String> storedStrings = new HashMap<String, String>();
+        SharedPreferences sharedPreferences = mock(SharedPreferences.class);
+        final SharedPreferences.Editor editor = mock(SharedPreferences.Editor.class);
+        when(context.getPackageName()).thenReturn("com.treasuredata.android.test");
+        when(context.getSharedPreferences(anyString(), anyInt())).thenReturn(sharedPreferences);
+        when(sharedPreferences.edit()).thenReturn(editor);
+        when(sharedPreferences.getString(anyString(), nullable(String.class))).thenAnswer(new Answer<String>() {
+            @Override
+            public String answer(InvocationOnMock invocation) {
+                String key = invocation.getArgument(0);
+                String defValue = invocation.getArgument(1);
+                return storedStrings.containsKey(key) ? storedStrings.get(key) : defValue;
+            }
+        });
+        when(editor.putString(anyString(), nullable(String.class))).thenAnswer(new Answer<SharedPreferences.Editor>() {
+            @Override
+            public SharedPreferences.Editor answer(InvocationOnMock invocation) {
+                String key = invocation.getArgument(0);
+                String value = invocation.getArgument(1);
+                storedStrings.put(key, value);
+                return editor;
+            }
+        });
+        when(editor.commit()).thenReturn(true);
+
+        td.setDefaultDatabase("db_");
+        td.setDefaultTable("tbl");
+        td.enableAutoAppendUniqId();
+
+        String initialUuid = td.getUUID();
+        assertNotNull(initialUuid);
+
+        td.resetUniqId();
+
+        assertEquals(1, client.addedEvent.size());
+        Event resetEvent = client.addedEvent.get(0);
+        assertEquals("db_.tbl", resetEvent.tag);
+        assertEquals("forget_device_uuid", resetEvent.event.get("td_android_event"));
+        assertEquals(initialUuid, resetEvent.event.get("td_uuid"));
+
+        String newUuid = td.getUUID();
+        assertNotNull(newUuid);
+        assertFalse(initialUuid.equals(newUuid));
+
+        Map<String, Object> nextRecord = new HashMap<String, Object>();
+        nextRecord.put("key", "val");
+        td.addEvent("db_", "tbl", nextRecord);
+
+        assertEquals(2, client.addedEvent.size());
+        assertEquals(newUuid, client.addedEvent.get(1).event.get("td_uuid"));
     }
 }
